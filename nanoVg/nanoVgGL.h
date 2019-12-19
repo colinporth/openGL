@@ -1,4 +1,11 @@
 #pragma once
+//{{{  includes
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+//}}}
+
 //{{{  gl flavor defines
 #if defined NANOVG_GL2_IMPLEMENTATION
   #define NANOVG_GL2 1
@@ -10,12 +17,6 @@
 #elif defined NANOVG_GLES3_IMPLEMENTATION
   #define NANOVG_GLES3 1
 #endif
-//}}}
-//{{{  includes
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
 //}}}
 
 //{{{

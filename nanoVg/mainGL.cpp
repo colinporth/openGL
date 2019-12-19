@@ -5,13 +5,12 @@
 #include "glad.h"
 #include <GLFW/glfw3.h>
 
-#include "nanoVg.h"
-
 //#define NANOVG_GL2_IMPLEMENTATION
 //#define NANOVG_GL3_IMPLEMENTATION
 //#define NANOVG_GLES2_IMPLEMENTATION
 #define NANOVG_GLES3_IMPLEMENTATION
 #include "nanoVgGL.h"
+//#include "nanoVg.h"
 
 #include "demo.h"
 #include "perf.h"
