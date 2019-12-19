@@ -170,7 +170,7 @@ int main (int argc, char* argv[]) {
                         " chan:" + dec(chan) + " bitrate:" + dec(bitrate));
 
   cAppWindow appWindow (chan, bitrate);
-  appWindow.run ("hls", 480, 272);
+  appWindow.run ("hls", 800, 480);
 
   CoUninitialize();
   return 0;
