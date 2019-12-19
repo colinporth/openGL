@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\shared\nanoVg\cGlWindow.cpp" />
+    <ClCompile Include="..\..\shared\nanoVg\cVg.cpp" />
+    <ClCompile Include="..\..\shared\nanoVg\glad.c" />
+    <ClCompile Include="..\..\shared\teensyAac\cAacDecoder.cpp" />
+    <ClCompile Include="..\..\shared\teensyAac\huffman.cpp" />
+    <ClCompile Include="..\..\shared\teensyAac\sbr.cpp" />
+    <ClCompile Include="..\..\shared\utils\cLog.cpp" />
+    <ClCompile Include="..\..\shared\utils\cWinAudio.cpp" />
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\shared\teensyAac\aaccommon.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\teensyAac\assembly.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\teensyAac\cAacDecoder.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\teensyAac\cBitStream.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\cGlWindow.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\utils\cLog.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\cPerfGraph.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\cVgGL.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cWidget.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\utils\date.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\fontStash.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\hls\hls.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\hls\hlsWidgets.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\teensyAac\huffman.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\iDraw.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\teensyAac\sbr.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\stb_image.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\teensyAac\tables.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\stb_truetype.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\cVg.h">
+      <Filter>h</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="h">
+      <UniqueIdentifier>{309b5935-6d35-41d3-8da8-2c132cc051bc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

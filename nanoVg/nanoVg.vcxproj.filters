@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="h">
+      <UniqueIdentifier>{cf71a851-55ff-4c13-a588-ec5d6e0b0aa4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="demo.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="fontstash.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="perf.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_truetype.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="glad.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="nanoVg.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="nanoVgGL.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="nanoVgGLutils.h">
+      <Filter>h</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="glad.c" />
+    <ClCompile Include="demo.cpp" />
+    <ClCompile Include="perf.cpp" />
+    <ClCompile Include="mainGL.cpp" />
+    <ClCompile Include="nanoVg.cpp" />
+  </ItemGroup>
+</Project>
