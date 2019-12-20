@@ -40,10 +40,10 @@ public:
   //{{{
   void run (string title, int width, int height, int frequency) {
 
-    string rootName = "/tv";
     mFrequency  = frequency;
     cLog::log (LOGINFO, "run %d", mFrequency);
 
+    string rootName = "/tv";
     mDvb = new cDvb (rootName);
     mDvb->createGraph (frequency);
 
@@ -122,7 +122,6 @@ private:
 
 
 int main (int argc, char* argv[]) {
-
   CoInitializeEx (NULL, COINIT_MULTITHREADED);
 
   bool logInfo = false;
