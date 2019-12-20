@@ -49,12 +49,13 @@ public:
 
     auto root = cGlWindow::initialise (title, width, height, (unsigned char*)droidSansMono);
 
-    add (new cTextBox (mPacketStr, 15.f));
+    add (new cTextBox (mDvb->mPacketStr, 15.f));
     add (new cTextBox (mDvb->mSignalStr, 14.f));
     add (new cTextBox (mDvb->mTuneStr, 12.f));
     addAt (new cTransportStreamBox (mDvb, 0.f, -2.f), 0.f, 1.f);
 
     thread ([=]() { mDvb->grabThread(); } ).detach();
+    thread ([=]() { mDvb->signalThread(); } ).detach();
 
     glClearColor (0, 0, 0, 1.f);
     cGlWindow::run();
@@ -117,8 +118,6 @@ private:
   bool mLogInfo = true;
   int mFrequency = 0;
   cDvb* mDvb = nullptr;
-
-  string mPacketStr = "packet";
   };
 
 
@@ -127,7 +126,7 @@ int main (int argc, char* argv[]) {
   CoInitializeEx (NULL, COINIT_MULTITHREADED);
 
   bool logInfo = false;
-  int frequency  = 674;
+  int frequency  = 626;
 
   for (auto arg = 1; arg < argc; arg++)
     if (!strcmp(argv[arg], "l")) logInfo = true;

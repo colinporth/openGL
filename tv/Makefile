@@ -10,6 +10,7 @@ INCLUDES +=
 SRC       = tvGrab.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/dvb/cLinuxDvb.cpp \
+	    ../../shared/dvb/cTransportStream.cpp \
 	    ../../shared/nanoVg/cGlWindow.cpp \
 	    ../../shared/nanoVg/cVg.cpp \
 	    ../../shared/nanoVg/glad.c

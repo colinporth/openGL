@@ -173,7 +173,8 @@
     <ClInclude Include="..\..\shared\widgets\iDraw.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\shared\dvb\cWinDvb .cpp" />
+    <ClCompile Include="..\..\shared\dvb\cTransportStream.cpp" />
+    <ClCompile Include="..\..\shared\dvb\cWinDvb.cpp" />
     <ClCompile Include="..\..\shared\nanoVg\cGlWindow.cpp" />
     <ClCompile Include="..\..\shared\nanoVg\cVg.cpp" />
     <ClCompile Include="..\..\shared\nanoVg\glad.c" />

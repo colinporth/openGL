@@ -6,7 +6,8 @@
     <ClCompile Include="..\..\shared\nanoVg\glad.c" />
     <ClCompile Include="..\..\shared\utils\cLog.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="..\..\shared\dvb\cWinDvb .cpp" />
+    <ClCompile Include="..\..\shared\dvb\cTransportStream.cpp" />
+    <ClCompile Include="..\..\shared\dvb\cWinDvb.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\teensyAac\aaccommon.h">
