@@ -6,6 +6,7 @@
     <ClCompile Include="..\..\shared\nanoVg\glad.c" />
     <ClCompile Include="..\..\shared\utils\cLog.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="..\..\shared\dvb\cWinDvb .cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\teensyAac\aaccommon.h">
@@ -66,6 +67,9 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\nanoVg\cVg.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\dvb\cWinDvb.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>

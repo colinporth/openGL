@@ -23,6 +23,7 @@
 
 #include "../../shared/nanoVg/cGlWindow.h"
 #include "../../shared/fonts/FreeSansBold.h"
+#include "../../shared/fonts/DroidSansMono1.h"
 
 #include "../../shared/widgets/cTextBox.h"
 #include "../../shared/widgets/cValueBox.h"
@@ -46,8 +47,12 @@ public:
     mDvb = new cDvb (rootName);
     mDvb->createGraph (frequency);
 
-    auto root = cGlWindow::initialise (title, width, height, (unsigned char*)freeSansBold);
-    add (new cTransportStreamBox (mDvb, 0.f, 0.f));
+    auto root = cGlWindow::initialise (title, width, height, (unsigned char*)droidSansMono);
+
+    add (new cTextBox (mPacketStr, 15.f));
+    add (new cTextBox (mDvb->mSignalStr, 14.f));
+    add (new cTextBox (mDvb->mTuneStr, 12.f));
+    addAt (new cTransportStreamBox (mDvb, 0.f, -2.f), 0.f, 1.f);
 
     thread ([=]() { mDvb->grabThread(); } ).detach();
 
@@ -112,6 +117,8 @@ private:
   bool mLogInfo = true;
   int mFrequency = 0;
   cDvb* mDvb = nullptr;
+
+  string mPacketStr = "packet";
   };
 
 
@@ -120,15 +127,14 @@ int main (int argc, char* argv[]) {
   CoInitializeEx (NULL, COINIT_MULTITHREADED);
 
   bool logInfo = false;
-  int frequency  = 626;
+  int frequency  = 674;
 
   for (auto arg = 1; arg < argc; arg++)
     if (!strcmp(argv[arg], "l")) logInfo = true;
     else if (!strcmp(argv[arg], "f")) frequency = 674;
 
   cLog::init (logInfo ? LOGINFO3 : LOGINFO, false, "");
-  cLog::log (LOGNOTICE, "winTv log:" + dec(logInfo) +
-                        " frequency:" + dec(frequency));
+  cLog::log (LOGNOTICE, "winTv log:" + dec(logInfo) + " frequency:" + dec(frequency));
 
   cAppWindow appWindow;
   appWindow.run ("tv", 800, 480, frequency * 1000);
