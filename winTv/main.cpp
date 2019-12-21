@@ -6,31 +6,24 @@
 #define NOMINMAX
 
 #include <windows.h>
-
 #include <winsock2.h>
 #include <WS2tcpip.h>
 
+#include <string>
 #include <thread>
 #include <chrono>
 
-#include "../../shared/utils/date.h"
 #include "../../shared/utils/utils.h"
 #include "../../shared/utils/cLog.h"
-#include "../../shared/utils/cSemaphore.h"
-
-#include "../../shared/utils/iChange.h"
-
-#include "../../shared/dvb/cWinDvb.h"
 
 #include "../../shared/nanoVg/cGlWindow.h"
 #include "../../shared/fonts/FreeSansBold.h"
 #include "../../shared/fonts/DroidSansMono1.h"
 
 #include "../../shared/widgets/cTextBox.h"
-#include "../../shared/widgets/cValueBox.h"
-#include "../../shared/widgets/cSelectText.h"
-#include "../../shared/widgets/cNumBox.h"
 #include "../../shared/widgets/cTransportStreamBox.h"
+
+#include "../../shared/dvb/cWinDvb.h"
 
 using namespace std;
 //}}}
@@ -43,26 +36,26 @@ public:
 
     cLog::log (LOGINFO, "run %d", frequency);
 
-    mDvb = new cDvb (frequency, root);
+    auto dvb = new cDvb (frequency, root);
 
     cGlWindow::initialise (title, width, height, (unsigned char*)droidSansMono);
 
-    add (new cTextBox (mDvb->mTuneStr, 12.f));
-    add (new cTextBox (mDvb->mSignalStr, 14.f));
-    add (new cTextBox (mDvb->mErrorStr, 15.f));
-    addAt (new cTransportStreamBox (mDvb, 0.f, -2.f), 0.f, 1.f);
+    add (new cTextBox (dvb->mTuneStr, 12.f));
+    add (new cTextBox (dvb->mSignalStr, 14.f));
+    add (new cTextBox (dvb->mErrorStr, 15.f));
+    addAt (new cTransportStreamBox (dvb, 0.f, -2.f), 0.f, 1.f);
 
     thread ([=]() {
       //{{{  grabthread
       CoInitializeEx (NULL, COINIT_MULTITHREADED);
-      mDvb->grabThread();
+      dvb->grabThread();
       CoUninitialize();
       //}}}
       }).detach();
     thread ([=]() {
       //{{{  signalThread
       CoInitializeEx (NULL, COINIT_MULTITHREADED);
-      mDvb->signalThread();
+      dvb->signalThread();
       CoUninitialize();
       //}}}
       }).detach();
@@ -70,7 +63,7 @@ public:
     glClearColor (0, 0, 0, 1.f);
     cGlWindow::run();
 
-    delete mDvb;
+    delete dvb;
 
     cLog::log (LOGINFO, "run exit");
     }
@@ -125,7 +118,6 @@ protected:
   void onChar (char ch, int mods) {}
 
 private:
-  cDvb* mDvb = nullptr;
   bool mLogInfo = true;
   };
 
@@ -135,17 +127,19 @@ int main (int argc, char* argv[]) {
 
   bool logInfo = false;
   int frequency  = 626;
-  string root = "/tv";
 
   for (auto arg = 1; arg < argc; arg++)
     if (!strcmp(argv[arg], "l")) logInfo = true;
-    else if (!strcmp(argv[arg], "f")) frequency = 674;
+    else if (!strcmp(argv[arg], "f")) frequency = atoi (argv[++arg]);
+    else if (!strcmp (argv[arg], "hd"))  frequency = 626;
+    else if (!strcmp (argv[arg], "itv")) frequency = 650;
+    else if (!strcmp (argv[arg], "bbc")) frequency = 674;
 
   cLog::init (logInfo ? LOGINFO3 : LOGINFO, false, "");
-  cLog::log (LOGNOTICE, "winTv log:" + dec(logInfo) + " frequency:" + dec(frequency));
+  cLog::log (LOGNOTICE, "winTv - log:" + dec(logInfo) + " frequency:" + dec(frequency));
 
   cAppWindow appWindow;
-  appWindow.run ("tv", 800, 480, frequency * 1000, root);
+  appWindow.run ("tv", 800, 480, frequency * 1000, "/tv");
 
   CoUninitialize();
   return 0;
