@@ -1,6 +1,7 @@
 // hlsPlayer.cpp
 //{{{  includes
 #define _CRT_SECURE_NO_WARNINGS
+#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 
@@ -30,7 +31,6 @@
 
 using namespace std;
 #include "../../shared/hls/hls.h"
-#include "../../shared/hls/hlsSchedule.h"
 #include "../../shared/hls/hlsWidgets.h"
 //}}}
 
