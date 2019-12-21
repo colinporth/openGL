@@ -129,7 +129,7 @@ int main (int argc, char* argv[]) {
 
   for (auto arg = 1; arg < argc; arg++)
     if (!strcmp(argv[arg], "l")) logInfo = true;
-    else if (!strcmp(argv[arg], "f")) frequency = atoi (argv[++arg]);
+    else if (!strcmp (argv[arg], "f")) frequency = atoi (argv[++arg]);
     else if (!strcmp (argv[arg], "hd"))  frequency = 626;
     else if (!strcmp (argv[arg], "itv")) frequency = 650;
     else if (!strcmp (argv[arg], "bbc")) frequency = 674;
