@@ -39,24 +39,33 @@ class cAppWindow : public cGlWindow {
 public:
   cAppWindow() {}
   //{{{
-  void run (string title, int width, int height, int frequency) {
+  void run (string title, int width, int height, int frequency, const string& root) {
 
-    mFrequency  = frequency;
-    cLog::log (LOGINFO, "run %d", mFrequency);
+    cLog::log (LOGINFO, "run %d", frequency);
 
-    string rootName = "/tv";
-    mDvb = new cDvb (rootName);
-    mDvb->createGraph (frequency);
+    mDvb = new cDvb (frequency, root);
 
-    auto root = cGlWindow::initialise (title, width, height, (unsigned char*)droidSansMono);
+    cGlWindow::initialise (title, width, height, (unsigned char*)droidSansMono);
 
-    add (new cTextBox (mDvb->mPacketStr, 15.f));
-    add (new cTextBox (mDvb->mSignalStr, 14.f));
     add (new cTextBox (mDvb->mTuneStr, 12.f));
+    add (new cTextBox (mDvb->mSignalStr, 14.f));
+    add (new cTextBox (mDvb->mErrorStr, 15.f));
     addAt (new cTransportStreamBox (mDvb, 0.f, -2.f), 0.f, 1.f);
 
-    thread ([=]() { mDvb->grabThread(); } ).detach();
-    thread ([=]() { mDvb->signalThread(); } ).detach();
+    thread ([=]() {
+      //{{{  grabthread
+      CoInitializeEx (NULL, COINIT_MULTITHREADED);
+      mDvb->grabThread();
+      CoUninitialize();
+      //}}}
+      }).detach();
+    thread ([=]() {
+      //{{{  signalThread
+      CoInitializeEx (NULL, COINIT_MULTITHREADED);
+      mDvb->signalThread();
+      CoUninitialize();
+      //}}}
+      }).detach();
 
     glClearColor (0, 0, 0, 1.f);
     cGlWindow::run();
@@ -116,9 +125,8 @@ protected:
   void onChar (char ch, int mods) {}
 
 private:
-  bool mLogInfo = true;
-  int mFrequency = 0;
   cDvb* mDvb = nullptr;
+  bool mLogInfo = true;
   };
 
 
@@ -127,6 +135,7 @@ int main (int argc, char* argv[]) {
 
   bool logInfo = false;
   int frequency  = 626;
+  string root = "/tv";
 
   for (auto arg = 1; arg < argc; arg++)
     if (!strcmp(argv[arg], "l")) logInfo = true;
@@ -136,7 +145,7 @@ int main (int argc, char* argv[]) {
   cLog::log (LOGNOTICE, "winTv log:" + dec(logInfo) + " frequency:" + dec(frequency));
 
   cAppWindow appWindow;
-  appWindow.run ("tv", 800, 480, frequency * 1000);
+  appWindow.run ("tv", 800, 480, frequency * 1000, root);
 
   CoUninitialize();
   return 0;

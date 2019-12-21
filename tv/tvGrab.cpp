@@ -30,9 +30,9 @@ using namespace std;
 
 class cAppWindow : public cGlWindow {
 public:
-  cAppWindow (const string& root) : mDvb(root) {}
+  cAppWindow() {}
   //{{{
-  void run (const string& title, int width, int height, unsigned int frequency) {
+  void run (const string& title, int width, int height, unsigned int frequency, const string& root) {
 
     initialise (title, width, height, (unsigned char*)droidSansMono);
     add (new cTextBox (mPacketStr, 15.f));
@@ -40,15 +40,17 @@ public:
     add (new cTextBox (mDvb.mTuneStr, 12.f));
     addAt (new cTransportStreamBox (&mDvb, 0.f, -2.f), 0.f, 1.f);
 
+    mDvb = new cDvb (frequency, root);
+
     // launch dvbThread
-    auto dvbCaptureThread = thread ([=]() { mDvb.captureThread (frequency); });
+    auto dvbCaptureThread = thread ([=]() { mDvb->captureThread (frequency); });
     sched_param sch_params;
     sch_params.sched_priority = sched_get_priority_max (SCHED_RR);
     pthread_setschedparam (dvbCaptureThread.native_handle(), SCHED_RR, &sch_params);
     dvbCaptureThread.detach();
 
     // launch grabThread
-    thread ([=]() { mDvb.grabThread(); } ).detach();
+    thread ([=]() { mDvb->grabThread(); } ).detach();
 
     glClearColor (0, 0, 0, 1.f);
     cGlWindow::run();
@@ -91,7 +93,7 @@ protected:
 
 private:
   //{{{  vars
-  cDvb mDvb;
+  cDvb* mDvb;
 
   string mStr1 = "tv app";
   string mStr2 = "";
@@ -126,7 +128,7 @@ int main (int argc, char* argv[]) {
                         " root:" + root);
 
   cAppWindow appWindow (root);
-  appWindow.run ("tv - openGL2", 790, 400, frequency);
+  appWindow.run ("tv - openGL2", 790, 400, frequency, root);
 
   return 0;
   }
