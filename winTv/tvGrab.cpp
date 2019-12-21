@@ -1,4 +1,4 @@
-// linTvGrab.cpp
+// tvGrab.cpp
 //{{{  includes
 #include <string.h>
 #include <stdlib.h>
@@ -31,9 +31,9 @@ class cAppWindow : public cGlWindow {
 public:
   cAppWindow() {}
   //{{{
-  void run (const string& title, int width, int height, unsigned int frequency, const std::string& root) {
+  void run (const string& title, int width, int height, unsigned int frequency) {
 
-    mDvb = new cDvb (frequency*1000, root);
+    mDvb = new cDvb (frequency*1000, "home/pi/ts");
 
     initialise (title, width, height, (unsigned char*)droidSansMono);
     add (new cTextBox (mDvb->mErrorStr, 12.f));
@@ -103,16 +103,16 @@ int main (int argc, char* argv[]) {
   int frequency = 626;
   for (auto arg = 1; arg < argc; arg++)
     if (!strcmp(argv[arg], "l")) logInfo = true;
+    else if (!strcmp (argv[arg], "f")) frequency = atoi (argv[++arg]);
     else if (!strcmp(argv[arg], "itv")) frequency = 650;
     else if (!strcmp(argv[arg], "bbc")) frequency = 674;
     else if (!strcmp(argv[arg], "hd"))  frequency = 626;
 
   cLog::init (logInfo ? LOGINFO3 : LOGINFO, false, "");
-  cLog::log (LOGNOTICE, "linTvGrab logInfo:" + dec(logInfo) +
-                        " freq:" + dec(frequency));
+  cLog::log (LOGNOTICE, "linTvGrab logInfo:" + dec(logInfo) + " freq:" + dec(frequency));
 
   cAppWindow appWindow;
-  appWindow.run ("tv - openGL2", 790, 400, frequency, "home/pi/ts");
+  appWindow.run ("tv - openGL2", 790, 400, frequency);
 
   return 0;
   }

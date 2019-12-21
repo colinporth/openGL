@@ -32,14 +32,13 @@ class cAppWindow : public cGlWindow {
 public:
   cAppWindow() {}
   //{{{
-  void run (string title, int width, int height, int frequency, const string& root) {
+  void run (string title, int width, int height, int frequency) {
 
     cLog::log (LOGINFO, "run %d", frequency);
 
-    auto dvb = new cDvb (frequency, root, true);
+    auto dvb = new cDvb (frequency, "/tv", true);
 
     cGlWindow::initialise (title, width, height, (unsigned char*)droidSansMono);
-
     add (new cTextBox (dvb->mTuneStr, 12.f));
     add (new cTextBox (dvb->mSignalStr, 14.f));
     add (new cTextBox (dvb->mErrorStr, 15.f));
@@ -139,7 +138,7 @@ int main (int argc, char* argv[]) {
   cLog::log (LOGNOTICE, "winTv - log:" + dec(logInfo) + " frequency:" + dec(frequency));
 
   cAppWindow appWindow;
-  appWindow.run ("tv", 800, 480, frequency * 1000, "/tv");
+  appWindow.run ("winTv", 800, 480, frequency * 1000);
 
   CoUninitialize();
   return 0;
