@@ -1,4 +1,4 @@
-// winTv.cpp
+// winTv - main.cpp
 //{{{  includes
 #define _CRT_SECURE_NO_WARNINGS
 #define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
@@ -36,7 +36,7 @@ public:
 
     cLog::log (LOGINFO, "run %d", frequency);
 
-    auto dvb = new cDvb (frequency, root);
+    auto dvb = new cDvb (frequency, root, true);
 
     cGlWindow::initialise (title, width, height, (unsigned char*)droidSansMono);
 
