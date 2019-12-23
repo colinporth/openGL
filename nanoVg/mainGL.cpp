@@ -137,7 +137,7 @@ int main() {
     // Calculate pixel ration for hi-dpi devices.
     float pxRatio = (float)fbWidth / (float)winWidth;
     nvgBeginFrame (vg, (float)winWidth, (float)winHeight, pxRatio);
-    renderDemo(vg, (float)mx, (float)my, (float)winWidth, (float) winHeight, (float)t, blowup, &data);
+    renderDemo (vg, (float)mx, (float)my, (float)winWidth, (float) winHeight, (float)t, blowup, &data);
     renderGraph (vg, 5,5, &fps);
     renderGraph (vg, 5 + 200 + 5, 5, &cpuGraph);
     nvgEndFrame (vg);

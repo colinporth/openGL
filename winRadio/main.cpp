@@ -50,7 +50,8 @@ public:
       //{{{  loader
       CoInitializeEx (NULL, COINIT_MULTITHREADED);
 
-      cWinSockHttp http; //cWinEsp8266Http http;
+      //cWinEsp8266Http http;
+      cWinSockHttp http;
       loader (http);
 
       CoUninitialize();
