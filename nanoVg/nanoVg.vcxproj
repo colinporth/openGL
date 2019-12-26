@@ -91,24 +91,24 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>..\..\shared;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\shared\GLFW\lib32;..\..\shared\GL\lib32;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\shared\GLFW\lib32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>..\..\shared;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\shared\GLFW\lib64;..\..\shared\GL\lib64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\shared\GLFW\lib64;$(LibraryPath)</LibraryPath>
     <OutDir>$(MSBuildProjectDirectory)\</OutDir>
     <IntDir>$(TargetName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>..\..\shared;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\shared\GLFW\lib32;..\..\shared\GL\lib32;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\shared\GLFW\lib32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>..\..\shared;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\shared\GLFW\lib64;..\..\shared\GL\lib64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\shared\GLFW\lib64;$(LibraryPath)</LibraryPath>
     <OutDir>$(MSBuildProjectDirectory)\</OutDir>
     <IntDir>$(TargetName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
