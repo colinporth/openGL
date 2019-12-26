@@ -21,9 +21,6 @@
     <ClInclude Include="stb_truetype.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="glad.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="nanoVg.h">
       <Filter>h</Filter>
     </ClInclude>
@@ -33,12 +30,15 @@
     <ClInclude Include="nanoVgGLutils.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\glad\glad.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="glad.c" />
     <ClCompile Include="demo.cpp" />
     <ClCompile Include="perf.cpp" />
     <ClCompile Include="mainGL.cpp" />
     <ClCompile Include="nanoVg.cpp" />
+    <ClCompile Include="..\..\shared\glad\glad.c" />
   </ItemGroup>
 </Project>

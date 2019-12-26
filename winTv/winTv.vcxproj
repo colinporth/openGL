@@ -155,6 +155,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\dvb\cWinDvb.h" />
+    <ClInclude Include="..\..\shared\glad\glad.h" />
     <ClInclude Include="..\..\shared\hls\hls.h" />
     <ClInclude Include="..\..\shared\hls\hlsWidgets.h" />
     <ClInclude Include="..\..\shared\nanoVg\cGlWindow.h" />
@@ -179,9 +180,9 @@
   <ItemGroup>
     <ClCompile Include="..\..\shared\dvb\cTransportStream.cpp" />
     <ClCompile Include="..\..\shared\dvb\cWinDvb.cpp" />
+    <ClCompile Include="..\..\shared\glad\glad.c" />
     <ClCompile Include="..\..\shared\nanoVg\cGlWindow.cpp" />
     <ClCompile Include="..\..\shared\nanoVg\cVg.cpp" />
-    <ClCompile Include="..\..\shared\nanoVg\glad.c" />
     <ClCompile Include="..\..\shared\utils\cLog.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>

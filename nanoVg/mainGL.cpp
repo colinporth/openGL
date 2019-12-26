@@ -2,7 +2,7 @@
 //{{{  includes
 #include <stdio.h>
 
-#include "glad.h"
+#include "glad/glad.h"
 #include <GLFW/glfw3.h>
 
 //#define NANOVG_GL2_IMPLEMENTATION
