@@ -10,7 +10,7 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
-#include "nanovg.h"
+#include "../nanoVg.h"
 #include <d3d11.h>
 
 #include "D3D11VertexShader.h"

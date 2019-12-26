@@ -61,7 +61,7 @@ enum GLNVGshaderType {
   //}}}
 #endif
 
-#include "nanoVg.h"
+#include "..\nanoVg.h"
 
 //{{{
 struct GLNVGshader {

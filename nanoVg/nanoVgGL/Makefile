@@ -8,10 +8,10 @@ CXXFLAGS += -Wall -O2 -std=c++11
 INCLUDES +=
 
 SRC       = mainGL.cpp \
-	    demo.cpp \
-	    perf.cpp \
-	    nanoVg.cpp \
-	    glad.c
+	    ../demo.cpp \
+	    ../perf.cpp \
+	    ../nanoVg.cpp \
+	    ../../../shared/glad/glad.c
 
 OBJS     += $(filter %.o,$(SRC:.cpp=.o)) $(filter %.o,$(SRC:.c=.o))
 

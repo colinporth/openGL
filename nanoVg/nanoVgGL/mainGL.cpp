@@ -12,8 +12,8 @@
 #include "nanoVgGL.h"
 //#include "nanoVg.h"
 
-#include "demo.h"
-#include "perf.h"
+#include "../demo.h"
+#include "../perf.h"
 
 //}}}
 //#define DEMO_MSAA

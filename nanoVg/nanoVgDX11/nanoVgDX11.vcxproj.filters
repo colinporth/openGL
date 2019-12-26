@@ -6,6 +6,30 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="mainDX11.cpp" />
+    <ClCompile Include="..\demo.cpp" />
+    <ClCompile Include="..\nanoVg.cpp" />
+    <ClCompile Include="..\perf.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\demo.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fontstash.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nanoVg.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\perf.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stb_image.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stb_truetype.h">
+      <Filter>h</Filter>
+    </ClInclude>
     <ClInclude Include="D3D11PixelShader.h">
       <Filter>h</Filter>
     </ClInclude>
@@ -15,32 +39,5 @@
     <ClInclude Include="D3D11VertexShader.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="fontstash.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="stb_image.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="stb_truetype.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="perf.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="demo.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="nanoVg.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="nanoVgDX11.h">
-      <Filter>h</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="demo.cpp" />
-    <ClCompile Include="perf.cpp" />
-    <ClCompile Include="mainDX11.cpp" />
-    <ClCompile Include="nanoVg.cpp" />
   </ItemGroup>
 </Project>

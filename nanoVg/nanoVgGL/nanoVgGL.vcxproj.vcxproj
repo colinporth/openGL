@@ -19,29 +19,27 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="D3D11PixelShader.h" />
-    <ClInclude Include="D3D11PixelShaderAA.h" />
-    <ClInclude Include="D3D11VertexShader.h" />
-    <ClInclude Include="demo.h" />
-    <ClInclude Include="fontstash.h" />
-    <ClInclude Include="nanoVg.h" />
-    <ClInclude Include="nanoVgDX11.h" />
-    <ClInclude Include="perf.h" />
-    <ClInclude Include="stb_image.h" />
-    <ClInclude Include="stb_truetype.h" />
+    <ClInclude Include="..\..\..\shared\glad\glad.h" />
+    <ClInclude Include="..\demo.h" />
+    <ClInclude Include="..\fontstash.h" />
+    <ClInclude Include="..\nanoVg.h" />
+    <ClInclude Include="..\perf.h" />
+    <ClInclude Include="..\stb_image.h" />
+    <ClInclude Include="..\stb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="demo.cpp" />
-    <ClCompile Include="mainDX11.cpp" />
-    <ClCompile Include="nanoVg.cpp" />
-    <ClCompile Include="perf.cpp" />
+    <ClCompile Include="..\..\..\shared\glad\glad.c" />
+    <ClCompile Include="..\demo.cpp" />
+    <ClCompile Include="..\nanoVg.cpp" />
+    <ClCompile Include="..\perf.cpp" />
+    <ClCompile Include="mainGL.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{77DFEC35-ED0E-490D-98C7-8DE6DAF02C11}</ProjectGuid>
+    <ProjectGuid>{1BAF18BC-F15B-4273-B0D6-0444487226E8}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>glHlsPlayer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>nanoVgDX11</ProjectName>
+    <ProjectName>nanoVgGL</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -90,27 +88,31 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\shared;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\shared\GLFW\lib32;..\..\shared\GL\lib32;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\..\shared;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\..\shared\GLFW\lib32;$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\shared;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\shared\GLFW\lib64;..\..\shared\GL\lib64;$(LibraryPath)</LibraryPath>
-    <IntDir>$(TargetName)\$(Platform)\$(Configuration)\</IntDir>
-    <OutDir>$(MSBuildProjectDirectory)\</OutDir>
+    <IncludePath>..\..\..\shared;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\..\shared\GLFW\lib64;$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\shared;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\shared\GLFW\lib32;..\..\shared\GL\lib32;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\..\shared;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\..\shared\GLFW\lib32;$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\shared;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\shared\GLFW\lib64;..\..\shared\GL\lib64;$(LibraryPath)</LibraryPath>
-    <IntDir>$(TargetName)\$(Platform)\$(Configuration)\</IntDir>
-    <OutDir>$(MSBuildProjectDirectory)\</OutDir>
+    <IncludePath>..\..\..\shared;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\..\shared\GLFW\lib64;$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -118,11 +120,11 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>openGL32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(SolutionDir)nanoVg\$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -131,11 +133,11 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>openGL32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(SolutionDir)nanoVg\$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -146,14 +148,14 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>openGL32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>true</Profile>
+      <OutputFile>$(SolutionDir)nanoVg\$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -165,14 +167,14 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>openGL32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>true</Profile>
+      <OutputFile>$(SolutionDir)nanoVg\$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

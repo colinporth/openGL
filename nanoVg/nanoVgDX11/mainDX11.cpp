@@ -5,13 +5,11 @@
 
 #include <stdio.h>
 
-#include "nanovg.h"
-
 #define INITGUID
 #include "nanoVgDX11.h"
 
-#include "demo.h"
-#include "perf.h"
+#include "../demo.h"
+#include "../perf.h"
 
 #include <Windows.h>
 #include <windowsx.h>
