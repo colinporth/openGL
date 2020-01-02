@@ -34,7 +34,7 @@ using namespace std;
 #include "../../shared/hls/hlsWidgets.h"
 //}}}
 
-class cAppWindow : public cHls, public cGlWindow, public cWinAudio {
+class cAppWindow : public cHls, public cGlWindow {
 public:
   cAppWindow (int chan, int bitrate) : cHls (chan, bitrate, kBst) {}
   //{{{
@@ -63,7 +63,10 @@ public:
     auto playerThread = thread ([=]() {
       //{{{  player
       CoInitializeEx (NULL, COINIT_MULTITHREADED);
-      player (this, this);
+
+      cWinAudio audio (2, 48000);
+      player (audio, this);
+
       CoUninitialize();
       }
       //}}}
