@@ -32,7 +32,7 @@ using namespace std;
 #include "../../shared/hls/hlsWidgets.h"
 //}}}
 
-class cAppWindow : public cHls, public cGlWindow, public cLinuxAudio {
+class cAppWindow : public cHls, public cGlWindow {
 public:
   //{{{
   cAppWindow (int chan)
@@ -50,8 +50,10 @@ public:
     thread ([=]() { cLinuxHttp http; loader(http); } ).detach();
 
     // launch playerThread, higher priority
-    auto playerThread = thread ([=]() { player (this, this); });
-    playerThread.detach();
+    thread ([=]() {
+      cLinuxAudio audio (2, 48000);
+      player (audio, this);
+      }).detach();
 
     glClearColor (0, 0, 0, 1.f);
     cGlWindow::run();

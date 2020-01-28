@@ -14,7 +14,7 @@ SRC       = hlsPlayer.cpp \
 	    ../../shared/teensyAac/sbr.cpp \
 	    ../../shared/nanoVg/cGlWindow.cpp \
 	    ../../shared/nanoVg/cVg.cpp \
-	    ../../shared/nanoVg/glad.c \
+	    ../../shared/glad/glad.c \
 
 OBJS     += $(filter %.o,$(SRC:.cpp=.o)) $(filter %.o,$(SRC:.c=.o))
 
