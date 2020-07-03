@@ -6,7 +6,8 @@ CFLAGS   += -Wall \
 	    -O2 \
 	    -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64
 
-CXXFLAGS += -Wall -std=c++11 \
+CXXFLAGS += -Wall \
+	    -std=c++11 \
 	    -g \
 	    -O2 \
 	    -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64
