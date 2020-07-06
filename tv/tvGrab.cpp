@@ -33,7 +33,7 @@ public:
   //{{{
   void run (const string& title, int width, int height, unsigned int frequency) {
 
-    mDvb = new cDvb (frequency*1000, "home/pi/ts", true);
+    mDvb = new cDvb (frequency*1000, "/home/pi/ts", true);
 
     initialise (title, width, height, (unsigned char*)droidSansMono);
     add (new cTextBox (mDvb->mErrorStr, 12.f));
