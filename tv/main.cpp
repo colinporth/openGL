@@ -1,4 +1,4 @@
-// winTv - main.cpp
+// main.cpp - windows tv
 //{{{  includes
 #define _CRT_SECURE_NO_WARNINGS
 #define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
@@ -9,10 +9,15 @@
 #include <winsock2.h>
 #include <WS2tcpip.h>
 
+#include <string.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <math.h>
+
 #include <string>
 #include <thread>
 #include <chrono>
-
+#include "../../shared/date/date.h"
 #include "../../shared/utils/utils.h"
 #include "../../shared/utils/cLog.h"
 
@@ -32,37 +37,33 @@ class cAppWindow : public cGlWindow {
 public:
   cAppWindow() {}
   //{{{
-  void run (string title, int width, int height, int frequency) {
+  void run (const string& title, int width, int height, int frequency) {
 
     cLog::log (LOGINFO, "run %d", frequency);
+    mDvb = new cDvb (frequency*1000, "/tv", true);
 
-    auto dvb = new cDvb (frequency, "/tv", true);
-
-    cGlWindow::initialise (title, width, height, (unsigned char*)droidSansMono);
-    add (new cTextBox (dvb->mTuneStr, 12.f));
-    add (new cTextBox (dvb->mSignalStr, 14.f));
-    add (new cTextBox (dvb->mErrorStr, 15.f));
-    addAt (new cTransportStreamBox (dvb, 0.f, -2.f), 0.f, 1.f);
+    initialise (title, width, height, (unsigned char*)droidSansMono);
+    add (new cTextBox (mDvb->mErrorStr, 12.f));
+    add (new cTextBox (mDvb->mTuneStr, 12.f));
+    add (new cTextBox (mDvb->mSignalStr, 16.f));
+    addAt (new cTransportStreamBox (mDvb, 0.f, -2.f), 0.f, 1.f);
 
     thread ([=]() {
-      //{{{  grabthread
       CoInitializeEx (NULL, COINIT_MULTITHREADED);
-      dvb->grabThread();
+      mDvb->grabThread();
       CoUninitialize();
-      //}}}
       }).detach();
+
     thread ([=]() {
-      //{{{  signalThread
       CoInitializeEx (NULL, COINIT_MULTITHREADED);
-      dvb->signalThread();
+      mDvb->signalThread();
       CoUninitialize();
-      //}}}
       }).detach();
 
     glClearColor (0, 0, 0, 1.f);
     cGlWindow::run();
 
-    delete dvb;
+    delete mDvb;
 
     cLog::log (LOGINFO, "run exit");
     }
@@ -118,6 +119,7 @@ protected:
 
 private:
   bool mLogInfo = true;
+  cDvb* mDvb;
   };
 
 
@@ -125,7 +127,7 @@ int main (int argc, char* argv[]) {
   CoInitializeEx (NULL, COINIT_MULTITHREADED);
 
   bool logInfo = false;
-  int frequency  = 626;
+  int frequency = 626;
 
   for (auto arg = 1; arg < argc; arg++)
     if (!strcmp(argv[arg], "l")) logInfo = true;
@@ -135,10 +137,10 @@ int main (int argc, char* argv[]) {
     else if (!strcmp (argv[arg], "bbc")) frequency = 674;
 
   cLog::init (logInfo ? LOGINFO3 : LOGINFO, false, "");
-  cLog::log (LOGNOTICE, "winTv - log:" + dec(logInfo) + " frequency:" + dec(frequency));
+  cLog::log (LOGNOTICE, "tv - log:" + dec(logInfo) + " freq:" + dec(frequency));
 
   cAppWindow appWindow;
-  appWindow.run ("winTv", 800, 480, frequency * 1000);
+  appWindow.run ("tv", 800, 480, frequency);
 
   CoUninitialize();
   return 0;
