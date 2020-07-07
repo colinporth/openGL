@@ -1,13 +1,13 @@
 CC = gcc
-CXX = g++
-
-CFLAGS   += -Wall \
+CFLAGS   += -std=c++0x \
+	    -Wall \
 	    -g \
 	    -O2 \
 	    -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64
 
-CXXFLAGS += -Wall\
-	    -std=c++11 \
+CXX = g++
+CXXFLAGS += -std=c++14 \
+	    -Wall\
 	    -g \
 	    -O2 \
 	    -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64

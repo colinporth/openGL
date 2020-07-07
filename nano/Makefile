@@ -1,9 +1,16 @@
 CC = gcc
-CXX = g++
+CFLAGS   += -std=c++0x \
+	    -Wall \
+	    -g \
+	    -O2 \
+	    -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64
 
-# -g -O2
-CFLAGS   += -Wall -O2
-CXXFLAGS += -Wall -O2 -std=c++11
+CXX = g++
+CXXFLAGS += -std=c++14 \
+	    -Wall\
+	    -g \
+	    -O2 \
+	    -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64
 
 INCLUDES +=
 

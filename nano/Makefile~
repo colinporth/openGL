@@ -1,11 +1,13 @@
 CC = gcc
+CXX = g++
+
+# -g -O2
 CFLAGS   += -std=c++0x \
 	    -Wall \
 	    -g \
 	    -O2 \
 	    -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64
 
-CXX = g++
 CXXFLAGS += -std=c++14 \
 	    -Wall\
 	    -g \
@@ -14,19 +16,17 @@ CXXFLAGS += -std=c++14 \
 
 INCLUDES +=
 
-SRC       = tvGrab.cpp \
-	    ../../shared/utils/cLog.cpp \
-	    ../../shared/dvb/cLinuxDvb.cpp \
-	    ../../shared/dvb/cTransportStream.cpp \
-	    ../../shared/nanoVg/cGlWindow.cpp \
-	    ../../shared/nanoVg/cVg.cpp \
+SRC       = mainGL.cpp \
+	    demo.cpp \
+	    perf.cpp \
+	    nanoVg.cpp \
 	    ../../shared/glad/glad.c
 
 OBJS     += $(filter %.o,$(SRC:.cpp=.o)) $(filter %.o,$(SRC:.c=.o))
 
-LDFLAGS  += -lGL -lglfw -lpthread -ldl
+LDFLAGS  += -l GL -l glfw -l dl
 
-all: tv Makefile
+all: nano Makefile
 
 %.o: %.c Makefile
 	@rm -f $@
@@ -36,13 +36,13 @@ all: tv Makefile
 	@rm -f $@
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
-tv: $(OBJS) Makefile
-	$(CXX) $(LDFLAGS) -o tv $(OBJS)
+nano: $(OBJS) Makefile
+	$(CXX) $(LDFLAGS) -o nano $(OBJS)
 
 .PHONY: clean rebuild
 
 clean:
-	rm -f *.o *.~* %*~ tv
+	rm -f *.o *.~* %*~ nano
 
 rebuild:
 	make clean && make

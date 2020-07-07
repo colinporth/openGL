@@ -1,11 +1,12 @@
 CC = gcc
+CXX = g++
+
 CFLAGS   += -std=c++0x \
 	    -Wall \
 	    -g \
 	    -O2 \
 	    -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64
 
-CXX = g++
 CXXFLAGS += -std=c++14 \
 	    -Wall\
 	    -g \
@@ -14,19 +15,20 @@ CXXFLAGS += -std=c++14 \
 
 INCLUDES +=
 
-SRC       = tvGrab.cpp \
+SRC       = main.cpp \
 	    ../../shared/utils/cLog.cpp \
-	    ../../shared/dvb/cLinuxDvb.cpp \
-	    ../../shared/dvb/cTransportStream.cpp \
+	    ../../shared/teensyAac/huffman.cpp \
+	    ../../shared/teensyAac/cAacDecoder.cpp \
+	    ../../shared/teensyAac/sbr.cpp \
 	    ../../shared/nanoVg/cGlWindow.cpp \
 	    ../../shared/nanoVg/cVg.cpp \
-	    ../../shared/glad/glad.c
+	    ../../shared/glad/glad.c \
 
 OBJS     += $(filter %.o,$(SRC:.cpp=.o)) $(filter %.o,$(SRC:.c=.o))
 
-LDFLAGS  += -lGL -lglfw -lpthread -ldl
+LDFLAGS  += -l asound -l glfw -l dl -l pthread -l GL
 
-all: tv Makefile
+all: radio Makefile
 
 %.o: %.c Makefile
 	@rm -f $@
@@ -36,13 +38,13 @@ all: tv Makefile
 	@rm -f $@
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
-tv: $(OBJS) Makefile
-	$(CXX) $(LDFLAGS) -o tv $(OBJS)
+radio: $(OBJS) Makefile
+	$(CXX) $(LDFLAGS) -o radio $(OBJS)
 
 .PHONY: clean rebuild
 
 clean:
-	rm -f *.o *.~* %*~ tv
+	rm -f *.o *.~* %*~ radio
 
 rebuild:
 	make clean && make

@@ -16,7 +16,6 @@
 #include <limits.h>
 #include <math.h>
 
-
 #include <thread>
 #include <chrono>
 #include "../../shared/date/date.h"
@@ -89,7 +88,7 @@ public:
       }
     else {
       while (true)
-        Sleep (1000);
+        this_thread::sleep_for (1s);
       }
 
     cLog::log (LOGINFO, "run exit");
