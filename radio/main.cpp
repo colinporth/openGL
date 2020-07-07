@@ -87,9 +87,11 @@ public:
       glClearColor (0, 0, 0, 1.f);
       cGlWindow::run();
       }
-    else
+    else {
       while (true)
-        Sleep (1);
+        Sleep (1000);
+      }
+
     cLog::log (LOGINFO, "run exit");
     }
   //}}}
