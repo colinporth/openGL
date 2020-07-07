@@ -56,7 +56,11 @@ public:
 
     // loader
     thread ([=]() {
-      cWinSockHttp http;
+      #ifdef _WIN32
+        cWinSockHttp http;
+      #else
+        cLinuxHttp http;
+      #endif
       loader (http);
       } ).detach();
 
