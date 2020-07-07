@@ -10,11 +10,9 @@
 //#define NANOVG_GLES2_IMPLEMENTATION
 #define NANOVG_GLES3_IMPLEMENTATION
 #include "nanoVgGL.h"
-//#include "nanoVg.h"
 
 #include "../demo.h"
 #include "../perf.h"
-
 //}}}
 //#define DEMO_MSAA
 
