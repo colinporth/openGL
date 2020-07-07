@@ -14,7 +14,7 @@ CXXFLAGS += -Wall\
 
 INCLUDES +=
 
-SRC       = hlsPlayer.cpp \
+SRC       = main.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/teensyAac/huffman.cpp \
 	    ../../shared/teensyAac/cAacDecoder.cpp \
@@ -26,7 +26,6 @@ SRC       = hlsPlayer.cpp \
 OBJS     += $(filter %.o,$(SRC:.cpp=.o)) $(filter %.o,$(SRC:.c=.o))
 
 LDFLAGS  += -l asound -l glfw -l dl -l pthread -l GL
-#LDFLAGS  += -lasound -lglfw -lrt -lm -ldl -lX11 -lpthread -lxcb -lXau -lXdmcp -lGL
 
 all: radio Makefile
 

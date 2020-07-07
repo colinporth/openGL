@@ -7,9 +7,9 @@
     <ClCompile Include="..\..\shared\teensyAac\huffman.cpp" />
     <ClCompile Include="..\..\shared\teensyAac\sbr.cpp" />
     <ClCompile Include="..\..\shared\utils\cLog.cpp" />
-    <ClCompile Include="..\..\shared\utils\cWinAudio.cpp" />
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="..\..\shared\glad\glad.c" />
+    <ClCompile Include="..\..\shared\utils\cWinAudio16.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\teensyAac\aaccommon.h">
@@ -73,6 +73,9 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\glad\glad.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\utils\cWinAudio16.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>

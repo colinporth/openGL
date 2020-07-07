@@ -1,33 +1,37 @@
-// hlsPlayer.cpp
+// main.cpp - windows,linux hls radio
 //{{{  includes
-#define _CRT_SECURE_NO_WARNINGS
-#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
+#ifdef _WIN32
+  #define _CRT_SECURE_NO_WARNINGS
+  #define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
+  #define WIN32_LEAN_AND_MEAN
+  #define NOMINMAX
 
-#include <windows.h>
+  #include <windows.h>
+  #include <winsock2.h>
+  #include <WS2tcpip.h>
+#endif
 
-#include <winsock2.h>
-#include <WS2tcpip.h>
+#include <string.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <math.h>
 
 #include <thread>
 #include <chrono>
-
 #include "../../shared/date/date.h"
-#include "../../shared/utils/utils.h"
-#include "../../shared/utils/cLog.h"
-#include "../../shared/utils/cSemaphore.h"
-
-#include "../../shared/utils/iChange.h"
-#include "../../shared/utils/cWinAudio.h"
-#include "../../shared/net/cWinSockHttp.h"
 
 #include "../../shared/nanoVg/cGlWindow.h"
 #include "../../shared/fonts/FreeSansBold.h"
 
+#include "../../shared/utils/utils.h"
+#include "../../shared/utils/cLog.h"
+#include "../../shared/utils/cSemaphore.h"
+
+#include "../../shared/utils/cWinAudio16.h"
+#include "../../shared/net/cWinSockHttp.h"
+
 #include "../../shared/widgets/cValueBox.h"
 #include "../../shared/widgets/cSelectText.h"
-#include "../../shared/widgets/cPicWidget.h"
 
 using namespace std;
 #include "../../shared/hls/hls.h"
@@ -47,32 +51,24 @@ public:
 
     // launch loaderThread
     thread ([=]() {
-      //{{{  loader
-      CoInitializeEx (NULL, COINIT_MULTITHREADED);
-
-      //cWinEsp8266Http http;
       cWinSockHttp http;
       loader (http);
+      } ).detach();
 
-      CoUninitialize();
-      }
+    // launch playerThread
+    thread ([=]() {
+      //{{{
+      #ifdef _WIN32
+        CoInitializeEx (NULL, COINIT_MULTITHREADED);
+        cWinAudio audio (2, 48000);
+        player (audio, this);
+        CoUninitialize();
+      #else
+        cLinuxAudio audio (2, 48000);
+        player (audio, this);
+      #endif
       //}}}
-      ).detach();
-
-    // launch playerThread, higher priority
-    auto playerThread = thread ([=]() {
-      //{{{  player
-      CoInitializeEx (NULL, COINIT_MULTITHREADED);
-
-      cWinAudio audio (2, 48000);
-      player (audio, this);
-
-      CoUninitialize();
-      }
-      //}}}
-      );
-    SetThreadPriority (playerThread.native_handle(), THREAD_PRIORITY_HIGHEST);
-    playerThread.detach();
+      } ).detach();
 
     glClearColor (0, 0, 0, 1.f);
     cGlWindow::run();
@@ -150,11 +146,6 @@ private:
 
 int main (int argc, char* argv[]) {
 
-  CoInitializeEx (NULL, COINIT_MULTITHREADED);
-  WSADATA wsaData;
-  if (WSAStartup (MAKEWORD(2,2), &wsaData))
-    exit (0);
-
   bool logInfo = false;
   uint32_t chan = kDefaultChan;
   uint32_t bitrate = kDefaultBitrate;
@@ -170,12 +161,14 @@ int main (int argc, char* argv[]) {
     else if (!strcmp(argv[arg], "6")) chan = 6;
 
   cLog::init (logInfo ? LOGINFO3 : LOGINFO, false, "");
-  cLog::log (LOGNOTICE, "winHlsPlayer log:" + dec(logInfo) +
-                        " chan:" + dec(chan) + " bitrate:" + dec(bitrate));
+  cLog::log (LOGNOTICE, "radio " + dec(logInfo) + " chan:" + dec(chan) + " bitrate:" + dec(bitrate));
 
   cAppWindow appWindow (chan, bitrate);
-  appWindow.run ("hls", 800, 480);
+  #ifdef _WIN32
+    appWindow.run ("hls", 800, 480);
+  #else
+    appWindow.run ("hls", 480, 272);
+  #endif
 
-  CoUninitialize();
   return 0;
   }

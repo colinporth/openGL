@@ -1,4 +1,4 @@
-// linux hlsPlayer.cpp
+// linuxMain.cpp
 //{{{  includes
 #include <string.h>
 #include <stdlib.h>
@@ -19,13 +19,8 @@
 #include "../../shared/utils/cLinuxAudio.h"
 #include "../../shared/net/cLinuxHttp.h"
 
-#include "../../shared/widgets/cRootContainer.h"
-#include "../../shared/widgets/cListWidget.h"
-#include "../../shared/widgets/cTextBox.h"
 #include "../../shared/widgets/cValueBox.h"
 #include "../../shared/widgets/cSelectText.h"
-#include "../../shared/widgets/cDecodePicWidget.h"
-#include "../../shared/widgets/cNumBox.h"
 
 using namespace std;
 #include "../../shared/hls/hls.h"
@@ -34,26 +29,26 @@ using namespace std;
 
 class cAppWindow : public cHls, public cGlWindow {
 public:
-  //{{{
-  cAppWindow (int chan)
-    : cHls (chan, kDefaultBitrate, kBst) {}
-  //}}}
+  cAppWindow (int chan, int bitrate) : cHls (chan, bitrate, kBst) {}
   //{{{
   void run (string title, int width, int height) {
 
-    cLog::log (LOGINFO, "run hlsChan:%d", mChan);
+    cLog::log (LOGINFO, "run chan:%d", mChan);
 
     auto root = cGlWindow::initialise (title, width, height, (unsigned char*)freeSansBold);
     hlsMenu (root, this);
 
     // launch loaderThread
-    thread ([=]() { cLinuxHttp http; loader(http); } ).detach();
+    thread ([=]() {
+      cLinuxHttp http; 
+      loader (http);
+      } ).detach();
 
-    // launch playerThread, higher priority
+    // launch playerThread
     thread ([=]() {
       cLinuxAudio audio (2, 48000);
       player (audio, this);
-      }).detach();
+      } ).detach();
 
     glClearColor (0, 0, 0, 1.f);
     cGlWindow::run();
@@ -133,21 +128,22 @@ int main (int argc, char* argv[]) {
 
   bool logInfo = false;
   uint32_t chan = kDefaultChan;
+  uint32_t bitrate = kDefaultBitrate;
 
-  for (auto arg = 1; arg < argc; arg++) {
+  for (auto arg = 1; arg < argc; arg++)
     if (!strcmp(argv[arg], "l")) logInfo = true;
+    else if (!strcmp(argv[arg], "b")) bitrate = 320000;
     else if (!strcmp(argv[arg], "1")) chan = 1;
     else if (!strcmp(argv[arg], "2")) chan = 2;
     else if (!strcmp(argv[arg], "3")) chan = 3;
     else if (!strcmp(argv[arg], "4")) chan = 4;
     else if (!strcmp(argv[arg], "5")) chan = 5;
     else if (!strcmp(argv[arg], "6")) chan = 6;
-    }
 
-  cLog::init (logInfo ? LOGINFO : LOGINFO3, false, "");
-  cLog::log (LOGNOTICE, "linHlsPlayer");
+  cLog::init (logInfo ? LOGINFO3 : LOGINFO, false, "");
+  cLog::log (LOGNOTICE, "radio " + dec(logInfo) + " chan:" + dec(chan) + " bitrate:" + dec(bitrate));
 
-  cAppWindow appWindow (chan);
+  cAppWindow appWindow (chan, bitrate);
   appWindow.run ("hls", 480, 272);
 
   return 0;
