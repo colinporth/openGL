@@ -49,7 +49,7 @@ public:
   //{{{
   void run (string title, int width, int height) {
 
-    cLog::log (LOGINFO, "run chan:%d", mChan);
+    cLog::log (LOGINFO, "run chan:%d bitrate:%d", mChan, mBitrate);
 
     auto root = cGlWindow::initialise (title, width, height, (unsigned char*)freeSansBold);
     hlsMenu (root, this);
