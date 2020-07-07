@@ -21,8 +21,7 @@
 int blowup = 0;
 int premult = 0;
 //{{{
-void errorcb (int error, const char* desc)
-{
+void errorcb (int error, const char* desc) {
   printf("GLFW error %d: %s\n", error, desc);
 }
 //}}}
