@@ -27,11 +27,16 @@
 #include "../../shared/utils/cLog.h"
 #include "../../shared/utils/cSemaphore.h"
 
-#include "../../shared/utils/cWinAudio16.h"
-#include "../../shared/net/cWinSockHttp.h"
-
 #include "../../shared/widgets/cValueBox.h"
 #include "../../shared/widgets/cSelectText.h"
+
+#ifdef _WIN32
+  #include "../../shared/net/cWinSockHttp.h"
+  #include "../../shared/utils/cWinAudio16.h"
+#else
+  #include "../../shared/net/cLinuxHttp.h"
+  #include "../../shared/utils/cLinuxAudio.h"
+#endif
 
 using namespace std;
 #include "../../shared/hls/hls.h"
@@ -49,25 +54,26 @@ public:
     auto root = cGlWindow::initialise (title, width, height, (unsigned char*)freeSansBold);
     hlsMenu (root, this);
 
-    // launch loaderThread
+    // loader
     thread ([=]() {
       cWinSockHttp http;
       loader (http);
       } ).detach();
 
-    // launch playerThread
+    // player
     thread ([=]() {
-      //{{{
       #ifdef _WIN32
         CoInitializeEx (NULL, COINIT_MULTITHREADED);
         cWinAudio audio (2, 48000);
-        player (audio, this);
-        CoUninitialize();
       #else
         cLinuxAudio audio (2, 48000);
-        player (audio, this);
       #endif
-      //}}}
+
+      player (audio, this);
+
+      #ifdef _WIN32
+        CoUninitialize();
+      #endif
       } ).detach();
 
     glClearColor (0, 0, 0, 1.f);
