@@ -48,12 +48,14 @@ class cAppWindow : public cHls, public cGlWindow {
 public:
   cAppWindow (int chan, int bitrate) : cHls (chan, bitrate, kBst) {}
   //{{{
-  void run (string title, int width, int height) {
+  void run (string title, int width, int height, bool graphics) {
 
     cLog::log (LOGINFO, "run chan:%d bitrate:%d", mChan, mBitrate);
 
-    auto root = cGlWindow::initialise (title, width, height, (unsigned char*)freeSansBold);
-    hlsMenu (root, this);
+    if (graphics) {
+      auto root = cGlWindow::initialise (title, width, height, (unsigned char*)freeSansBold);
+      hlsMenu (root, this);
+      }
 
     // loader
     thread ([=]() {
@@ -81,9 +83,13 @@ public:
       #endif
       } ).detach();
 
-    glClearColor (0, 0, 0, 1.f);
-    cGlWindow::run();
-
+    if (graphics) {
+      glClearColor (0, 0, 0, 1.f);
+      cGlWindow::run();
+      }
+    else
+      while (true)
+        Sleep (1);
     cLog::log (LOGINFO, "run exit");
     }
   //}}}
@@ -158,11 +164,13 @@ private:
 int main (int argc, char* argv[]) {
 
   bool logInfo = false;
+  bool graphics = true;
   uint32_t chan = kDefaultChan;
   uint32_t bitrate = kDefaultBitrate;
 
   for (auto arg = 1; arg < argc; arg++)
     if (!strcmp(argv[arg], "l")) logInfo = true;
+    else if (!strcmp(argv[arg], "c")) graphics = false;
     else if (!strcmp(argv[arg], "b")) bitrate = 320000;
     else if (!strcmp(argv[arg], "1")) chan = 1;
     else if (!strcmp(argv[arg], "2")) chan = 2;
@@ -176,9 +184,9 @@ int main (int argc, char* argv[]) {
 
   cAppWindow appWindow (chan, bitrate);
   #ifdef _WIN32
-    appWindow.run ("hls", 800, 480);
+    appWindow.run ("hls", 800, 480, graphics);
   #else
-    appWindow.run ("hls", 480, 272);
+    appWindow.run ("hls", 480, 272, graphics);
   #endif
 
   return 0;
