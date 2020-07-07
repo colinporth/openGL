@@ -9,12 +9,16 @@
   #include <windows.h>
   #include <winsock2.h>
   #include <WS2tcpip.h>
+#else
+  #include <unistd.h>
+  #include <sys/types.h>
 #endif
 
 #include <string.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <math.h>
+
 
 #include <thread>
 #include <chrono>
