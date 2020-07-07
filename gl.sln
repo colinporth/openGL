@@ -7,9 +7,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "winRadio", "winRadio\winRad
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "winTv", "winTv\winTv.vcxproj", "{7E5E3F32-296E-4BEF-AE33-BDDD6D53AF50}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nanoVgDX11", "nano\dx11\nanoVgDX11.vcxproj", "{77DFEC35-ED0E-490D-98C7-8DE6DAF02C11}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nanodx11", "nano\dx11\nanoVgDX11.vcxproj", "{77DFEC35-ED0E-490D-98C7-8DE6DAF02C11}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nanoVgGL", "nano\gl\nanoVgGL.vcxproj.vcxproj", "{1BAF18BC-F15B-4273-B0D6-0444487226E8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nanogl", "nano\nanoVgGL.vcxproj.vcxproj", "{1BAF18BC-F15B-4273-B0D6-0444487226E8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

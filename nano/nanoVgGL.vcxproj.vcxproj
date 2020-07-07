@@ -19,20 +19,22 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\shared\glad\glad.h" />
-    <ClInclude Include="..\demo.h" />
-    <ClInclude Include="..\fontstash.h" />
-    <ClInclude Include="..\nanoVg.h" />
-    <ClInclude Include="..\perf.h" />
-    <ClInclude Include="..\stb_image.h" />
-    <ClInclude Include="..\stb_truetype.h" />
+    <ClCompile Include="..\..\shared\glad\glad.c" />
+    <ClCompile Include="demo.cpp" />
+    <ClCompile Include="mainGL.cpp" />
+    <ClCompile Include="nanoVg.cpp" />
+    <ClCompile Include="perf.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\shared\glad\glad.c" />
-    <ClCompile Include="..\demo.cpp" />
-    <ClCompile Include="..\nanoVg.cpp" />
-    <ClCompile Include="..\perf.cpp" />
-    <ClCompile Include="mainGL.cpp" />
+    <ClInclude Include="..\..\shared\glad\glad.h" />
+    <ClInclude Include="demo.h" />
+    <ClInclude Include="fontstash.h" />
+    <ClInclude Include="nanoVg.h" />
+    <ClInclude Include="nanoVgGL.h" />
+    <ClInclude Include="nanoVgGLutils.h" />
+    <ClInclude Include="perf.h" />
+    <ClInclude Include="stb_image.h" />
+    <ClInclude Include="stb_truetype.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1BAF18BC-F15B-4273-B0D6-0444487226E8}</ProjectGuid>
@@ -95,8 +97,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\..\shared;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\..\shared\GLFW\lib64;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\shared;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\shared\GLFW\lib64;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
   </PropertyGroup>
@@ -109,8 +111,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\..\shared;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\..\shared\GLFW\lib64;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\shared;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\shared\GLFW\lib64;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
   </PropertyGroup>
