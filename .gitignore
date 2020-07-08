@@ -23,7 +23,12 @@
 
 *.~*
 *.*~
+Makefile~
 
 *.o
 
 *.exe
+tv
+radio
+demo
+nano

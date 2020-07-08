@@ -42,16 +42,18 @@ class cAppWindow : public cGlWindow {
 public:
   cAppWindow() {}
   //{{{
-  void run (const string& title, int width, int height, int frequency) {
+  void run (const string& title, int width, int height, int frequency, bool headless) {
 
     cLog::log (LOGINFO, "run %d", frequency);
     mDvb = new cDvb (frequency*1000, "/tv", true);
 
-    initialise (title, width, height, (unsigned char*)droidSansMono);
-    add (new cTextBox (mDvb->mErrorStr, 12.f));
-    add (new cTextBox (mDvb->mTuneStr, 12.f));
-    add (new cTextBox (mDvb->mSignalStr, 16.f));
-    addAt (new cTransportStreamBox (mDvb, 0.f, -2.f), 0.f, 1.f);
+    if (!headless) {
+      initialise (title, width, height, (unsigned char*)droidSansMono);
+      add (new cTextBox (mDvb->mErrorStr, 12.f));
+      add (new cTextBox (mDvb->mTuneStr, 12.f));
+      add (new cTextBox (mDvb->mSignalStr, 16.f));
+      addAt (new cTransportStreamBox (mDvb, 0.f, -2.f), 0.f, 1.f);
+      }
 
     #ifdef _WIN32
       thread ([=]() {
@@ -67,8 +69,14 @@ public:
         }).detach();
     #endif
 
-    glClearColor (0, 0, 0, 1.f);
-    cGlWindow::run();
+    if (headless) {
+      while (true)
+        this_thread::sleep_for (1s);
+      }
+    else {
+      glClearColor (0, 0, 0, 1.f);
+      cGlWindow::run();
+      }
 
     delete mDvb;
 
@@ -137,10 +145,12 @@ int main (int argc, char* argv[]) {
   #endif
 
   bool moreLogInfo = false;
+  bool headless = false;
   int frequency = 626;
 
   for (auto arg = 1; arg < argc; arg++)
     if (!strcmp(argv[arg], "l")) moreLogInfo = true;
+    else if (!strcmp(argv[arg], "h")) headless = true;
     else if (!strcmp (argv[arg], "f")) frequency = atoi (argv[++arg]);
     else if (!strcmp (argv[arg], "hd"))  frequency = 626;
     else if (!strcmp (argv[arg], "itv")) frequency = 650;
@@ -151,9 +161,9 @@ int main (int argc, char* argv[]) {
 
   cAppWindow appWindow;
   #ifdef _WIN32
-    appWindow.run ("tv", 800, 480, frequency);
+    appWindow.run ("tv", 800, 480, frequency, headless);
   #else
-    appWindow.run ("tv", 790, 400, frequency);
+    appWindow.run ("tv", 790, 400, frequency, headless);
   #endif
 
   #ifdef _WIN32
