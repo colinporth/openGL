@@ -5,7 +5,7 @@ CFLAGS   += -Wall \
 	    -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64
 
 CXX = g++
-CXXFLAGS += -std=c++14 \
+CXXFLAGS += -std=c++17 \
 	    -Wall\
 	    -g \
 	    -O2 \
@@ -13,7 +13,7 @@ CXXFLAGS += -std=c++14 \
 
 INCLUDES +=
 
-SRC       = tvGrab.cpp \
+SRC       = main.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/dvb/cLinuxDvb.cpp \
 	    ../../shared/dvb/cTransportStream.cpp \

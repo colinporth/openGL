@@ -1,4 +1,4 @@
-// main.cpp - windows tv
+// main.cpp - tv
 //{{{  includes
 #ifdef _WIN32
   #define _CRT_SECURE_NO_WARNINGS
@@ -151,7 +151,11 @@ int main (int argc, char* argv[]) {
   cLog::log (LOGNOTICE, "tv - log:" + dec(logInfo) + " freq:" + dec(frequency));
 
   cAppWindow appWindow;
-  appWindow.run ("tv", 800, 480, frequency);
+  #ifdef _WIN32
+    appWindow.run ("tv", 800, 480, frequency);
+  #else
+    appWindow.run ("tv", 790, 400, frequency);
+  #endif
 
   #ifdef _WIN32
     CoUninitialize();
