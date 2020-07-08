@@ -27,9 +27,6 @@
 #include "../../shared/utils/cLog.h"
 #include "../../shared/utils/cSemaphore.h"
 
-#include "../../shared/widgets/cValueBox.h"
-#include "../../shared/widgets/cSelectText.h"
-
 #ifdef _WIN32
   #include "../../shared/net/cWinSockHttp.h"
   #include "../../shared/utils/cWinAudio16.h"
@@ -37,6 +34,9 @@
   #include "../../shared/net/cLinuxHttp.h"
   #include "../../shared/utils/cLinuxAudio.h"
 #endif
+
+#include "../../shared/widgets/cValueBox.h"
+#include "../../shared/widgets/cSelectText.h"
 
 using namespace std;
 #include "../../shared/hls/hls.h"
