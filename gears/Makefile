@@ -11,7 +11,7 @@ LFLAGS = -lGL -lGLEW -lGLU -lGL -lm -lX11 -lXext
 gears:  gears.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LFLAGS)
 
-gears.o: glxgears.c
+gears.o: gears.c
 	$(CC) -c -o $@ $< $(CFLAGS) -MT $< -MD -MP -MF gears.Tpo
 
 clean:
