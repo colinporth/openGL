@@ -48,48 +48,36 @@ class cAppWindow : public cHls, public cGlWindow {
 public:
   cAppWindow (int chan, int bitrate) : cHls (chan, bitrate, kBst) {}
   //{{{
-  void run (string title, int width, int height, bool graphics) {
+  void run (string title, int width, int height, bool headless) {
 
     cLog::log (LOGINFO, "run chan:%d bitrate:%d", mChan, mBitrate);
 
-    if (graphics) {
+    if (!headless) {
       auto root = cGlWindow::initialise (title, width, height, (unsigned char*)freeSansBold);
       hlsMenu (root, this);
       }
 
-    // loader
-    thread ([=]() {
-      #ifdef _WIN32
-        cWinSockHttp http;
-      #else
-        cLinuxHttp http;
-      #endif
-      loader (http);
-      } ).detach();
-
-    // player
-    thread ([=]() {
-      #ifdef _WIN32
-        CoInitializeEx (NULL, COINIT_MULTITHREADED);
-        cWinAudio audio (2, 48000);
-      #else
-        cLinuxAudio audio (2, 48000);
-      #endif
-
-      player (audio, this);
-
-      #ifdef _WIN32
+    #ifdef _WIN32
+      thread ([=]() { cWinSockHttp http; loader (http); } ).detach();
+      thread ([=]() { 
+        CoInitializeEx (NULL, COINIT_MULTITHREADED); 
+        cWinAudio audio (2, 48000); 
+        player (audio, this);
         CoUninitialize();
-      #endif
       } ).detach();
 
-    if (graphics) {
-      glClearColor (0, 0, 0, 1.f);
-      cGlWindow::run();
-      }
-    else {
+    #else
+      thread ([=]() { cLinuxHttp http; loader (http); } ).detach();
+      thread ([=]() { cLinuxAudio audio (2, 48000); player (audio, this); } ).detach();
+    #endif
+
+    if (headless) {
       while (true)
         this_thread::sleep_for (1s);
+      }
+    else {
+      glClearColor (0, 0, 0, 1.f);
+      cGlWindow::run();
       }
 
     cLog::log (LOGINFO, "run exit");
@@ -166,13 +154,13 @@ private:
 int main (int argc, char* argv[]) {
 
   bool moreLogInfo = false;
-  bool graphics = true;
+  bool headless = false;
   uint32_t chan = kDefaultChan;
   uint32_t bitrate = kDefaultBitrate;
 
   for (auto arg = 1; arg < argc; arg++)
     if (!strcmp(argv[arg], "l")) moreLogInfo = true;
-    else if (!strcmp(argv[arg], "c")) graphics = false;
+    else if (!strcmp(argv[arg], "h")) headless = true;
     else if (!strcmp(argv[arg], "b")) bitrate = 320000;
     else if (!strcmp(argv[arg], "1")) chan = 1;
     else if (!strcmp(argv[arg], "2")) chan = 2;
@@ -182,13 +170,14 @@ int main (int argc, char* argv[]) {
     else if (!strcmp(argv[arg], "6")) chan = 6;
 
   cLog::init (moreLogInfo ? LOGINFO3 : LOGINFO, false, "");
-  cLog::log (LOGNOTICE, "radio " + dec(moreLogInfo) + " chan:" + dec(chan) + " bitrate:" + dec(bitrate));
+  cLog::log (LOGNOTICE, "radio " + dec(moreLogInfo) + " chan:" + dec(chan) + 
+                         " bitrate:" + dec(bitrate) + " headless" + dec(headless));
 
   cAppWindow appWindow (chan, bitrate);
   #ifdef _WIN32
-    appWindow.run ("hls", 800, 480, graphics);
+    appWindow.run ("hls", 800, 480, headless);
   #else
-    appWindow.run ("hls", 480, 272, graphics);
+    appWindow.run ("hls", 480, 272, headless);
   #endif
 
   return 0;
