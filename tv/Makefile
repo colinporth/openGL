@@ -1,6 +1,5 @@
 CC = gcc
-CFLAGS   += -std=c++0x \
-	    -Wall \
+CFLAGS   += -Wall \
 	    -g \
 	    -O2 \
 	    -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64
@@ -45,4 +44,4 @@ clean:
 	rm -f *.o *.~* %*~ tv
 
 rebuild:
-	make clean && make
+	make clean && make -j 4

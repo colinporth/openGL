@@ -45,4 +45,4 @@ clean:
 	rm -f *.o *.~* %*~ radio
 
 rebuild:
-	make clean && make -j 4
+	make clean && make j -4
