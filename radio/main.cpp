@@ -38,9 +38,10 @@
 #include "../../shared/widgets/cValueBox.h"
 #include "../../shared/widgets/cSelectText.h"
 
-using namespace std;
 #include "../../shared/hls/hls.h"
 #include "../../shared/hls/hlsWidgets.h"
+
+using namespace std;
 //}}}
 
 class cAppWindow : public cHls, public cGlWindow {
@@ -146,8 +147,8 @@ protected:
         case GLFW_KEY_W: fringeWidth (getFringeWidth() + 0.25f); break;
 
         case GLFW_KEY_L:
-          mLogInfo = ! mLogInfo;
-          cLog::setLogLevel (mLogInfo ? LOGINFO3 : LOGNOTICE);
+          mMoreLogInfo = !mMoreLogInfo;
+          cLog::setLogLevel (mMoreLogInfo ? LOGINFO3 : LOGNOTICE);
           break;
 
         default: cLog::log (LOGNOTICE, "Keyboard %x", key); break;
@@ -158,19 +159,19 @@ protected:
   void onChar (char ch, int mods) {}
 
 private:
-  bool mLogInfo = true;
+  bool mMoreLogInfo = false;
   };
 
 
 int main (int argc, char* argv[]) {
 
-  bool logInfo = false;
+  bool moreLogInfo = false;
   bool graphics = true;
   uint32_t chan = kDefaultChan;
   uint32_t bitrate = kDefaultBitrate;
 
   for (auto arg = 1; arg < argc; arg++)
-    if (!strcmp(argv[arg], "l")) logInfo = true;
+    if (!strcmp(argv[arg], "l")) moreLogInfo = true;
     else if (!strcmp(argv[arg], "c")) graphics = false;
     else if (!strcmp(argv[arg], "b")) bitrate = 320000;
     else if (!strcmp(argv[arg], "1")) chan = 1;
@@ -180,8 +181,8 @@ int main (int argc, char* argv[]) {
     else if (!strcmp(argv[arg], "5")) chan = 5;
     else if (!strcmp(argv[arg], "6")) chan = 6;
 
-  cLog::init (logInfo ? LOGINFO3 : LOGINFO, false, "");
-  cLog::log (LOGNOTICE, "radio " + dec(logInfo) + " chan:" + dec(chan) + " bitrate:" + dec(bitrate));
+  cLog::init (moreLogInfo ? LOGINFO3 : LOGINFO, false, "");
+  cLog::log (LOGNOTICE, "radio " + dec(moreLogInfo) + " chan:" + dec(chan) + " bitrate:" + dec(bitrate));
 
   cAppWindow appWindow (chan, bitrate);
   #ifdef _WIN32
