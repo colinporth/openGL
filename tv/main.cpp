@@ -157,7 +157,7 @@ int main (int argc, char* argv[]) {
     else if (!strcmp (argv[arg], "bbc")) frequency = 674;
 
   cLog::init (moreLogInfo ? LOGINFO3 : LOGINFO, false, "");
-  cLog::log (LOGNOTICE, "tv - log:" + dec(moreLogInfo) + " freq:" + dec(frequency));
+  cLog::log (LOGNOTICE, "tv - moreLog:" + dec(moreLogInfo) + " freq:" + dec(frequency));
 
   cAppWindow appWindow;
   #ifdef _WIN32
