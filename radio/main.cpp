@@ -56,19 +56,19 @@ public:
       hlsMenu (root, this);
       }
 
-    #ifdef _WIN32
-      thread ([=]() { cWinSockHttp http; loader (http); } ).detach();
-      thread ([=]() { 
-        CoInitializeEx (NULL, COINIT_MULTITHREADED); 
-        cWinAudio audio (2, 48000); 
-        player (audio, this);
-        CoUninitialize();
-      } ).detach();
+    thread ([=]() { cPlatformHttp http; loader (http); } ).detach();
 
-    #else
-      thread ([=]() { cLinuxHttp http; loader (http); } ).detach();
-      thread ([=]() { cLinuxAudio audio (2, 48000); player (audio, this); } ).detach();
-    #endif
+    thread ([=]() {
+      #ifdef _WIN32
+        CoInitializeEx (NULL, COINIT_MULTITHREADED);
+      #endif
+
+      cAudio16 audio (2, 48000); player (audio, this);
+
+      #ifdef _WIN32
+        CoUninitialize();
+      #endif
+      } ).detach();
 
     if (headless) {
       while (true)
@@ -169,7 +169,7 @@ int main (int argc, char* argv[]) {
     else if (!strcmp(argv[arg], "6")) chan = 6;
 
   cLog::init (moreLogInfo ? LOGINFO3 : LOGINFO, false, "");
-  cLog::log (LOGNOTICE, "radio " + dec(moreLogInfo) + " chan:" + dec(chan) + 
+  cLog::log (LOGNOTICE, "radio " + dec(moreLogInfo) + " chan:" + dec(chan) +
                          " bitrate:" + dec(bitrate) + " headless" + dec(headless));
 
   cAppWindow appWindow (chan, bitrate);
