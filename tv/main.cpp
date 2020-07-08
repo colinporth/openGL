@@ -1,13 +1,15 @@
 // main.cpp - windows tv
 //{{{  includes
-#define _CRT_SECURE_NO_WARNINGS
-#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
+#ifdef _WIN32
+  #define _CRT_SECURE_NO_WARNINGS
+  #define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
+  #define WIN32_LEAN_AND_MEAN
+  #define NOMINMAX
 
-#include <windows.h>
-#include <winsock2.h>
-#include <WS2tcpip.h>
+  #include <windows.h>
+  #include <winsock2.h>
+  #include <WS2tcpip.h>
+#endif
 
 #include <string.h>
 #include <stdlib.h>
@@ -28,7 +30,11 @@
 #include "../../shared/widgets/cTextBox.h"
 #include "../../shared/widgets/cTransportStreamBox.h"
 
-#include "../../shared/dvb/cWinDvb.h"
+#ifdef _WIN32
+  #include "../../shared/dvb/cWinDvb.h"
+#else
+  #include "../../shared/dvb/cLinuxDvb.h"
+#endif
 
 using namespace std;
 //}}}
@@ -48,17 +54,19 @@ public:
     add (new cTextBox (mDvb->mSignalStr, 16.f));
     addAt (new cTransportStreamBox (mDvb, 0.f, -2.f), 0.f, 1.f);
 
-    thread ([=]() {
-      CoInitializeEx (NULL, COINIT_MULTITHREADED);
-      mDvb->grabThread();
-      CoUninitialize();
-      }).detach();
+    #ifdef _WIN32
+      thread ([=]() {
+        CoInitializeEx (NULL, COINIT_MULTITHREADED);
+        mDvb->grabThread();
+        CoUninitialize();
+        }).detach();
 
-    thread ([=]() {
-      CoInitializeEx (NULL, COINIT_MULTITHREADED);
-      mDvb->signalThread();
-      CoUninitialize();
-      }).detach();
+      thread ([=]() {
+        CoInitializeEx (NULL, COINIT_MULTITHREADED);
+        mDvb->signalThread();
+        CoUninitialize();
+        }).detach();
+    #endif
 
     glClearColor (0, 0, 0, 1.f);
     cGlWindow::run();
@@ -106,8 +114,8 @@ protected:
         case GLFW_KEY_W: fringeWidth (getFringeWidth() + 0.25f); break;
 
         case GLFW_KEY_L:
-          mLogInfo = ! mLogInfo;
-          cLog::setLogLevel (mLogInfo ? LOGINFO3 : LOGNOTICE);
+          mMoreLogInfo = ! mMoreLogInfo;
+          cLog::setLogLevel (mMoreLogInfo ? LOGINFO3 : LOGNOTICE);
           break;
 
         default: cLog::log (LOGNOTICE, "Keyboard %x", key); break;
@@ -118,30 +126,36 @@ protected:
   void onChar (char ch, int mods) {}
 
 private:
-  bool mLogInfo = true;
+  bool mMoreLogInfo = false;
   cDvb* mDvb;
   };
 
 
 int main (int argc, char* argv[]) {
-  CoInitializeEx (NULL, COINIT_MULTITHREADED);
 
-  bool logInfo = false;
+  #ifdef _WIN32
+    CoInitializeEx (NULL, COINIT_MULTITHREADED);
+  #endif
+
+  bool moreLogInfo = false;
   int frequency = 626;
 
   for (auto arg = 1; arg < argc; arg++)
-    if (!strcmp(argv[arg], "l")) logInfo = true;
+    if (!strcmp(argv[arg], "l")) moreLogInfo = true;
     else if (!strcmp (argv[arg], "f")) frequency = atoi (argv[++arg]);
     else if (!strcmp (argv[arg], "hd"))  frequency = 626;
     else if (!strcmp (argv[arg], "itv")) frequency = 650;
     else if (!strcmp (argv[arg], "bbc")) frequency = 674;
 
-  cLog::init (logInfo ? LOGINFO3 : LOGINFO, false, "");
+  cLog::init (moreLogInfo ? LOGINFO3 : LOGINFO, false, "");
   cLog::log (LOGNOTICE, "tv - log:" + dec(logInfo) + " freq:" + dec(frequency));
 
   cAppWindow appWindow;
   appWindow.run ("tv", 800, 480, frequency);
 
-  CoUninitialize();
+  #ifdef _WIN32
+    CoUninitialize();
+  #endif
+
   return 0;
   }
