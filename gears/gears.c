@@ -35,6 +35,9 @@
 #include <GL/glx.h>
 #include <GL/glxext.h>
 
+#include <sys/time.h>
+#include <unistd.h>
+
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -48,15 +51,6 @@
 	#define GLX_MESA_swap_control 1
 	typedef int (*PFNGLXGETSWAPINTERVALMESAPROC)(void);
 #endif
-
-#include <sys/time.h>
-#include <unistd.h>
-//}}}
-//{{{
-/** Event handler results: */
-#define NOP 0
-#define EXIT 1
-#define DRAW 2
 //}}}
 
 static GLboolean fullscreen = GL_FALSE; /* Create a single fullscreen window */
@@ -81,17 +75,14 @@ static double current_time() {
 //}}}
 
 //{{{
-/*
- *  Draw a gear wheel.  You'll probably want to call this function when
- *  building a display list since we do a lot of trig here.
- *  Input:  inner_radius - radius of hole at center
- *          outer_radius - radius at center of teeth
- *          width - width of gear
- *          teeth - number of teeth
- *          tooth_depth - depth of tooth
- */
-static void gear (GLfloat inner_radius, GLfloat outer_radius, GLfloat width, GLint teeth, GLfloat tooth_depth)
-{
+static void gear (GLfloat inner_radius, GLfloat outer_radius, GLfloat width, GLint teeth, GLfloat tooth_depth) {
+//  Draw a gear wheel.  You'll probably want to call this function when
+//  building a display list since we do a lot of trig here.
+//  Input:  inner_radius - radius of hole at center
+//          outer_radius - radius at center of teeth
+//          width - width of gear
+//          teeth - number of teeth
+//          tooth_depth - depth of tooth
 	 GLint i;
 	 GLfloat r0, r1, r2;
 	 GLfloat angle, da;
@@ -224,32 +215,32 @@ static void init() {
 	static GLfloat green[4] = { 0.0, 0.8, 0.2, 1.0 };
 	static GLfloat blue[4] = { 0.2, 0.2, 1.0, 1.0 };
 
-	glLightfv(GL_LIGHT0, GL_POSITION, pos);
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_DEPTH_TEST);
+	glLightfv (GL_LIGHT0, GL_POSITION, pos);
+	glEnable (GL_CULL_FACE);
+	glEnable (GL_LIGHTING);
+	glEnable (GL_LIGHT0);
+	glEnable (GL_DEPTH_TEST);
 
-	/* make the gears */
-	gear1 = glGenLists(1);
-	glNewList(gear1, GL_COMPILE);
-	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);
-	gear(1.0, 4.0, 1.0, 20, 0.7);
+	// make the gears
+	gear1 = glGenLists (1);
+	glNewList (gear1, GL_COMPILE);
+	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);
+	gear (1.0, 4.0, 1.0, 20, 0.7);
 	glEndList();
 
-	gear2 = glGenLists(1);
-	glNewList(gear2, GL_COMPILE);
-	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, green);
-	gear(0.5, 2.0, 2.0, 10, 0.7);
+	gear2 = glGenLists (1);
+	glNewList (gear2, GL_COMPILE);
+	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, green);
+	gear (0.5, 2.0, 2.0, 10, 0.7);
 	glEndList();
 
-	gear3 = glGenLists(1);
-	glNewList(gear3, GL_COMPILE);
-	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, blue);
-	gear(1.3, 2.0, 0.5, 10, 0.7);
+	gear3 = glGenLists (1);
+	glNewList (gear3, GL_COMPILE);
+	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, blue);
+	gear (1.3, 2.0, 0.5, 10, 0.7);
 	glEndList();
 
-	glEnable(GL_NORMALIZE);
+	glEnable (GL_NORMALIZE);
 	}
 //}}}
 //{{{
@@ -339,12 +330,11 @@ static void draw_frame (Display* dpy, Window win) {
 	}
 //}}}
 //{{{
-// Handle one X event.
-// return NOP, EXIT or DRAW
 static int handle_event (Display* dpy, Window win, XEvent* event) {
-
-	(void)dpy;
-	(void)win;
+// Handle one X event, return NOP, EXIT or DRAW
+	#define NOP 0
+	#define EXIT 1
+	#define DRAW 2
 
 	switch (event->type) {
 		case Expose:
@@ -356,29 +346,21 @@ static int handle_event (Display* dpy, Window win, XEvent* event) {
 
 		case KeyPress: {
 			char buffer[10];
-			int code;
-			code = XLookupKeysym(&event->xkey, 0);
-			if (code == XK_Left) {
+			int code = XLookupKeysym (&event->xkey, 0);
+			if (code == XK_Left)
 				view_roty += 5.0;
-			}
-			else if (code == XK_Right) {
+			else if (code == XK_Right)
 				view_roty -= 5.0;
-			}
-			else if (code == XK_Up) {
+			else if (code == XK_Up)
 				view_rotx += 5.0;
-			}
-			else if (code == XK_Down) {
+			else if (code == XK_Down)
 				view_rotx -= 5.0;
-			}
 			else {
-				XLookupString(&event->xkey, buffer, sizeof(buffer), NULL, NULL);
-				if (buffer[0] == 27) {
-					/* escape */
+				XLookupString (&event->xkey, buffer, sizeof(buffer), NULL, NULL);
+				if (buffer[0] == 27) // escape
 					return EXIT;
-					}
-				else if (buffer[0] == 'a' || buffer[0] == 'A') {
+				else if (buffer[0] == 'a' || buffer[0] == 'A') 
 					animate = !animate;
-					}
 				}
 			return DRAW;
 			}
@@ -390,12 +372,11 @@ static int handle_event (Display* dpy, Window win, XEvent* event) {
 //{{{
 static void event_loop (Display* dpy, Window win) {
 
-	while (1) {
-		int op;
+	while (true) {
 		while (!animate || XPending(dpy) > 0) {
 			XEvent event;
-			XNextEvent(dpy, &event);
-			op = handle_event (dpy, win, &event);
+			XNextEvent (dpy, &event);
+			int op = handle_event (dpy, win, &event);
 			if (op == EXIT)
 				return;
 			else if (op == DRAW)
@@ -432,7 +413,7 @@ static void no_border (Display* dpy, Window w) {
 
 	// get the atom for the property
 	prop = XInternAtom (dpy, "_MOTIF_WM_HINTS", True );
-	if (!prop) 
+	if (!prop)
 		return;
 
 	// not sure this is correct, seems to work, XA_WM_HINTS didn't work */
@@ -496,20 +477,19 @@ static void make_window (Display* dpy, const char* name, int x, int y, int width
 		exit (1);
 		}
 
-	/* window attributes */
+	// window attributes
 	attr.background_pixel = 0;
 	attr.border_pixel = 0;
-	attr.colormap = XCreateColormap( dpy, root, visinfo->visual, AllocNone);
+	attr.colormap = XCreateColormap (dpy, root, visinfo->visual, AllocNone);
 	attr.event_mask = StructureNotifyMask | ExposureMask | KeyPressMask;
 	// XXX this is a bad way to get a borderless window!
 	mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
-
 	win = XCreateWindow (dpy, root, x, y, width, height,
-											 0, visinfo->depth, InputOutput, visinfo->visual, mask, &attr );
+											 0, visinfo->depth, InputOutput, visinfo->visual, mask, &attr);
 	if (fullscreen)
 		no_border (dpy, win);
 
-	/* set hints and properties */
+	// set hints and properties
 		{
 		XSizeHints sizehints;
 		sizehints.x = x;
@@ -518,7 +498,7 @@ static void make_window (Display* dpy, const char* name, int x, int y, int width
 		sizehints.height = height;
 		sizehints.flags = USSize | USPosition;
 		XSetNormalHints (dpy, win, &sizehints);
-		XSetStandardProperties (dpy, win, name, name, None, (char **)NULL, 0, &sizehints);
+		XSetStandardProperties (dpy, win, name, name, None, (char**)NULL, 0, &sizehints);
 		}
 
 	ctx = glXCreateContext (dpy, visinfo, NULL, True );
@@ -558,18 +538,20 @@ static void query_vsync (Display* dpy, GLXDrawable drawable) {
 	int interval = 0;
 
 	#if defined(GLX_EXT_swap_control)
-	 if (is_glx_extension_supported(dpy, "GLX_EXT_swap_control")) {
-			 unsigned int tmp = -1;
-			 glXQueryDrawable(dpy, drawable, GLX_SWAP_INTERVAL_EXT, &tmp);
-			 interval = tmp;
-	 } else
+		if (is_glx_extension_supported(dpy, "GLX_EXT_swap_control")) {
+			unsigned int tmp = -1;
+			glXQueryDrawable(dpy, drawable, GLX_SWAP_INTERVAL_EXT, &tmp);
+			interval = tmp;
+			}
+		else
 	#endif
 
 	if (is_glx_extension_supported(dpy, "GLX_MESA_swap_control")) {
 		PFNGLXGETSWAPINTERVALMESAPROC pglXGetSwapIntervalMESA =
 				(PFNGLXGETSWAPINTERVALMESAPROC)glXGetProcAddressARB((const GLubyte *) "glXGetSwapIntervalMESA");
 		interval = (*pglXGetSwapIntervalMESA)();
-		} 
+		}
+
 	else if (is_glx_extension_supported(dpy, "GLX_SGI_swap_control")) {
 		/* The default swap interval with this extension is 1.  Assume that it
 		 * is set to the default.
@@ -581,62 +563,42 @@ static void query_vsync (Display* dpy, GLXDrawable drawable) {
 		}
 
 	if (interval > 0) {
-		printf("Running synchronized to the vertical refresh.  The framerate should be\n");
-		if (interval == 1) {
-				printf("approximately the same as the monitor refresh rate.\n");
-			} else if (interval > 1) {
-				printf("approximately 1/%d the monitor refresh rate.\n", interval);
-			}
+		printf ("Running synchronized to the vertical refresh.  The framerate should be\n");
+		if (interval == 1)
+			printf ("approximately the same as the monitor refresh rate.\n");
+		else if (interval > 1)
+			printf ("approximately 1/%d the monitor refresh rate.\n", interval);
 		}
 	}
 //}}}
 
-//{{{
-static void usage() {
-
-	printf ("Usage:\n");
-	printf ("  -display <displayname>  set the display to run on\n");
-	printf ("  -samples N              run in multisample mode with at least N samples\n");
-	printf ("  -fullscreen             run in fullscreen mode\n");
-	printf ("  -info                   display OpenGL renderer info\n");
-	printf ("  -geometry WxH+X+Y       window geometry\n");
-	}
-//}}}
 //{{{
 int main (int argc, char* argv[]) {
 
-	unsigned int winWidth = 300, winHeight = 300;
-	int x = 0, y = 0;
-	Display *dpy;
-	Window win;
-	GLXContext ctx;
-	char *dpyName = NULL;
-	GLboolean printInfo = GL_FALSE;
-	VisualID visId;
-	int i;
+	char* dpyName = NULL;
 
-	for (i = 1; i < argc; i++) {
-		 if (strcmp(argv[i], "-display") == 0) {
-			 dpyName = argv[i+1];
-			 i++;
-			 }
-		 else if (strcmp(argv[i], "-fullscreen") == 0) { fullscreen = GL_TRUE; }
-		 else if (strcmp(argv[i], "-info") == 0) { printInfo = GL_TRUE; }
-		 else if (i < argc-1 && strcmp(argv[i], "-samples") == 0) {
-			 samples = strtod (argv[i+1], NULL );
-			 ++i;
-			 }
-		 else if (i < argc-1 && strcmp(argv[i], "-geometry") == 0) {
-			 XParseGeometry(argv[i+1], &x, &y, &winWidth, &winHeight);
-			 i++;
-			 }
-		 else {
-			 usage();
-			 return -1;
-			 }
-		}
+	int x = 0;
+	int y = 0;
+	unsigned int winWidth = 300;
+	unsigned int winHeight = 300;
 
-	dpy = XOpenDisplay (dpyName);
+	for (int i = 1; i < argc; i++)
+		if (strcmp(argv[i], "-f") == 0)
+			fullscreen = GL_TRUE;
+		else if (strcmp(argv[i], "-d") == 0) {
+			dpyName = argv[i+1];
+			i++;
+			}
+		else if (i < argc-1 && strcmp(argv[i], "-s") == 0) {
+			samples = strtod (argv[i+1], NULL );
+			++i;
+			}
+		else if (i < argc-1 && strcmp(argv[i], "-g") == 0) {
+			XParseGeometry (argv[i+1], &x, &y, &winWidth, &winHeight);
+			i++;
+			}
+
+	Display* dpy = XOpenDisplay (dpyName);
 	if (!dpy) {
 		printf("Error: couldn't open display %s\n",
 		dpyName ? dpyName : getenv("DISPLAY"));
@@ -651,22 +613,22 @@ int main (int argc, char* argv[]) {
 		winHeight = DisplayHeight (dpy, scrnum);
 		}
 
+	Window win;
+	GLXContext ctx;
+	VisualID visId;
 	make_window (dpy, "glxgears", x, y, winWidth, winHeight, &win, &ctx, &visId);
+
 	XMapWindow (dpy, win);
 	glXMakeCurrent (dpy, win, ctx);
 	query_vsync (dpy, win);
 
-	if (printInfo) {
-		printf("GL_RENDERER   = %s\n", (char *) glGetString(GL_RENDERER));
-		printf("GL_VERSION    = %s\n", (char *) glGetString(GL_VERSION));
-		printf("GL_VENDOR     = %s\n", (char *) glGetString(GL_VENDOR));
-		printf("GL_EXTENSIONS = %s\n", (char *) glGetString(GL_EXTENSIONS));
-		printf("VisualID %d, 0x%x\n", (int) visId, (int) visId);
-		}
+	printf ("GL_RENDERER   = %s\n", (char *) glGetString(GL_RENDERER));
+	printf ("GL_VERSION    = %s\n", (char *) glGetString(GL_VERSION));
+	printf ("GL_VENDOR     = %s\n", (char *) glGetString(GL_VENDOR));
+	printf ("GL_EXTENSIONS = %s\n", (char *) glGetString(GL_EXTENSIONS));
+	printf ("VisualID %d, 0x%x\n", (int) visId, (int) visId);
 
 	init();
-	// Set initial projection/viewing transformation.
-	// We can't be sure we'll get a ConfigureNotify event when the window first appears.
 	reshape (winWidth, winHeight);
 	event_loop (dpy, win);
 

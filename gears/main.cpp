@@ -36,7 +36,11 @@
 //}}}
 //{{{  includes
 #include <windows.h>
+
 #include <GL/gl.h>
+#include <GL/glx.h>
+#include <GL/glxext.h>
+
 #include <time.h>
 
 #include <math.h>
@@ -57,7 +61,6 @@ static HWND hWnd;
 static HINSTANCE hInst;
 static RECT winrect;
 static const char* ProgramName;
-static bool verbose = true;
 
 static GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
 static GLint gear1, gear2, gear3;
@@ -70,16 +73,14 @@ static int current_time() {
 //}}}
 
 //{{{
-/*
- *  Draw a gear wheel.  You'll probably want to call this function when
- *  building a display list since we do a lot of trig here.
- *  Input:  inner_radius - radius of hole at center
- *          outer_radius - radius at center of teeth
- *          width - width of gear
- *          teeth - number of teeth
- *          tooth_depth - depth of tooth
- */
 static void gear (GLfloat inner_radius, GLfloat outer_radius, GLfloat width, GLint teeth, GLfloat tooth_depth) {
+//  Draw a gear wheel.  You'll probably want to call this function when
+//  building a display list since we do a lot of trig here.
+//  Input:  inner_radius - radius of hole at center
+//          outer_radius - radius at center of teeth
+//          width - width of gear
+//          teeth - number of teeth
+//          tooth_depth - depth of tooth
 
 	GLint i;
 	GLfloat r0, r1, r2;
@@ -208,7 +209,7 @@ static void init() {
 	glEnable (GL_LIGHT0);
 	glEnable (GL_DEPTH_TEST);
 
-	/* make the gears */
+	// make the gears
 	gear1 = glGenLists (1);
 	glNewList (gear1, GL_COMPILE);
 	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);
@@ -236,13 +237,13 @@ static void reshape (int width, int height) {
 
 	GLfloat h = (GLfloat) height / (GLfloat) width;
 
-	glViewport(0, 0, (GLint) width, (GLint) height);
-	glMatrixMode(GL_PROJECTION);
+	glViewport (0, 0, (GLint) width, (GLint) height);
+	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum(-1.0, 1.0, -h, h, 5.0, 60.0);
-	glMatrixMode(GL_MODELVIEW);
+	glFrustum (-1.0, 1.0, -h, h, 5.0, 60.0);
+	glMatrixMode (GL_MODELVIEW);
 	glLoadIdentity();
-	glTranslatef(0.0, 0.0, -40.0);
+	glTranslatef (0.0, 0.0, -40.0);
 	}
 //}}}
 //{{{
@@ -251,26 +252,26 @@ static void draw() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glPushMatrix();
-	glRotatef(view_rotx, 1.0, 0.0, 0.0);
-	glRotatef(view_roty, 0.0, 1.0, 0.0);
-	glRotatef(view_rotz, 0.0, 0.0, 1.0);
+	glRotatef (view_rotx, 1.0, 0.0, 0.0);
+	glRotatef (view_roty, 0.0, 1.0, 0.0);
+	glRotatef (view_rotz, 0.0, 0.0, 1.0);
 
 	glPushMatrix();
-	glTranslatef(-3.0, -2.0, 0.0);
-	glRotatef(angle, 0.0, 0.0, 1.0);
-	glCallList(gear1);
+	glTranslatef (-3.0, -2.0, 0.0);
+	glRotatef (angle, 0.0, 0.0, 1.0);
+	glCallList (gear1);
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslatef(3.1, -2.0, 0.0);
-	glRotatef(-2.0 * angle - 9.0, 0.0, 0.0, 1.0);
-	glCallList(gear2);
+	glTranslatef (3.1, -2.0, 0.0);
+	glRotatef (-2.0 * angle - 9.0, 0.0, 0.0, 1.0);
+	glCallList (gear2);
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslatef(-3.1, 4.2, 0.0);
-	glRotatef(-2.0 * angle - 25.0, 0.0, 0.0, 1.0);
-	glCallList(gear3);
+	glTranslatef (-3.1, 4.2, 0.0);
+	glRotatef (-2.0 * angle - 25.0, 0.0, 0.0, 1.0);
+	glCallList (gear3);
 	glPopMatrix();
 
 	glPopMatrix();
@@ -339,9 +340,9 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	}
 //}}}
 //{{{
+static void make_window (const char *name, int x, int y, int width, int height) {
 // Create an RGB, double-buffered window.
 // Return the window and context handles.
-static void make_window (const char *name, int x, int y, int width, int height) {
 
 	GLuint PixelFormat;
 	WNDCLASS wc;
@@ -382,91 +383,55 @@ static void make_window (const char *name, int x, int y, int width, int height) 
 	wc.lpszMenuName = NULL;
 	wc.lpszClassName = name;
 	if (!RegisterClass(&wc)) {
-		printf("failed to register class\n");
+		printf ("failed to register class\n");
 		exit(0);
 		}
 
 	dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
 	dwStyle = WS_OVERLAPPEDWINDOW;
-	AdjustWindowRectEx(&winrect, dwStyle, false, dwExStyle);
+	AdjustWindowRectEx (&winrect, dwStyle, false, dwExStyle);
 
-	if (!(hWnd = CreateWindowEx(dwExStyle, name, name,
-		WS_CLIPSIBLINGS | WS_CLIPCHILDREN | dwStyle, 0, 0,
-		winrect.right - winrect.left, winrect.bottom - winrect.top,
-		NULL, NULL, hInst, NULL))) {
-		printf("failed to create window\n");
-		exit(0);
+	if (!(hWnd = CreateWindowEx (dwExStyle, name, name,
+															 WS_CLIPSIBLINGS | WS_CLIPCHILDREN | dwStyle, 0, 0,
+															 winrect.right - winrect.left, winrect.bottom - winrect.top,
+															 NULL, NULL, hInst, NULL))) {
+		printf ("failed to create window\n");
+		exit (0);
 		}
 
-	if (!(hDC = GetDC(hWnd)) ||
-		!(PixelFormat = ChoosePixelFormat(hDC, &pfd)) ||
-		!(SetPixelFormat(hDC, PixelFormat, &pfd)) ||
-		!(hRC = wglCreateContext(hDC)) ||
-		!(wglMakeCurrent(hDC, hRC))) {
-		printf("failed to initialise opengl\n");
-		exit(0);
+	if ((hDC != GetDC (hWnd)) ||
+			(PixelFormat != ChoosePixelFormat (hDC, &pfd)) ||
+			!SetPixelFormat (hDC, PixelFormat, &pfd) ||
+			(hRC != wglCreateContext (hDC)) ||
+			!wglMakeCurrent (hDC, hRC)) {
+		printf ("failed to initialise opengl\n");
+		exit (0);
 	}
 
-	ShowWindow(hWnd, SW_SHOW);
-	SetForegroundWindow(hWnd);
-	SetFocus(hWnd);
+	ShowWindow (hWnd, SW_SHOW);
+	SetForegroundWindow (hWnd);
+	SetFocus (hWnd);
 	}
-//}}}
-
-//{{{
-static void usage() {
-	 fprintf (stderr, "usage:  %s [options]\n", ProgramName);
-	 fprintf (stderr, "-info\tPrint additional GL information.\n");
-	 fprintf (stderr, "-h\tPrint this help page.\n");
-	 fprintf (stderr, "-v\tVerbose output.\n");
-	 fprintf (stderr, "\n");
-	 exit(EXIT_FAILURE);
-}
 //}}}
 //{{{
 int main (int argc, char *argv[]) {
-
-	int i;
-	bool printInfo = false;
-
-	ProgramName = argv[0];
-
-	for (i = 1; i < argc; i++) {
-		const char *arg = argv[i];
-		int len = strlen(arg);
-
-		if (strcmp(argv[i], "-info") == 0)
-			printInfo = GL_TRUE;
-		else if (!strncmp("-v", arg, len)) {
-			verbose = true;
-			printInfo = GL_TRUE;
-			}
-		else if (strcmp(argv[i], "-h") == 0)
-			usage();
-		else {
-			fprintf (stderr, "%s: Unsupported option '%s'.\n", ProgramName, argv[i]);
-			usage();
-			}
-		}
 
 	make_window ("glxgears", 0, 0, 300, 300);
 	reshape (300, 300);
 
 	/* force vsync off */
 	#if 0
-		wglSwapIntervalEXT = wglGetProcAddress("wglSwapIntervalEXT");
+		wglSwapIntervalEXT = wglGetProcAddress ("wglSwapIntervalEXT");
 		if (!wglSwapIntervalEXT)
-			printf("warning: wglSwapIntervalEXT missing, cannot force vsync off\n");
+			printf ("warning: wglSwapIntervalEXT missing, cannot force vsync off\n");
 		else if (!wglSwapIntervalEXT(0))
-			printf("warning: failed to force vsync off, it may still be on\n");
+			printf ("warning: failed to force vsync off, it may still be on\n");
 	#endif
 
-	if (printInfo) {
-		printf ("GL_RENDERER   = %s\n", (char *) glGetString(GL_RENDERER));
-		printf ("GL_VERSION    = %s\n", (char *) glGetString(GL_VERSION));
-		printf ("GL_VENDOR     = %s\n", (char *) glGetString(GL_VENDOR));
-		printf ("GL_EXTENSIONS = %s\n", (char *) glGetString(GL_EXTENSIONS));
-		}
+	printf ("GL_RENDERER   = %s\n", (char *) glGetString(GL_RENDERER));
+	printf ("GL_VERSION    = %s\n", (char *) glGetString(GL_VERSION));
+	printf ("GL_VENDOR     = %s\n", (char *) glGetString(GL_VENDOR));
+	printf ("GL_EXTENSIONS = %s\n", (char *) glGetString(GL_EXTENSIONS));
 
 	init();
 	event_loop();
