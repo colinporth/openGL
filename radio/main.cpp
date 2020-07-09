@@ -47,7 +47,7 @@ class cAppWindow : public cHls, public cGlWindow {
 public:
   cAppWindow (int chan, int bitrate) : cHls (chan, bitrate, kBst) {}
   //{{{
-  void run (string title, int width, int height, bool headless) {
+  void run (const string& title, int width, int height, bool headless) {
 
     cLog::log (LOGINFO, "run chan:%d bitrate:%d", mChan, mBitrate);
 
@@ -56,14 +56,18 @@ public:
       hlsMenu (root, this);
       }
 
-    thread ([=]() { cPlatformHttp http; loader (http); } ).detach();
+    thread ([=]() { 
+      cPlatformHttp http; 
+      loader (http); 
+      } ).detach();
 
     thread ([=]() {
       #ifdef _WIN32
         CoInitializeEx (NULL, COINIT_MULTITHREADED);
       #endif
 
-      cAudio16 audio (2, 48000); player (audio, this);
+      cAudio16 audio16 (2, 48000); 
+      player (audio16, this);
 
       #ifdef _WIN32
         CoUninitialize();
@@ -135,7 +139,7 @@ protected:
 
         case GLFW_KEY_L:
           mMoreLogInfo = !mMoreLogInfo;
-          cLog::setLogLevel (mMoreLogInfo ? LOGINFO3 : LOGNOTICE);
+          cLog::setLogLevel (mMoreLogInfo ? LOGINFO3 : LOGINFO);
           break;
 
         default: cLog::log (LOGNOTICE, "Keyboard %x", key); break;

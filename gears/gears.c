@@ -103,7 +103,6 @@ static GLfloat eyesep = 5.0;    /* Eye separation. */
 static GLfloat fix_point = 40.0;  /* Fixation point distance.  */
 static GLfloat left, right, asp;  /* Stereo frustum params.  */
 
-
 //{{{
 /*
  *
@@ -413,7 +412,6 @@ static void init(void)
 
 	 glEnable(GL_NORMALIZE);
 }
-
 //}}}
 
 //{{{

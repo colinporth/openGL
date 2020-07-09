@@ -56,18 +56,18 @@ public:
       }
 
     #ifdef _WIN32
-      thread ([=]() {
-        CoInitializeEx (NULL, COINIT_MULTITHREADED);
-        mDvb->grabThread();
-        CoUninitialize();
-        }).detach();
-
-      thread ([=]() {
-        CoInitializeEx (NULL, COINIT_MULTITHREADED);
-        mDvb->signalThread();
-        CoUninitialize();
-        }).detach();
+      thread ([=]() { mDvb->signalThread(); }).detach();
+    #else
+      // launch captureThread
+      auto captureThread = thread ([=]() { mDvb->captureThread(); });
+      sched_param sch_params;
+      sch_params.sched_priority = sched_get_priority_max (SCHED_RR);
+      pthread_setschedparam (captureThread.native_handle(), SCHED_RR, &sch_params);
+      captureThread.detach();
     #endif
+
+    // launch grabThread
+    thread ([=]() { mDvb->grabThread(); } ).detach();
 
     if (headless) {
       while (true)
@@ -134,7 +134,7 @@ protected:
 
 private:
   bool mMoreLogInfo = false;
-  cDvb* mDvb;
+  cDvb* mDvb = nullptr;;
   };
 
 
@@ -162,12 +162,9 @@ int main (int argc, char* argv[]) {
   cAppWindow appWindow;
   #ifdef _WIN32
     appWindow.run ("tv", 800, 480, frequency, headless);
+    CoUninitialize();
   #else
     appWindow.run ("tv", 790, 400, frequency, headless);
-  #endif
-
-  #ifdef _WIN32
-    CoUninitialize();
   #endif
 
   return 0;

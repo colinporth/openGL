@@ -24,7 +24,7 @@ SRC       = main.cpp \
 
 OBJS     += $(filter %.o,$(SRC:.cpp=.o)) $(filter %.o,$(SRC:.c=.o))
 
-LDFLAGS  += -l asound -l glfw -l dl -l pthread -l GL
+LDFLAGS  += -l dl -l pthread -l asound -l glfw -l GL
 
 all: radio Makefile
 
