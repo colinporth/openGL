@@ -60,7 +60,6 @@ static HGLRC hRC;
 static HWND hWnd;
 static HINSTANCE hInst;
 static RECT winrect;
-static const char* ProgramName;
 
 static GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
 static GLint gear1, gear2, gear3;
@@ -384,7 +383,7 @@ static void make_window (const char *name, int x, int y, int width, int height) 
 	wc.lpszClassName = name;
 	if (!RegisterClass(&wc)) {
 		printf ("failed to register class\n");
-		exit(0);
+		exit (0);
 		}
 
 	dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
@@ -399,14 +398,14 @@ static void make_window (const char *name, int x, int y, int width, int height) 
 		exit (0);
 		}
 
-	if ((hDC != GetDC (hWnd)) ||
-			(PixelFormat != ChoosePixelFormat (hDC, &pfd)) ||
+	if (!(hDC = GetDC (hWnd)) ||
+			!(PixelFormat = ChoosePixelFormat (hDC, &pfd)) ||
 			!SetPixelFormat (hDC, PixelFormat, &pfd) ||
-			(hRC != wglCreateContext (hDC)) ||
+			!(hRC = wglCreateContext (hDC)) ||
 			!wglMakeCurrent (hDC, hRC)) {
 		printf ("failed to initialise opengl\n");
 		exit (0);
-	}
+		}
 
 	ShowWindow (hWnd, SW_SHOW);
 	SetForegroundWindow (hWnd);
