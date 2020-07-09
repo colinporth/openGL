@@ -21,6 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F7FC70D1-2B13-45B2-9905-C30374848269}</ProjectGuid>
     <RootNamespace>glxgears</RootNamespace>
+    <ProjectName>gears</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

@@ -34,54 +34,39 @@
 
 /* Modified to compile in Visual Studio 2012 by Calvin Hartwell 28th February 2013 */
 //}}}
-//{{{
+//{{{  includes
 #include <windows.h>
 #include <GL/gl.h>
+#include <time.h>
 
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include <math.h>
-
-/* XXX this probably isn't very portable */
-#include <time.h>
 
 #ifndef M_PI
-#define M_PI 3.14159265
-#endif /* !M_PI */
-
-/* Turn a NULL pointer string into an empty string */
-#define NULLSTR(x) (((x)!=NULL)?(x):(""))
-#define Log(x) { if(verbose) printf x; }
-
-#define Bool int
-#define False 0
-#define True 1
+	#define M_PI 3.14159265
+#endif
 //}}}
-
 //PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = 0;
 
-/* Global vars */
 static HDC hDC;
 static HGLRC hRC;
 static HWND hWnd;
 static HINSTANCE hInst;
 static RECT winrect;
-
 static const char* ProgramName;
-static Bool verbose = true;
+static bool verbose = true;
 
 static GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
 static GLint gear1, gear2, gear3;
 static GLfloat angle = 0.0;
-
 //{{{
-/* return current time (in seconds) */
 static int current_time() {
+	//return current time (in seconds)
 	return (int)time(NULL);
-}
+	}
 //}}}
 
 //{{{
@@ -107,19 +92,19 @@ static void gear (GLfloat inner_radius, GLfloat outer_radius, GLfloat width, GLi
 
 	da = 2.0 * M_PI / teeth / 4.0;
 
-	glShadeModel(GL_FLAT);
+	glShadeModel (GL_FLAT);
 
-	glNormal3f(0.0, 0.0, 1.0);
+	glNormal3f (0.0, 0.0, 1.0);
 
 	/* draw front face */
 	glBegin(GL_QUAD_STRIP);
 	for (i = 0; i <= teeth; i++) {
 		angle = i * 2.0 * M_PI / teeth;
-		glVertex3f(r0 * cos(angle), r0 * sin(angle), width * 0.5);
-		glVertex3f(r1 * cos(angle), r1 * sin(angle), width * 0.5);
+		glVertex3f (r0 * cos(angle), r0 * sin(angle), width * 0.5);
+		glVertex3f (r1 * cos(angle), r1 * sin(angle), width * 0.5);
 		if (i < teeth) {
-			glVertex3f(r0 * cos(angle), r0 * sin(angle), width * 0.5);
-			glVertex3f(r1 * cos(angle + 3 * da), r1 * sin(angle + 3 * da), width * 0.5);
+			glVertex3f (r0 * cos(angle), r0 * sin(angle), width * 0.5);
+			glVertex3f (r1 * cos(angle + 3 * da), r1 * sin(angle + 3 * da), width * 0.5);
 			}
 		}
 	glEnd();
@@ -129,11 +114,10 @@ static void gear (GLfloat inner_radius, GLfloat outer_radius, GLfloat width, GLi
 	da = 2.0 * M_PI / teeth / 4.0;
 	for (i = 0; i < teeth; i++) {
 		angle = i * 2.0 * M_PI / teeth;
-
-		glVertex3f(r1 * cos(angle), r1 * sin(angle), width * 0.5);
-		glVertex3f(r2 * cos(angle + da), r2 * sin(angle + da), width * 0.5);
-		glVertex3f(r2 * cos(angle + 2 * da), r2 * sin(angle + 2 * da), width * 0.5);
-		glVertex3f(r1 * cos(angle + 3 * da), r1 * sin(angle + 3 * da), width * 0.5);
+		glVertex3f (r1 * cos(angle), r1 * sin(angle), width * 0.5);
+		glVertex3f (r2 * cos(angle + da), r2 * sin(angle + da), width * 0.5);
+		glVertex3f (r2 * cos(angle + 2 * da), r2 * sin(angle + 2 * da), width * 0.5);
+		glVertex3f (r1 * cos(angle + 3 * da), r1 * sin(angle + 3 * da), width * 0.5);
 		}
 	glEnd();
 
@@ -146,8 +130,8 @@ static void gear (GLfloat inner_radius, GLfloat outer_radius, GLfloat width, GLi
 		glVertex3f(r1 * cos(angle), r1 * sin(angle), -width * 0.5);
 		glVertex3f(r0 * cos(angle), r0 * sin(angle), -width * 0.5);
 		if (i < teeth) {
-			glVertex3f(r1 * cos(angle + 3 * da), r1 * sin(angle + 3 * da), -width * 0.5);
-			glVertex3f(r0 * cos(angle), r0 * sin(angle), -width * 0.5);
+			glVertex3f (r1 * cos(angle + 3 * da), r1 * sin(angle + 3 * da), -width * 0.5);
+			glVertex3f (r0 * cos(angle), r0 * sin(angle), -width * 0.5);
 			}
 		}
 	glEnd();
@@ -158,10 +142,10 @@ static void gear (GLfloat inner_radius, GLfloat outer_radius, GLfloat width, GLi
 	for (i = 0; i < teeth; i++) {
 		angle = i * 2.0 * M_PI / teeth;
 
-		glVertex3f(r1 * cos(angle + 3 * da), r1 * sin(angle + 3 * da), -width * 0.5);
-		glVertex3f(r2 * cos(angle + 2 * da), r2 * sin(angle + 2 * da), -width * 0.5);
-		glVertex3f(r2 * cos(angle + da), r2 * sin(angle + da), -width * 0.5);
-		glVertex3f(r1 * cos(angle), r1 * sin(angle), -width * 0.5);
+		glVertex3f (r1 * cos(angle + 3 * da), r1 * sin(angle + 3 * da), -width * 0.5);
+		glVertex3f (r2 * cos(angle + 2 * da), r2 * sin(angle + 2 * da), -width * 0.5);
+		glVertex3f (r2 * cos(angle + da), r2 * sin(angle + da), -width * 0.5);
+		glVertex3f (r1 * cos(angle), r1 * sin(angle), -width * 0.5);
 		}
 	glEnd();
 
@@ -170,25 +154,25 @@ static void gear (GLfloat inner_radius, GLfloat outer_radius, GLfloat width, GLi
 	for (i = 0; i < teeth; i++) {
 		angle = i * 2.0 * M_PI / teeth;
 
-		glVertex3f(r1 * cos(angle), r1 * sin(angle), width * 0.5);
-		glVertex3f(r1 * cos(angle), r1 * sin(angle), -width * 0.5);
+		glVertex3f (r1 * cos(angle), r1 * sin(angle), width * 0.5);
+		glVertex3f (r1 * cos(angle), r1 * sin(angle), -width * 0.5);
 		u = r2 * cos(angle + da) - r1 * cos(angle);
 		v = r2 * sin(angle + da) - r1 * sin(angle);
 		len = sqrt(u * u + v * v);
 		u /= len;
 		v /= len;
-		glNormal3f(v, -u, 0.0);
-		glVertex3f(r2 * cos(angle + da), r2 * sin(angle + da), width * 0.5);
-		glVertex3f(r2 * cos(angle + da), r2 * sin(angle + da), -width * 0.5);
-		glNormal3f(cos(angle), sin(angle), 0.0);
-		glVertex3f(r2 * cos(angle + 2 * da), r2 * sin(angle + 2 * da), width * 0.5);
-		glVertex3f(r2 * cos(angle + 2 * da), r2 * sin(angle + 2 * da), -width * 0.5);
+		glNormal3f (v, -u, 0.0);
+		glVertex3f (r2 * cos(angle + da), r2 * sin(angle + da), width * 0.5);
+		glVertex3f (r2 * cos(angle + da), r2 * sin(angle + da), -width * 0.5);
+		glNormal3f (cos(angle), sin(angle), 0.0);
+		glVertex3f (r2 * cos(angle + 2 * da), r2 * sin(angle + 2 * da), width * 0.5);
+		glVertex3f (r2 * cos(angle + 2 * da), r2 * sin(angle + 2 * da), -width * 0.5);
 		u = r1 * cos(angle + 3 * da) - r2 * cos(angle + 2 * da);
 		v = r1 * sin(angle + 3 * da) - r2 * sin(angle + 2 * da);
-		glNormal3f(v, -u, 0.0);
-		glVertex3f(r1 * cos(angle + 3 * da), r1 * sin(angle + 3 * da), width * 0.5);
-		glVertex3f(r1 * cos(angle + 3 * da), r1 * sin(angle + 3 * da), -width * 0.5);
-		glNormal3f(cos(angle), sin(angle), 0.0);
+		glNormal3f (v, -u, 0.0);
+		glVertex3f (r1 * cos(angle + 3 * da), r1 * sin(angle + 3 * da), width * 0.5);
+		glVertex3f (r1 * cos(angle + 3 * da), r1 * sin(angle + 3 * da), -width * 0.5);
+		glNormal3f (cos(angle), sin(angle), 0.0);
 	 }
 
 	// VS2012 could not use cos & sin with integers, have to cast to double
@@ -197,17 +181,68 @@ static void gear (GLfloat inner_radius, GLfloat outer_radius, GLfloat width, GLi
 
 	glEnd();
 
-	glShadeModel(GL_SMOOTH);
+	glShadeModel (GL_SMOOTH);
 
 	/* draw inside radius cylinder */
-	glBegin(GL_QUAD_STRIP);
+	glBegin (GL_QUAD_STRIP);
 	for (i = 0; i <= teeth; i++) {
 		angle = i * 2.0 * M_PI / teeth;
-		glNormal3f(-cos(angle), -sin(angle), 0.0);
-		glVertex3f(r0 * cos(angle), r0 * sin(angle), -width * 0.5);
-		glVertex3f(r0 * cos(angle), r0 * sin(angle), width * 0.5);
+		glNormal3f (-cos(angle), -sin(angle), 0.0);
+		glVertex3f (r0 * cos(angle), r0 * sin(angle), -width * 0.5);
+		glVertex3f (r0 * cos(angle), r0 * sin(angle), width * 0.5);
 		}
 	glEnd();
+	}
+//}}}
+//{{{
+static void init() {
+
+	static GLfloat pos[4] = { 5.0, 5.0, 10.0, 0.0 };
+	static GLfloat red[4] = { 0.8, 0.1, 0.0, 1.0 };
+	static GLfloat green[4] = { 0.0, 0.8, 0.2, 1.0 };
+	static GLfloat blue[4] = { 0.2, 0.2, 1.0, 1.0 };
+
+	glLightfv (GL_LIGHT0, GL_POSITION, pos);
+	glEnable (GL_CULL_FACE);
+	glEnable (GL_LIGHTING);
+	glEnable (GL_LIGHT0);
+	glEnable (GL_DEPTH_TEST);
+
+	/* make the gears */
+	gear1 = glGenLists (1);
+	glNewList (gear1, GL_COMPILE);
+	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);
+	gear (1.0, 4.0, 1.0, 20, 0.7);
+	glEndList();
+
+	gear2 = glGenLists (1);
+	glNewList (gear2, GL_COMPILE);
+	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, green);
+	gear (0.5, 2.0, 2.0, 10, 0.7);
+	glEndList();
+
+	gear3 = glGenLists (1);
+	glNewList (gear3, GL_COMPILE);
+	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, blue);
+	gear(1.3, 2.0, 0.5, 10, 0.7);
+	glEndList();
+
+	glEnable (GL_NORMALIZE);
+	}
+//}}}
+//{{{
+/* new window size or exposure */
+static void reshape (int width, int height) {
+
+	GLfloat h = (GLfloat) height / (GLfloat) width;
+
+	glViewport(0, 0, (GLint) width, (GLint) height);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glFrustum(-1.0, 1.0, -h, h, 5.0, 60.0);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glTranslatef(0.0, 0.0, -40.0);
 	}
 //}}}
 //{{{
@@ -241,55 +276,36 @@ static void draw() {
 	glPopMatrix();
 	}
 //}}}
+
 //{{{
-/* new window size or exposure */
-static void reshape (int width, int height) {
+static void event_loop() {
 
-	GLfloat h = (GLfloat) height / (GLfloat) width;
+	int t, t0 = current_time();
+	int frames = 0;
 
-	glViewport(0, 0, (GLint) width, (GLint) height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glFrustum(-1.0, 1.0, -h, h, 5.0, 60.0);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glTranslatef(0.0, 0.0, -40.0);
-	}
-//}}}
-//{{{
-static void init() {
+	MSG msg;
+	while (1) {
+		if (PeekMessage (&msg, NULL, 0, 0, PM_REMOVE)) {
+			if (msg.message == WM_QUIT) break;;
+			TranslateMessage (&msg);
+			DispatchMessage (&msg);
+			}
 
-	static GLfloat pos[4] = { 5.0, 5.0, 10.0, 0.0 };
-	static GLfloat red[4] = { 0.8, 0.1, 0.0, 1.0 };
-	static GLfloat green[4] = { 0.0, 0.8, 0.2, 1.0 };
-	static GLfloat blue[4] = { 0.2, 0.2, 1.0, 1.0 };
+		angle += 2.0;
+		draw();
+		SwapBuffers (hDC);
 
-	glLightfv(GL_LIGHT0, GL_POSITION, pos);
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_DEPTH_TEST);
-
-	/* make the gears */
-	gear1 = glGenLists(1);
-	glNewList(gear1, GL_COMPILE);
-	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);
-	gear(1.0, 4.0, 1.0, 20, 0.7);
-	glEndList();
-
-	gear2 = glGenLists(1);
-	glNewList(gear2, GL_COMPILE);
-	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, green);
-	gear(0.5, 2.0, 2.0, 10, 0.7);
-	glEndList();
-
-	gear3 = glGenLists(1);
-	glNewList(gear3, GL_COMPILE);
-	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, blue);
-	gear(1.3, 2.0, 0.5, 10, 0.7);
-	glEndList();
-
-	glEnable(GL_NORMALIZE);
+		// calc framerate
+		t = current_time();
+		frames++;
+		if (t - t0 >= 5.0) {
+			GLfloat s = t - t0;
+			GLfloat fps = frames / s;
+			printf ("%d frames in %3.1f seconds = %6.3f FPS\n", frames, s, fps);
+			t0 = t;
+			frames = 0;
+			}
+		}
 	}
 //}}}
 
@@ -302,7 +318,7 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 			return 0;
 
 		case WM_SIZE:
-			reshape(LOWORD(lParam), HIWORD(lParam));
+			reshape (LOWORD(lParam), HIWORD(lParam));
 			return 0;
 
 		case WM_KEYDOWN:
@@ -372,7 +388,7 @@ static void make_window (const char *name, int x, int y, int width, int height) 
 
 	dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
 	dwStyle = WS_OVERLAPPEDWINDOW;
-	AdjustWindowRectEx(&winrect, dwStyle, False, dwExStyle);
+	AdjustWindowRectEx(&winrect, dwStyle, false, dwExStyle);
 
 	if (!(hWnd = CreateWindowEx(dwExStyle, name, name,
 		WS_CLIPSIBLINGS | WS_CLIPCHILDREN | dwStyle, 0, 0,
@@ -398,38 +414,6 @@ static void make_window (const char *name, int x, int y, int width, int height) 
 //}}}
 
 //{{{
-static void event_loop() {
-
-	MSG msg;
-	int t, t0 = current_time();
-	int frames = 0;
-
-	while (1) {
-		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-			if (msg.message == WM_QUIT) break;;
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-			}
-
-		angle += 2.0;
-		draw();
-		SwapBuffers(hDC);
-
-		/* calc framerate */
-		t = current_time();
-		frames++;
-		if (t - t0 >= 5.0) {
-			GLfloat s = t - t0;
-			GLfloat fps = frames / s;
-			printf("%d frames in %3.1f seconds = %6.3f FPS\n", frames, s, fps);
-			t0 = t;
-			frames = 0;
-			}
-		}
-	}
-//}}}
-
-//{{{
 static void usage() {
 	 fprintf (stderr, "usage:  %s [options]\n", ProgramName);
 	 fprintf (stderr, "-info\tPrint additional GL information.\n");
@@ -443,7 +427,7 @@ static void usage() {
 int main (int argc, char *argv[]) {
 
 	int i;
-	Bool printInfo = False;
+	bool printInfo = false;
 
 	ProgramName = argv[0];
 
@@ -451,44 +435,40 @@ int main (int argc, char *argv[]) {
 		const char *arg = argv[i];
 		int len = strlen(arg);
 
-		if (strcmp(argv[i], "-info") == 0) {
+		if (strcmp(argv[i], "-info") == 0)
 			printInfo = GL_TRUE;
-			}
 		else if (!strncmp("-v", arg, len)) {
-			verbose = True;
+			verbose = true;
 			printInfo = GL_TRUE;
 			}
-		else if (strcmp(argv[i], "-h") == 0) {
+		else if (strcmp(argv[i], "-h") == 0)
 			usage();
-			}
 		else {
 			fprintf (stderr, "%s: Unsupported option '%s'.\n", ProgramName, argv[i]);
 			usage();
 			}
 		}
 
-
 	make_window ("glxgears", 0, 0, 300, 300);
 	reshape (300, 300);
 
-/* force vsync off */
-#if 0
-	wglSwapIntervalEXT = wglGetProcAddress("wglSwapIntervalEXT");
-	if (!wglSwapIntervalEXT)
-		printf("warning: wglSwapIntervalEXT missing, cannot force vsync off\n");
-	else if (!wglSwapIntervalEXT(0)) 
-		printf("warning: failed to force vsync off, it may still be on\n");
-#endif
+	/* force vsync off */
+	#if 0
+		wglSwapIntervalEXT = wglGetProcAddress("wglSwapIntervalEXT");
+		if (!wglSwapIntervalEXT)
+			printf("warning: wglSwapIntervalEXT missing, cannot force vsync off\n");
+		else if (!wglSwapIntervalEXT(0))
+			printf("warning: failed to force vsync off, it may still be on\n");
+	#endif
 
 	if (printInfo) {
-		printf("GL_RENDERER   = %s\n", (char *) glGetString(GL_RENDERER));
-		printf("GL_VERSION    = %s\n", (char *) glGetString(GL_VERSION));
-		printf("GL_VENDOR     = %s\n", (char *) glGetString(GL_VENDOR));
-		printf("GL_EXTENSIONS = %s\n", (char *) glGetString(GL_EXTENSIONS));
+		printf ("GL_RENDERER   = %s\n", (char *) glGetString(GL_RENDERER));
+		printf ("GL_VERSION    = %s\n", (char *) glGetString(GL_VERSION));
+		printf ("GL_VENDOR     = %s\n", (char *) glGetString(GL_VENDOR));
+		printf ("GL_EXTENSIONS = %s\n", (char *) glGetString(GL_EXTENSIONS));
 		}
 
-	 init();
-
+	init();
 	event_loop();
 
 	wglMakeCurrent (NULL, NULL);
