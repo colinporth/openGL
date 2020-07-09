@@ -10,18 +10,6 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\shared\teensyAac\aaccommon.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\teensyAac\assembly.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\teensyAac\cAacDecoder.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\teensyAac\cBitStream.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\nanoVg\cGlWindow.h">
       <Filter>h</Filter>
     </ClInclude>
@@ -43,22 +31,7 @@
     <ClInclude Include="..\..\shared\nanoVg\fontStash.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\hls\hls.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\hls\hlsWidgets.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\teensyAac\huffman.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\widgets\iDraw.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\teensyAac\sbr.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\stb_image.h">
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\teensyAac\tables.h">
