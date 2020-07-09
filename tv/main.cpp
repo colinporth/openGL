@@ -47,7 +47,11 @@ public:
     mMoreLogInfo = moreLogInfo;
     cLog::log (LOGINFO, "run %d", frequency);
 
-    auto mDvb = new cDvb (frequency*1000, "/tv", true);
+    #ifdef _WIN32
+      auto mDvb = new cDvb (frequency*1000, "/tv", true);
+    #else
+      auto mDvb = new cDvb (frequency*1000, "/home/pi/tv", true);
+    #endif
 
     if (!headless) {
       initialise (title, width, height, (unsigned char*)droidSansMono);
