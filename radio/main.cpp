@@ -47,8 +47,9 @@ class cAppWindow : public cHls, public cGlWindow {
 public:
   cAppWindow (int chan, int bitrate) : cHls (chan, bitrate, kBst) {}
   //{{{
-  void run (const string& title, int width, int height, bool headless) {
+  void run (const string& title, int width, int height, bool headless, bool moreLogInfo) {
 
+    mMoreLogInfo = moreLogInfo;
     cLog::log (LOGINFO, "run chan:%d bitrate:%d", mChan, mBitrate);
 
     if (!headless) {
@@ -56,23 +57,8 @@ public:
       hlsMenu (root, this);
       }
 
-    thread ([=]() { 
-      cPlatformHttp http; 
-      loader (http); 
-      } ).detach();
-
-    thread ([=]() {
-      #ifdef _WIN32
-        CoInitializeEx (NULL, COINIT_MULTITHREADED);
-      #endif
-
-      cAudio16 audio16 (2, 48000); 
-      player (audio16, this);
-
-      #ifdef _WIN32
-        CoUninitialize();
-      #endif
-      } ).detach();
+    thread ([=]() { cPlatformHttp http; loader (http); } ).detach();
+    thread ([=]() { cAudio16 audio16 (2, 48000); player (audio16, this); } ).detach();
 
     if (headless) {
       while (true)
@@ -156,8 +142,12 @@ private:
 
 int main (int argc, char* argv[]) {
 
-  bool moreLogInfo = false;
+  #ifdef _WIN32
+    CoInitializeEx (NULL, COINIT_MULTITHREADED);
+  #endif
+
   bool headless = false;
+  bool moreLogInfo = false;
   uint32_t chan = kDefaultChan;
   uint32_t bitrate = kDefaultBitrate;
 
@@ -178,9 +168,10 @@ int main (int argc, char* argv[]) {
 
   cAppWindow appWindow (chan, bitrate);
   #ifdef _WIN32
-    appWindow.run ("hls", 800, 480, headless);
+    appWindow.run ("hls", 800, 480, headless, moreLogInfo);
+    CoUninitialize();
   #else
-    appWindow.run ("hls", 480, 272, headless);
+    appWindow.run ("hls", 480, 272, headless, moreLogInfo);
   #endif
 
   return 0;

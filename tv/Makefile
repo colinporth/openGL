@@ -23,7 +23,7 @@ SRC       = main.cpp \
 
 OBJS     += $(filter %.o,$(SRC:.cpp=.o)) $(filter %.o,$(SRC:.c=.o))
 
-LDFLAGS  += -lGL -lglfw -lpthread -ldl
+LDFLAGS  += -lpthread -ldl -lGL -lglfw
 
 all: tv Makefile
 

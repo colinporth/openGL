@@ -42,10 +42,12 @@ class cAppWindow : public cGlWindow {
 public:
   cAppWindow() {}
   //{{{
-  void run (const string& title, int width, int height, int frequency, bool headless) {
+  void run (const string& title, int width, int height, int frequency, bool headless, bool moreLogInfo) {
 
+    mMoreLogInfo = moreLogInfo;
     cLog::log (LOGINFO, "run %d", frequency);
-    mDvb = new cDvb (frequency*1000, "/tv", true);
+
+    auto mDvb = new cDvb (frequency*1000, "/tv", true);
 
     if (!headless) {
       initialise (title, width, height, (unsigned char*)droidSansMono);
@@ -55,10 +57,7 @@ public:
       addAt (new cTransportStreamBox (mDvb, 0.f, -2.f), 0.f, 1.f);
       }
 
-    #ifdef _WIN32
-      thread ([=]() { mDvb->signalThread(); }).detach();
-    #else
-      // launch captureThread
+    #ifndef _WIN32
       auto captureThread = thread ([=]() { mDvb->captureThread(); });
       sched_param sch_params;
       sch_params.sched_priority = sched_get_priority_max (SCHED_RR);
@@ -66,7 +65,6 @@ public:
       captureThread.detach();
     #endif
 
-    // launch grabThread
     thread ([=]() { mDvb->grabThread(); } ).detach();
 
     if (headless) {
@@ -134,7 +132,6 @@ protected:
 
 private:
   bool mMoreLogInfo = false;
-  cDvb* mDvb = nullptr;;
   };
 
 
@@ -161,10 +158,10 @@ int main (int argc, char* argv[]) {
 
   cAppWindow appWindow;
   #ifdef _WIN32
-    appWindow.run ("tv", 800, 480, frequency, headless);
+    appWindow.run ("tv", 800, 480, frequency, headless, moreLogInfo);
     CoUninitialize();
   #else
-    appWindow.run ("tv", 790, 400, frequency, headless);
+    appWindow.run ("tv", 790, 400, frequency, headless, moreLogInfo);
   #endif
 
   return 0;
