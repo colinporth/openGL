@@ -164,7 +164,7 @@ int main (int argc, char* argv[]) {
 
   cLog::init (moreLogInfo ? LOGINFO3 : LOGINFO, false, "");
   cLog::log (LOGNOTICE, "radio " + dec(moreLogInfo) + " chan:" + dec(chan) +
-                         " bitrate:" + dec(bitrate) + " headless" + dec(headless));
+                        " bitrate:" + dec(bitrate) + " headless" + dec(headless));
 
   cAppWindow appWindow (chan, bitrate);
   #ifdef _WIN32

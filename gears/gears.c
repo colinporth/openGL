@@ -45,15 +45,11 @@
 typedef int (*PFNGLXGETSWAPINTERVALMESAPROC)(void);
 #endif
 //}}}
-#define BENCHMARK
-
-#ifdef BENCHMARK
-/* XXX this probably isn't very portable */
 #include <sys/time.h>
 #include <unistd.h>
 //{{{
 /* return current time (in seconds) */
-static double current_time(void)
+static double current_time()
 {
 	 struct timeval tv;
 #ifdef __VMS
@@ -65,25 +61,9 @@ static double current_time(void)
 	 return (double) tv.tv_sec + tv.tv_usec / 1000000.0;
 }
 //}}}
-#else /*BENCHMARK*/
-//{{{
-/* dummy */
-static double current_time(void)
-{
-	 /* update this function for other platforms! */
-	 static double t = 0.0;
-	 static int warn = 1;
-	 if (warn) {
-			fprintf(stderr, "Warning: current_time() not implemented!!\n");
-			warn = 0;
-	 }
-	 return t += 1.0;
-}
-//}}}
-#endif /*BENCHMARK*/
 
 #ifndef M_PI
-#define M_PI 3.14159265
+	#define M_PI 3.14159265
 #endif
 
 /** Event handler results: */
@@ -105,7 +85,6 @@ static GLfloat left, right, asp;  /* Stereo frustum params.  */
 
 //{{{
 /*
- *
  *  Draw a gear wheel.  You'll probably want to call this function when
  *  building a display list since we do a lot of trig here.
  *
@@ -115,7 +94,7 @@ static GLfloat left, right, asp;  /* Stereo frustum params.  */
  *          teeth - number of teeth
  *          tooth_depth - depth of tooth
  */
-static void gear(GLfloat inner_radius, GLfloat outer_radius, GLfloat width, GLint teeth, GLfloat tooth_depth)
+static void gear (GLfloat inner_radius, GLfloat outer_radius, GLfloat width, GLint teeth, GLfloat tooth_depth)
 {
 	 GLint i;
 	 GLfloat r0, r1, r2;
@@ -242,183 +221,180 @@ static void gear(GLfloat inner_radius, GLfloat outer_radius, GLfloat width, GLin
 
 //}}}
 //{{{
-static void draw(void)
-{
-	 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+static void draw() {
 
-	 glPushMatrix();
-	 glRotatef(view_rotx, 1.0, 0.0, 0.0);
-	 glRotatef(view_roty, 0.0, 1.0, 0.0);
-	 glRotatef(view_rotz, 0.0, 0.0, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	 glPushMatrix();
-	 glTranslatef(-3.0, -2.0, 0.0);
-	 glRotatef(angle, 0.0, 0.0, 1.0);
-	 glCallList(gear1);
-	 glPopMatrix();
+	glPushMatrix();
+	glRotatef(view_rotx, 1.0, 0.0, 0.0);
+	glRotatef(view_roty, 0.0, 1.0, 0.0);
+	glRotatef(view_rotz, 0.0, 0.0, 1.0);
 
-	 glPushMatrix();
-	 glTranslatef(3.1, -2.0, 0.0);
-	 glRotatef(-2.0 * angle - 9.0, 0.0, 0.0, 1.0);
-	 glCallList(gear2);
-	 glPopMatrix();
+	glPushMatrix();
+	glTranslatef(-3.0, -2.0, 0.0);
+	glRotatef(angle, 0.0, 0.0, 1.0);
+	glCallList(gear1);
+	glPopMatrix();
 
-	 glPushMatrix();
-	 glTranslatef(-3.1, 4.2, 0.0);
-	 glRotatef(-2.0 * angle - 25.0, 0.0, 0.0, 1.0);
-	 glCallList(gear3);
-	 glPopMatrix();
+	glPushMatrix();
+	glTranslatef(3.1, -2.0, 0.0);
+	glRotatef(-2.0 * angle - 9.0, 0.0, 0.0, 1.0);
+	glCallList(gear2);
+	glPopMatrix();
 
-	 glPopMatrix();
-}
+	glPushMatrix();
+	glTranslatef(-3.1, 4.2, 0.0);
+	glRotatef(-2.0 * angle - 25.0, 0.0, 0.0, 1.0);
+	glCallList(gear3);
+	glPopMatrix();
+
+	glPopMatrix();
+	}
 //}}}
 //{{{
-static void draw_gears(void)
-{
-	 if (stereo) {
-			/* First left eye.  */
-			glDrawBuffer(GL_BACK_LEFT);
+static void draw_gears() {
 
-			glMatrixMode(GL_PROJECTION);
-			glLoadIdentity();
-			glFrustum(left, right, -asp, asp, 5.0, 60.0);
+	if (stereo) {
+		//{{{
+		/* First left eye.  */
+		glDrawBuffer(GL_BACK_LEFT);
 
-			glMatrixMode(GL_MODELVIEW);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glFrustum(left, right, -asp, asp, 5.0, 60.0);
 
-			glPushMatrix();
-			glTranslated(+0.5 * eyesep, 0.0, 0.0);
-			draw();
-			glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
 
-			/* Then right eye.  */
-			glDrawBuffer(GL_BACK_RIGHT);
+		glPushMatrix();
+		glTranslated(+0.5 * eyesep, 0.0, 0.0);
+		draw();
+		glPopMatrix();
 
-			glMatrixMode(GL_PROJECTION);
-			glLoadIdentity();
-			glFrustum(-right, -left, -asp, asp, 5.0, 60.0);
+		/* Then right eye.  */
+		glDrawBuffer(GL_BACK_RIGHT);
 
-			glMatrixMode(GL_MODELVIEW);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glFrustum(-right, -left, -asp, asp, 5.0, 60.0);
 
-			glPushMatrix();
-			glTranslated(-0.5 * eyesep, 0.0, 0.0);
-			draw();
-			glPopMatrix();
-	 }
-	 else {
-			draw();
-	 }
-}
+		glMatrixMode(GL_MODELVIEW);
 
+		glPushMatrix();
+		glTranslated(-0.5 * eyesep, 0.0, 0.0);
+		draw();
+		glPopMatrix();
+		//}}}
+		}
+	else 
+		draw();
+	}
 //}}}
 //{{{
 /** Draw single frame, do SwapBuffers, compute FPS */
-static void draw_frame(Display *dpy, Window win)
-{
-	 static int frames = 0;
-	 static double tRot0 = -1.0, tRate0 = -1.0;
-	 double dt, t = current_time();
+static void draw_frame (Display *dpy, Window win) {
 
-	 if (tRot0 < 0.0)
-			tRot0 = t;
-	 dt = t - tRot0;
-	 tRot0 = t;
+	static int frames = 0;
+	static double tRot0 = -1.0, tRate0 = -1.0;
+	double dt, t = current_time();
 
-	 if (animate) {
-			/* advance rotation for next frame */
-			angle += 70.0 * dt;  /* 70 degrees per second */
-			if (angle > 3600.0)
-				 angle -= 3600.0;
-	 }
+	if (tRot0 < 0.0)
+		tRot0 = t;
+	dt = t - tRot0;
+	tRot0 = t;
 
-	 draw_gears();
-	 glXSwapBuffers(dpy, win);
+	if (animate) {
+		/* advance rotation for next frame */
+		angle += 70.0 * dt;  /* 70 degrees per second */
+		if (angle > 3600.0)
+			angle -= 3600.0;
+		}
 
-	 frames++;
+	draw_gears();
+	glXSwapBuffers (dpy, win);
 
-	 if (tRate0 < 0.0)
-			tRate0 = t;
-	 if (t - tRate0 >= 5.0) {
-			GLfloat seconds = t - tRate0;
-			GLfloat fps = frames / seconds;
-			printf("%d frames in %3.1f seconds = %6.3f FPS\n", frames, seconds,
-						 fps);
-			fflush(stdout);
-			tRate0 = t;
-			frames = 0;
-	 }
-}
+	frames++;
+
+	if (tRate0 < 0.0)
+		tRate0 = t;
+	if (t - tRate0 >= 5.0) {
+		GLfloat seconds = t - tRate0;
+		GLfloat fps = frames / seconds;
+		printf ("%d frames in %3.1f seconds = %6.3f FPS\n", frames, seconds, fps);
+		fflush (stdout);
+		tRate0 = t;
+		frames = 0;
+		}
+	}
 //}}}
 
 //{{{
 /* new window size or exposure */
-static void reshape(int width, int height)
-{
-	 glViewport(0, 0, (GLint) width, (GLint) height);
+static void reshape (int width, int height) {
 
-	 if (stereo) {
-			GLfloat w;
+	glViewport(0, 0, (GLint) width, (GLint) height);
 
-			asp = (GLfloat) height / (GLfloat) width;
-			w = fix_point * (1.0 / 5.0);
+	if (stereo) {
+		GLfloat w;
 
-			left = -5.0 * ((w - 0.5 * eyesep) / fix_point);
-			right = 5.0 * ((w + 0.5 * eyesep) / fix_point);
-	 }
-	 else {
-			GLfloat h = (GLfloat) height / (GLfloat) width;
+		asp = (GLfloat) height / (GLfloat) width;
+		w = fix_point * (1.0 / 5.0);
 
-			glMatrixMode(GL_PROJECTION);
-			glLoadIdentity();
-			glFrustum(-1.0, 1.0, -h, h, 5.0, 60.0);
-	 }
+		left = -5.0 * ((w - 0.5 * eyesep) / fix_point);
+		right = 5.0 * ((w + 0.5 * eyesep) / fix_point);
+		}
+	else {
+		GLfloat h = (GLfloat) height / (GLfloat) width;
 
-	 glMatrixMode(GL_MODELVIEW);
-	 glLoadIdentity();
-	 glTranslatef(0.0, 0.0, -40.0);
-}
+		glMatrixMode (GL_PROJECTION);
+		glLoadIdentity();
+		glFrustum (-1.0, 1.0, -h, h, 5.0, 60.0);
+		}
+
+	glMatrixMode (GL_MODELVIEW);
+	glLoadIdentity();
+	glTranslatef (0.0, 0.0, -40.0);
+	}
 //}}}
 //{{{
-static void init(void)
-{
-	 static GLfloat pos[4] = { 5.0, 5.0, 10.0, 0.0 };
-	 static GLfloat red[4] = { 0.8, 0.1, 0.0, 1.0 };
-	 static GLfloat green[4] = { 0.0, 0.8, 0.2, 1.0 };
-	 static GLfloat blue[4] = { 0.2, 0.2, 1.0, 1.0 };
+static void init() {
 
-	 glLightfv(GL_LIGHT0, GL_POSITION, pos);
-	 glEnable(GL_CULL_FACE);
-	 glEnable(GL_LIGHTING);
-	 glEnable(GL_LIGHT0);
-	 glEnable(GL_DEPTH_TEST);
+	static GLfloat pos[4] = { 5.0, 5.0, 10.0, 0.0 };
+	static GLfloat red[4] = { 0.8, 0.1, 0.0, 1.0 };
+	static GLfloat green[4] = { 0.0, 0.8, 0.2, 1.0 };
+	static GLfloat blue[4] = { 0.2, 0.2, 1.0, 1.0 };
 
-	 /* make the gears */
-	 gear1 = glGenLists(1);
-	 glNewList(gear1, GL_COMPILE);
-	 glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);
-	 gear(1.0, 4.0, 1.0, 20, 0.7);
-	 glEndList();
+	glLightfv(GL_LIGHT0, GL_POSITION, pos);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_DEPTH_TEST);
 
-	 gear2 = glGenLists(1);
-	 glNewList(gear2, GL_COMPILE);
-	 glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, green);
-	 gear(0.5, 2.0, 2.0, 10, 0.7);
-	 glEndList();
+	/* make the gears */
+	gear1 = glGenLists(1);
+	glNewList(gear1, GL_COMPILE);
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);
+	gear(1.0, 4.0, 1.0, 20, 0.7);
+	glEndList();
 
-	 gear3 = glGenLists(1);
-	 glNewList(gear3, GL_COMPILE);
-	 glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, blue);
-	 gear(1.3, 2.0, 0.5, 10, 0.7);
-	 glEndList();
+	gear2 = glGenLists(1);
+	glNewList(gear2, GL_COMPILE);
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, green);
+	gear(0.5, 2.0, 2.0, 10, 0.7);
+	glEndList();
 
-	 glEnable(GL_NORMALIZE);
-}
+	gear3 = glGenLists(1);
+	glNewList(gear3, GL_COMPILE);
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, blue);
+	gear(1.3, 2.0, 0.5, 10, 0.7);
+	glEndList();
+
+	glEnable(GL_NORMALIZE);
+	}
 //}}}
 
 //{{{
-/**
- * Remove window border/decorations.
- */
-static void no_border( Display *dpy, Window w)
+// Remove window border/decorations.
+static void no_border (Display *dpy, Window w)
 {
 	 static const unsigned MWM_HINTS_DECORATIONS = (1 << 1);
 	 static const int PROP_MOTIF_WM_HINTS_ELEMENTS = 5;
@@ -460,14 +436,12 @@ static void no_border( Display *dpy, Window w)
 }
 //}}}
 //{{{
-/*
- * Create an RGB, double-buffered window.
- * Return the window and context handles.
- */
-static void make_window( Display *dpy, const char *name,
+// Create an RGB, double-buffered window.
+// Return the window and context handles.
+static void make_window (Display *dpy, const char *name,
 						 int x, int y, int width, int height,
-						 Window *winRet, GLXContext *ctxRet, VisualID *visRet)
-{
+						 Window *winRet, GLXContext *ctxRet, VisualID *visRet) {
+
 	 int attribs[64];
 	 int i = 0;
 
@@ -560,40 +534,34 @@ static void make_window( Display *dpy, const char *name,
 //}}}
 
 //{{{
-/**
- * Determine whether or not a GLX extension is supported.
- */
-static int is_glx_extension_supported(Display *dpy, const char *query)
-{
-	 const int scrnum = DefaultScreen(dpy);
-	 const char *glx_extensions = NULL;
-	 const size_t len = strlen(query);
-	 const char *ptr;
+static int is_glx_extension_supported (Display *dpy, const char *query) {
+// Determine whether or not a GLX extension is supported.
 
-	 if (glx_extensions == NULL) {
-			glx_extensions = glXQueryExtensionsString(dpy, scrnum);
-	 }
+	const int scrnum = DefaultScreen(dpy);
+	const char *glx_extensions = NULL;
+	const size_t len = strlen(query);
+	const char *ptr;
 
-	 ptr = strstr(glx_extensions, query);
-	 return ((ptr != NULL) && ((ptr[len] == ' ') || (ptr[len] == '\0')));
-}
+	if (glx_extensions == NULL)
+		glx_extensions = glXQueryExtensionsString (dpy, scrnum);
+
+	ptr = strstr(glx_extensions, query);
+	return ((ptr != NULL) && ((ptr[len] == ' ') || (ptr[len] == '\0')));
+	}
 //}}}
-
 //{{{
-/**
- * Attempt to determine whether or not the display is synched to vblank.
- */
-static void query_vsync(Display *dpy, GLXDrawable drawable)
-{
+// Attempt to determine whether or not the display is synched to vblank.
+static void query_vsync (Display *dpy, GLXDrawable drawable) {
+
 	 int interval = 0;
 
-#if defined(GLX_EXT_swap_control)
+	#if defined(GLX_EXT_swap_control)
 	 if (is_glx_extension_supported(dpy, "GLX_EXT_swap_control")) {
 			 unsigned int tmp = -1;
 			 glXQueryDrawable(dpy, drawable, GLX_SWAP_INTERVAL_EXT, &tmp);
 			 interval = tmp;
 	 } else
-#endif
+	#endif
 	 if (is_glx_extension_supported(dpy, "GLX_MESA_swap_control")) {
 			PFNGLXGETSWAPINTERVALMESAPROC pglXGetSwapIntervalMESA =
 					(PFNGLXGETSWAPINTERVALMESAPROC)
@@ -625,12 +593,10 @@ static void query_vsync(Display *dpy, GLXDrawable drawable)
 //}}}
 
 //{{{
-/**
- * Handle one X event.
- * \return NOP, EXIT or DRAW
- */
-static int handle_event(Display *dpy, Window win, XEvent *event)
-{
+// Handle one X event.
+// return NOP, EXIT or DRAW
+static int handle_event (Display *dpy, Window win, XEvent *event) {
+
 	 (void) dpy;
 	 (void) win;
 
@@ -675,7 +641,7 @@ static int handle_event(Display *dpy, Window win, XEvent *event)
 }
 //}}}
 //{{{
-static void event_loop(Display *dpy, Window win)
+static void event_loop (Display *dpy, Window win)
 {
 	 while (1) {
 			int op;
@@ -696,104 +662,95 @@ static void event_loop(Display *dpy, Window win)
 //}}}
 
 //{{{
-static void usage(void)
-{
-	 printf("Usage:\n");
-	 printf("  -display <displayname>  set the display to run on\n");
-	 printf("  -stereo                 run in stereo mode\n");
-	 printf("  -samples N              run in multisample mode with at least N samples\n");
-	 printf("  -fullscreen             run in fullscreen mode\n");
-	 printf("  -info                   display OpenGL renderer info\n");
-	 printf("  -geometry WxH+X+Y       window geometry\n");
-}
+static void usage() {
+
+	printf("Usage:\n");
+	printf("  -display <displayname>  set the display to run on\n");
+	printf("  -stereo                 run in stereo mode\n");
+	printf("  -samples N              run in multisample mode with at least N samples\n");
+	printf("  -fullscreen             run in fullscreen mode\n");
+	printf("  -info                   display OpenGL renderer info\n");
+	printf("  -geometry WxH+X+Y       window geometry\n");
+	}
 //}}}
 //{{{
-int main(int argc, char *argv[])
-{
-	 unsigned int winWidth = 300, winHeight = 300;
-	 int x = 0, y = 0;
-	 Display *dpy;
-	 Window win;
-	 GLXContext ctx;
-	 char *dpyName = NULL;
-	 GLboolean printInfo = GL_FALSE;
-	 VisualID visId;
-	 int i;
+int main (int argc, char *argv[]) {
 
-	 for (i = 1; i < argc; i++) {
-			if (strcmp(argv[i], "-display") == 0) {
-				 dpyName = argv[i+1];
-				 i++;
-			}
-			else if (strcmp(argv[i], "-info") == 0) {
-				 printInfo = GL_TRUE;
-			}
-			else if (strcmp(argv[i], "-stereo") == 0) {
-				 stereo = GL_TRUE;
-			}
-			else if (i < argc-1 && strcmp(argv[i], "-samples") == 0) {
-				 samples = strtod(argv[i+1], NULL );
-				 ++i;
-			}
-			else if (strcmp(argv[i], "-fullscreen") == 0) {
-				 fullscreen = GL_TRUE;
-			}
-			else if (i < argc-1 && strcmp(argv[i], "-geometry") == 0) {
-				 XParseGeometry(argv[i+1], &x, &y, &winWidth, &winHeight);
-				 i++;
-			}
-			else {
-				 usage();
-				 return -1;
-			}
-	 }
+	unsigned int winWidth = 300, winHeight = 300;
+	int x = 0, y = 0;
+	Display *dpy;
+	Window win;
+	GLXContext ctx;
+	char *dpyName = NULL;
+	GLboolean printInfo = GL_FALSE;
+	VisualID visId;
+	int i;
 
-	 dpy = XOpenDisplay(dpyName);
-	 if (!dpy) {
-			printf("Error: couldn't open display %s\n",
-			 dpyName ? dpyName : getenv("DISPLAY"));
-			return -1;
-	 }
+	for (i = 1; i < argc; i++) {
+		 if (strcmp(argv[i], "-display") == 0) { 
+			 dpyName = argv[i+1]; 
+			 i++;
+			 }
+		 else if (strcmp(argv[i], "-fullscreen") == 0) { fullscreen = GL_TRUE; }
+		 else if (strcmp(argv[i], "-info") == 0) { printInfo = GL_TRUE; } 
+		 else if (strcmp(argv[i], "-stereo") == 0) { stereo = GL_TRUE; }
+		 else if (i < argc-1 && strcmp(argv[i], "-samples") == 0) { 
+			 samples = strtod (argv[i+1], NULL ); 
+			 ++i; 
+			 }
+		 else if (i < argc-1 && strcmp(argv[i], "-geometry") == 0) { 
+			 XParseGeometry(argv[i+1], &x, &y, &winWidth, &winHeight); 
+			 i++; 
+			 }
+		 else { 
+			 usage(); 
+			 return -1; 
+			 }
+		}
 
-	 if (fullscreen) {
-			int scrnum = DefaultScreen(dpy);
+	dpy = XOpenDisplay(dpyName);
+	if (!dpy) {
+		 printf("Error: couldn't open display %s\n",
+			dpyName ? dpyName : getenv("DISPLAY"));
+		 return -1;
+	}
 
-			x = 0; y = 0;
-			winWidth = DisplayWidth(dpy, scrnum);
-			winHeight = DisplayHeight(dpy, scrnum);
-	 }
+	if (fullscreen) {
+		int scrnum = DefaultScreen(dpy);
+		x = 0; y = 0;
+		winWidth = DisplayWidth(dpy, scrnum);
+		winHeight = DisplayHeight(dpy, scrnum);
+		}
 
-	 make_window(dpy, "glxgears", x, y, winWidth, winHeight, &win, &ctx, &visId);
-	 XMapWindow(dpy, win);
-	 glXMakeCurrent(dpy, win, ctx);
-	 query_vsync(dpy, win);
+	make_window (dpy, "glxgears", x, y, winWidth, winHeight, &win, &ctx, &visId);
+	XMapWindow (dpy, win);
+	glXMakeCurrent (dpy, win, ctx);
+	query_vsync (dpy, win);
 
-	 if (printInfo) {
-			printf("GL_RENDERER   = %s\n", (char *) glGetString(GL_RENDERER));
-			printf("GL_VERSION    = %s\n", (char *) glGetString(GL_VERSION));
-			printf("GL_VENDOR     = %s\n", (char *) glGetString(GL_VENDOR));
-			printf("GL_EXTENSIONS = %s\n", (char *) glGetString(GL_EXTENSIONS));
-			printf("VisualID %d, 0x%x\n", (int) visId, (int) visId);
-	 }
+	if (printInfo) {
+		printf("GL_RENDERER   = %s\n", (char *) glGetString(GL_RENDERER));
+		printf("GL_VERSION    = %s\n", (char *) glGetString(GL_VERSION));
+		printf("GL_VENDOR     = %s\n", (char *) glGetString(GL_VENDOR));
+		printf("GL_EXTENSIONS = %s\n", (char *) glGetString(GL_EXTENSIONS));
+		printf("VisualID %d, 0x%x\n", (int) visId, (int) visId);
+		}
 
-	 init();
+	init();
 
-	 /* Set initial projection/viewing transformation.
-		* We can't be sure we'll get a ConfigureNotify event when the window
-		* first appears.
-		*/
-	 reshape(winWidth, winHeight);
+	// Set initial projection/viewing transformation.
+	// We can't be sure we'll get a ConfigureNotify event when the window first appears.
+	reshape (winWidth, winHeight);
 
-	 event_loop(dpy, win);
+	event_loop (dpy, win);
 
-	 glDeleteLists(gear1, 1);
-	 glDeleteLists(gear2, 1);
-	 glDeleteLists(gear3, 1);
-	 glXMakeCurrent(dpy, None, NULL);
-	 glXDestroyContext(dpy, ctx);
-	 XDestroyWindow(dpy, win);
-	 XCloseDisplay(dpy);
+	glDeleteLists (gear1, 1);
+	glDeleteLists (gear2, 1);
+	glDeleteLists (gear3, 1);
+	glXMakeCurrent (dpy, None, NULL);
+	glXDestroyContext (dpy, ctx);
+	XDestroyWindow (dpy, win);
+	XCloseDisplay (dpy);
 
-	 return 0;
-}
+	return 0;
+	}
 //}}}
