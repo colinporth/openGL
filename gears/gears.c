@@ -4,6 +4,7 @@
 #endif
 
 #include <GL/gl.h>
+
 #include <time.h>
 #include <math.h>
 #include <stdbool.h>
@@ -18,11 +19,6 @@
 
 	#include <GL/glx.h>
 	#include <GL/glxext.h>
-
-	//#include <sys/time.h>
-	//#include <unistd.h>
-	#define GLX_MESA_swap_control 1
-	typedef int (*PFNGLXGETSWAPINTERVALMESAPROC)(void);
 #endif
 
 #ifndef M_PI
@@ -31,7 +27,6 @@
 //}}}
 
 #ifdef _WIN32
-	//PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = 0;
 	static HDC hDC;
 	static HGLRC hRC;
 	static HWND hWnd;
@@ -63,25 +58,19 @@ static void gear (GLfloat inner_radius, GLfloat outer_radius, GLfloat width, GLi
 //          teeth - number of teeth
 //          tooth_depth - depth of tooth
 
-	GLint i;
-	GLfloat r0, r1, r2;
-	GLfloat angle, da;
-	GLfloat u, v, len;
-
-	r0 = inner_radius;
-	r1 = outer_radius - tooth_depth / 2.0f;
-	r2 = outer_radius + tooth_depth / 2.0f;
-
-	da = 2.0f * M_PI / teeth / 4.0f;
-
-	glShadeModel (GL_FLAT);
+	GLfloat r0 = inner_radius;
+	GLfloat r1 = outer_radius - tooth_depth / 2.0f;
+	GLfloat r2 = outer_radius + tooth_depth / 2.0f;
+	GLfloat da = 2.0f * M_PI / teeth / 4.0f;
 
 	glNormal3f (0.0, 0.0, 1.0);
 
-	/* draw front face */
-	glBegin(GL_QUAD_STRIP);
-	for (i = 0; i <= teeth; i++) {
-		angle = i * 2.0f * M_PI / teeth;
+	glShadeModel (GL_FLAT);
+	//{{{  draw front face
+	glBegin (GL_QUAD_STRIP);
+
+	for (int i = 0; i <= teeth; i++) {
+		GLfloat angle = i * 2.0f * M_PI / teeth;
 		glVertex3f (r0 * cosf(angle), r0 * sinf(angle), width * 0.5f);
 		glVertex3f (r1 * cosf(angle), r1 * sinf(angle), width * 0.5f);
 		if (i < teeth) {
@@ -89,26 +78,30 @@ static void gear (GLfloat inner_radius, GLfloat outer_radius, GLfloat width, GLi
 			glVertex3f (r1 * cosf(angle + 3.f * da), r1 * sinf(angle + 3.f * da), width * 0.5f);
 			}
 		}
-	glEnd();
 
-	/* draw front sides of teeth */
-	glBegin(GL_QUADS);
+	glEnd();
+	//}}}
+	//{{{  draw front sides of teeth
+	glBegin (GL_QUADS);
+
 	da = 2.f * M_PI / teeth / 4.0f;
-	for (i = 0; i < teeth; i++) {
-		angle = i * 2.0f * M_PI / teeth;
+	for (int i = 0; i < teeth; i++) {
+		GLfloat angle = i * 2.0f * M_PI / teeth;
 		glVertex3f (r1 * cosf(angle), r1 * sinf(angle), width * 0.5f);
 		glVertex3f (r2 * cosf(angle + da), r2 * sinf(angle + da), width * 0.5f);
 		glVertex3f (r2 * cosf(angle + 2.0f * da), r2 * sinf(angle + 2.0f * da), width * 0.5f);
 		glVertex3f (r1 * cosf(angle + 3.0f * da), r1 * sinf(angle + 3.0f * da), width * 0.5f);
 		}
+
 	glEnd();
 
 	glNormal3f(0.0f, 0.0f, -1.0f);
+	//}}}
+	//{{{  draw back face
+	glBegin (GL_QUAD_STRIP);
 
-	/* draw back face */
-	glBegin(GL_QUAD_STRIP);
-	for (i = 0; i <= teeth; i++) {
-		angle = i * 2.f * M_PI / teeth;
+	for (int i = 0; i <= teeth; i++) {
+		GLfloat angle = i * 2.f * M_PI / teeth;
 		glVertex3f(r1 * cosf(angle), r1 * sinf(angle), -width * 0.5f);
 		glVertex3f(r0 * cosf(angle), r0 * sinf(angle), -width * 0.5f);
 		if (i < teeth) {
@@ -116,64 +109,71 @@ static void gear (GLfloat inner_radius, GLfloat outer_radius, GLfloat width, GLi
 			glVertex3f (r0 * cosf(angle), r0 * sinf(angle), -width * 0.5f);
 			}
 		}
-	glEnd();
 
-	/* draw back sides of teeth */
-	glBegin(GL_QUADS);
+	glEnd();
+	//}}}
+	//{{{  draw back sides of teeth
+	glBegin (GL_QUADS);
+
 	da = 2.0f * M_PI / teeth / 4.0f;
-	for (i = 0; i < teeth; i++) {
-		angle = i * 2.0f * M_PI / teeth;
+	for (int i = 0; i < teeth; i++) {
+		GLfloat angle = i * 2.0f * M_PI / teeth;
 
 		glVertex3f (r1 * cosf(angle + 3 * da), r1 * sinf(angle + 3 * da), -width * 0.5f);
 		glVertex3f (r2 * cosf(angle + 2 * da), r2 * sinf(angle + 2 * da), -width * 0.5f);
 		glVertex3f (r2 * cosf(angle + da), r2 * sinf(angle + da), -width * 0.5f);
 		glVertex3f (r1 * cosf(angle), r1 * sinf(angle), -width * 0.5f);
 		}
-	glEnd();
 
-	/* draw outward faces of teeth */
-	glBegin(GL_QUAD_STRIP);
-	for (i = 0; i < teeth; i++) {
-		angle = i * 2.0f * M_PI / teeth;
+	glEnd();
+	//}}}
+	//{{{  draw outward faces of teeth
+	glBegin (GL_QUAD_STRIP);
+
+	for (int i = 0; i < teeth; i++) {
+		GLfloat angle = i * 2.0f * M_PI / teeth;
 
 		glVertex3f (r1 * cosf(angle), r1 * sinf(angle), width * 0.5f);
 		glVertex3f (r1 * cosf(angle), r1 * sinf(angle), -width * 0.5f);
-		u = r2 * cosf(angle + da) - r1 * cosf(angle);
-		v = r2 * sinf(angle + da) - r1 * sinf(angle);
-		len = sqrtf(u * u + v * v);
+
+		GLfloat u = r2 * cosf(angle + da) - r1 * cosf(angle);
+		GLfloat v = r2 * sinf(angle + da) - r1 * sinf(angle);
+		GLfloat len = sqrtf(u * u + v * v);
 		u /= len;
 		v /= len;
+
 		glNormal3f (v, -u, 0.0f);
 		glVertex3f (r2 * cosf(angle + da), r2 * sinf(angle + da), width * 0.5f);
 		glVertex3f (r2 * cosf(angle + da), r2 * sinf(angle + da), -width * 0.5f);
 		glNormal3f (cosf(angle), sinf(angle), 0.0f);
 		glVertex3f (r2 * cosf(angle + 2.f * da), r2 * sinf(angle + 2.f * da), width * 0.5f);
 		glVertex3f (r2 * cosf(angle + 2.f * da), r2 * sinf(angle + 2.f * da), -width * 0.5f);
+
 		u = r1 * cosf(angle + 3.f * da) - r2 * cosf(angle + 2 * da);
 		v = r1 * sinf(angle + 3.f * da) - r2 * sinf(angle + 2 * da);
 		glNormal3f (v, -u, 0.0);
 		glVertex3f (r1 * cosf(angle + 3.f * da), r1 * sinf(angle + 3.f * da), width * 0.5f);
 		glVertex3f (r1 * cosf(angle + 3.f * da), r1 * sinf(angle + 3.f * da), -width * 0.5f);
 		glNormal3f (cosf(angle), sinf(angle), 0.0);
-	 }
+		}
 
-	// VS2012 could not use cos & sin with integers, have to cast to double
-	glVertex3f(r1 * cosf(0), r1 * sinf(0), width * 0.5f);
-	glVertex3f(r1 * cosf(0), r1 * sinf(0), -width * 0.5f);
+	glVertex3f (r1 * cosf(0), r1 * sinf(0), width * 0.5f);
+	glVertex3f (r1 * cosf(0), r1 * sinf(0), -width * 0.5f);
 
 	glEnd();
+	//}}}
 
 	glShadeModel (GL_SMOOTH);
-
-	/* draw inside radius cylinder */
+	//{{{  draw inside radius cylinder
 	glBegin (GL_QUAD_STRIP);
-	for (i = 0; i <= teeth; i++) {
-		angle = i * 2.0f * M_PI / teeth;
+	for (int i = 0; i <= teeth; i++) {
+		GLfloat angle = i * 2.0f * M_PI / teeth;
 		glNormal3f (-cosf(angle), -sinf(angle), 0.0f);
 		glVertex3f (r0 * cosf(angle), r0 * sinf(angle), -width * 0.5f);
 		glVertex3f (r0 * cosf(angle), r0 * sinf(angle), width * 0.5f);
 		}
 	glEnd();
+	//}}}
 	}
 //}}}
 //{{{
@@ -213,16 +213,18 @@ static void init() {
 	}
 //}}}
 //{{{
-/* new window size or exposure */
 static void reshape (int width, int height) {
+// new window size or exposure
 
-	GLfloat h = (GLfloat) height / (GLfloat) width;
+	GLfloat h = (GLfloat)height / (GLfloat)width;
+	glViewport (0, 0, (GLint)width, (GLint)height);
 
-	glViewport (0, 0, (GLint) width, (GLint) height);
 	glMatrixMode (GL_PROJECTION);
+
 	glLoadIdentity();
 	glFrustum (-1.0, 1.0, -h, h, 5.0, 60.0);
 	glMatrixMode (GL_MODELVIEW);
+
 	glLoadIdentity();
 	glTranslatef (0.0, 0.0, -40.0);
 	}
@@ -267,7 +269,7 @@ static void draw() {
 		int frames = 0;
 
 		MSG msg;
-		while (1) {
+		while (true) {
 			if (PeekMessage (&msg, NULL, 0, 0, PM_REMOVE)) {
 				if (msg.message == WM_QUIT) break;;
 				TranslateMessage (&msg);
@@ -281,10 +283,10 @@ static void draw() {
 			// calc framerate
 			t = current_time();
 			frames++;
-			if (t - t0 >= 5.0f) {
-				GLfloat s = t - t0;
-				GLfloat fps = frames / s;
-				printf ("%d frames in %3.1f seconds = %6.3f FPS\n", frames, s, fps);
+			if (t - t0 >= 5) {
+				int s = t - t0;
+				int fps = frames / s;
+				printf ("%d frames in %d seconds = %dfps\n", frames, s, fps);
 				t0 = t;
 				frames = 0;
 				}
@@ -397,19 +399,17 @@ static void draw() {
 		make_window ("gears", 0, 0, 300, 300);
 		reshape (300, 300);
 
-		// force vsync off
-		#if 0
-			wglSwapIntervalEXT = wglGetProcAddress ("wglSwapIntervalEXT");
-			if (!wglSwapIntervalEXT)
-				printf ("warning: wglSwapIntervalEXT missing, cannot force vsync off\n");
-			else if (!wglSwapIntervalEXT (0))
-				printf ("warning: failed to force vsync off, it may still be on\n");
-		#endif
+		// vsync
+		typedef int (APIENTRY* WGLSWAPINTERVALEXT_T) (int interval);
+		WGLSWAPINTERVALEXT_T wglSwapIntervalEXT;
+		wglSwapIntervalEXT = (WGLSWAPINTERVALEXT_T)wglGetProcAddress ("wglSwapIntervalEXT");
+		if (wglSwapIntervalEXT)
+			wglSwapIntervalEXT (1);
 
-		printf ("GL_EXTENSIONS = %s\n", (char*) glGetString(GL_EXTENSIONS));
-		printf ("GL_RENDERER   = %s\n", (char*) glGetString(GL_RENDERER));
-		printf ("GL_VERSION    = %s\n", (char*) glGetString(GL_VERSION));
-		printf ("GL_VENDOR     = %s\n", (char*) glGetString(GL_VENDOR));
+		printf ("GL_EXTENSIONS = %s\n", (char*) glGetString (GL_EXTENSIONS));
+		printf ("GL_RENDERER   = %s\n", (char*) glGetString (GL_RENDERER));
+		printf ("GL_VERSION    = %s\n", (char*) glGetString (GL_VERSION));
+		printf ("GL_VENDOR     = %s\n", (char*) glGetString (GL_VENDOR));
 
 		init();
 		event_loop();
@@ -665,28 +665,23 @@ static void draw() {
 
 		int interval = 0;
 
-		#if defined(GLX_EXT_swap_control)
-			if (is_glx_extension_supported(dpy, "GLX_EXT_swap_control")) {
-				unsigned int tmp = -1;
-				glXQueryDrawable(dpy, drawable, GLX_SWAP_INTERVAL_EXT, &tmp);
-				interval = tmp;
-				}
-			else
-		#endif
-
-		if (is_glx_extension_supported(dpy, "GLX_MESA_swap_control")) {
+		if (is_glx_extension_supported(dpy, "GLX_EXT_swap_control")) {
+			unsigned int tmp = -1;
+			glXQueryDrawable(dpy, drawable, GLX_SWAP_INTERVAL_EXT, &tmp);
+			interval = tmp;
+			}
+		else if (is_glx_extension_supported (dpy, "GLX_MESA_swap_control")) {
+			typedef int (*PFNGLXGETSWAPINTERVALMESAPROC)(void);
 			PFNGLXGETSWAPINTERVALMESAPROC pglXGetSwapIntervalMESA =
-					(PFNGLXGETSWAPINTERVALMESAPROC)glXGetProcAddressARB((const GLubyte *) "glXGetSwapIntervalMESA");
+				(PFNGLXGETSWAPINTERVALMESAPROC)glXGetProcAddressARB ((const GLubyte *) "glXGetSwapIntervalMESA");
 			interval = (*pglXGetSwapIntervalMESA)();
 			}
 
-		else if (is_glx_extension_supported(dpy, "GLX_SGI_swap_control")) {
-			/* The default swap interval with this extension is 1.  Assume that it
-			 * is set to the default.
-			 * Many Mesa-based drivers default to 0, but all of these drivers also
-			 * export GLX_MESA_swap_control.  In that case, this branch will never
-			 * be taken, and the correct result should be reported.
-			 */
+		else if (is_glx_extension_supported (dpy, "GLX_SGI_swap_control")) {
+			// The default swap interval with this extension is 1.  Assume that it is set to the default.
+			// Many Mesa-based drivers default to 0, but all of these drivers also
+			// export GLX_MESA_swap_control.  In that case, this branch will never be taken
+			// and the correct result should be reported.
 			interval = 1;
 			}
 
