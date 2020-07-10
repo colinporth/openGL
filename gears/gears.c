@@ -14,11 +14,10 @@
 #include <ctype.h>
 
 #ifndef _WIN32
-	#include <X11/Xlib.h>
-	#include <X11/keysym.h>
-
 	#include <GL/glx.h>
 	#include <GL/glxext.h>
+	#include <X11/Xlib.h>
+	#include <X11/keysym.h>
 #endif
 
 #ifndef M_PI
@@ -38,6 +37,9 @@
 static bool fullscreen = false;
 static bool animate = true;
 static GLint samples = 0;
+static int frames = 0;
+static double tRot0 = -1.0, tRate0 = -1.0;
+
 static GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
 static GLint gear1, gear2, gear3;
 static GLfloat angle = 0.0;
@@ -265,7 +267,7 @@ static void draw() {
 	//{{{
 	static void event_loop() {
 
-		int t, t0 = current_time();
+		int t0 = current_time();
 		int frames = 0;
 
 		MSG msg;
@@ -281,8 +283,8 @@ static void draw() {
 			SwapBuffers (hDC);
 
 			// calc framerate
-			t = current_time();
 			frames++;
+			int t = current_time();
 			if (t - t0 >= 5) {
 				int s = t - t0;
 				int fps = frames / s;
@@ -423,43 +425,6 @@ static void draw() {
 	//}}}
 #else
 	//{{{
-	/** Draw single frame, do SwapBuffers, compute FPS */
-	static void draw_frame (Display* dpy, Window win) {
-
-		static int frames = 0;
-		static double tRot0 = -1.0, tRate0 = -1.0;
-		double dt, t = current_time();
-
-		if (tRot0 < 0.0)
-			tRot0 = t;
-		dt = t - tRot0;
-		tRot0 = t;
-
-		if (animate) {
-			/* advance rotation for next frame */
-			angle += 70.0 * dt;  /* 70 degrees per second */
-			if (angle > 3600.0)
-				angle -= 3600.0;
-			}
-
-		draw();
-		glXSwapBuffers (dpy, win);
-
-		frames++;
-
-		if (tRate0 < 0.0)
-			tRate0 = t;
-		if (t - tRate0 >= 5.0) {
-			GLfloat seconds = t - tRate0;
-			GLfloat fps = frames / seconds;
-			printf ("%d frames in %3.1f seconds = %6.3f FPS\n", frames, seconds, fps);
-			fflush (stdout);
-			tRate0 = t;
-			frames = 0;
-			}
-		}
-	//}}}
-	//{{{
 	static int handle_event (Display* dpy, Window win, XEvent* event) {
 	// Handle one X event, return NOP, EXIT or DRAW
 		#define NOP 0
@@ -513,7 +478,36 @@ static void draw() {
 					break;
 				}
 
-			draw_frame (dpy, win);
+			// Draw single frame, do SwapBuffers, compute FPS
+			double dt, t = current_time();
+
+			if (tRot0 < 0.0)
+				tRot0 = t;
+			dt = t - tRot0;
+			tRot0 = t;
+
+			if (animate) {
+				// advance rotation for next frame
+				angle += 70.0 * dt;  /* 70 degrees per second */
+				if (angle > 3600.0)
+					angle -= 3600.0;
+				}
+
+			draw();
+			glXSwapBuffers (dpy, win);
+
+			frames++;
+			if (tRate0 < 0.0)
+				tRate0 = t;
+
+			if (t - tRate0 >= 5.0) {
+				GLfloat seconds = t - tRate0;
+				GLfloat fps = frames / seconds;
+				printf ("%d frames in %3.1f seconds = %6.3f FPS\n", frames, seconds, fps);
+				fflush (stdout);
+				tRate0 = t;
+				frames = 0;
+				}
 			}
 		}
 	//}}}
