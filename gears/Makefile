@@ -7,18 +7,18 @@ CFLAGS = -I/usr/include/GL \
 
 LFLAGS = -lm -lGL -lGLEW -lGLU -lX11 -lXext
 
-all: gears Makefile
+all: main Makefile
 
-gears.o: gears.c
-	$(CC) -c -o $@ $< $(CFLAGS) -MT $< -MD -MP -MF gears.Tpo
+main.o: main.c
+	$(CC) -c -o $@ $< $(CFLAGS) -MT $< -MD -MP -MF main.Tpo
 
-gears:  gears.o
+main:  main.o
 	$(CC) -o $@ $^ $(LFLAGS)
 
 .PHONY: clean rebuild
 
 clean:
-	rm -f *.o *.~* %*~ gears
+	rm -f *.o *.~* %*~ main
 
 rebuild:
 	make clean && make -j 4

@@ -1,65 +1,60 @@
-//{{{
-/*
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * BRIAN PAUL BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
- * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-/* $XFree86: xc/programs/glxgears/glxgears.c,v 1.3tsi Exp $ */
+#ifdef _WIN32
+	//{{{  includes
+	#include <windows.h>
 
-/*
- * This is a port of the infamous "gears" demo to straight GLX (i.e. no GLUT)
- * Port by Brian Paul  23 March 2001
- *
- * Command line options:
- *    -info      print GL implementation information
- *
- */
+	#include <GL/gl.h>
+	//#include <GL/glx.h>
+	//#include <GL/glxext.h>
 
-/* Modified from X11/GLX to Win32/WGL by Ben Skeggs 25th October 2004 */
+	#include <time.h>
 
-/* Modified to compile in Visual Studio 2012 by Calvin Hartwell 28th February 2013 */
-//}}}
-//{{{  includes
-#include <windows.h>
+	#include <math.h>
+	#include <stdlib.h>
+	#include <stdio.h>
+	#include <string.h>
+	#include <ctype.h>
 
-#include <GL/gl.h>
-#include <GL/glx.h>
-#include <GL/glxext.h>
+	#ifndef M_PI
+		#define M_PI 3.14159265
+	#endif
+	//}}}
+	//PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = 0;
+	static HDC hDC;
+	static HGLRC hRC;
+	static HWND hWnd;
+	static HINSTANCE hInst;
+	static RECT winrect;
+#else
+	//{{{  includes
+	#include <X11/Xlib.h>
+	#include <X11/keysym.h>
 
-#include <time.h>
+	#include <GL/gl.h>
+	#include <GL/glx.h>
+	#include <GL/glxext.h>
 
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
+	#include <sys/time.h>
+	#include <unistd.h>
 
-#ifndef M_PI
-	#define M_PI 3.14159265
+	#include <math.h>
+	#include <stdbool.h>
+	#include <stdlib.h>
+	#include <stdio.h>
+	#include <string.h>
+
+	#ifndef M_PI
+		#define M_PI 3.14159265
+	#endif
+
+	#ifndef GLX_MESA_swap_control
+		#define GLX_MESA_swap_control 1
+		typedef int (*PFNGLXGETSWAPINTERVALMESAPROC)(void);
+	#endif
+	//}}}
+	static bool fullscreen = false;
+	static bool animate = true;
+	static GLint samples = 0;
 #endif
-//}}}
-//PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = 0;
-
-static HDC hDC;
-static HGLRC hRC;
-static HWND hWnd;
-static HINSTANCE hInst;
-static RECT winrect;
 
 static GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
 static GLint gear1, gear2, gear3;
@@ -277,168 +272,517 @@ static void draw() {
 	}
 //}}}
 
-//{{{
-static void event_loop() {
+#ifdef _WIN32
+	//{{{
+	static void event_loop() {
 
-	int t, t0 = current_time();
-	int frames = 0;
+		int t, t0 = current_time();
+		int frames = 0;
 
-	MSG msg;
-	while (1) {
-		if (PeekMessage (&msg, NULL, 0, 0, PM_REMOVE)) {
-			if (msg.message == WM_QUIT) break;;
-			TranslateMessage (&msg);
-			DispatchMessage (&msg);
+		MSG msg;
+		while (1) {
+			if (PeekMessage (&msg, NULL, 0, 0, PM_REMOVE)) {
+				if (msg.message == WM_QUIT) break;;
+				TranslateMessage (&msg);
+				DispatchMessage (&msg);
+				}
+
+			angle += 2.0;
+			draw();
+			SwapBuffers (hDC);
+
+			// calc framerate
+			t = current_time();
+			frames++;
+			if (t - t0 >= 5.0) {
+				GLfloat s = t - t0;
+				GLfloat fps = frames / s;
+				printf ("%d frames in %3.1f seconds = %6.3f FPS\n", frames, s, fps);
+				t0 = t;
+				frames = 0;
+				}
+			}
+		}
+	//}}}
+	//{{{
+	LRESULT CALLBACK WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+
+		switch (uMsg) {
+			case WM_CLOSE:
+				PostQuitMessage(0);
+				return 0;
+
+			case WM_SIZE:
+				reshape (LOWORD(lParam), HIWORD(lParam));
+				return 0;
+
+			case WM_KEYDOWN:
+				if (wParam == VK_LEFT)
+					view_roty += 5.0;
+				else if (wParam == VK_RIGHT)
+					view_roty -= 5.0;
+				else if (wParam == VK_UP)
+					view_rotx += 5.0;
+				else if (wParam == VK_DOWN)
+					view_rotx -= 5.0;
+				else if (wParam == VK_ESCAPE)
+					PostQuitMessage(0);
+				return 0;
+				}
+
+		return DefWindowProc(hWnd, uMsg, wParam, lParam);
+		}
+	//}}}
+	//{{{
+	static void make_window (const char *name, int x, int y, int width, int height) {
+	// Create an RGB, double-buffered window.
+	// Return the window and context handles.
+
+		GLuint PixelFormat;
+		WNDCLASS wc;
+		DWORD dwExStyle, dwStyle;
+		static PIXELFORMATDESCRIPTOR pfd = {
+			sizeof(PIXELFORMATDESCRIPTOR),
+			1,
+			PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,
+			PFD_TYPE_RGBA,
+			24,
+			0, 0, 0, 0, 0, 0,
+			0,
+			0,
+			0,
+			0, 0, 0, 0,
+			16,
+			0,
+			0,
+			PFD_MAIN_PLANE,
+			0,
+			0, 0, 0
+			};
+
+		winrect.left = (long)0;
+		winrect.right = (long)width;
+		winrect.top = (long) 0;
+		winrect.bottom = (long)height;
+
+		hInst = GetModuleHandle(NULL);
+		wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+		wc.lpfnWndProc = (WNDPROC)WndProc;
+		wc.cbClsExtra = 0;
+		wc.cbWndExtra = 0;
+		wc.hInstance = hInst;
+		wc.hIcon = LoadIcon(NULL, IDI_WINLOGO);
+		wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+		wc.hbrBackground = NULL;
+		wc.lpszMenuName = NULL;
+		wc.lpszClassName = name;
+		if (!RegisterClass(&wc)) {
+			printf ("failed to register class\n");
+			exit (0);
 			}
 
-		angle += 2.0;
-		draw();
-		SwapBuffers (hDC);
+		dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
+		dwStyle = WS_OVERLAPPEDWINDOW;
+		AdjustWindowRectEx (&winrect, dwStyle, false, dwExStyle);
 
-		// calc framerate
-		t = current_time();
+		if (!(hWnd = CreateWindowEx (dwExStyle, name, name,
+																 WS_CLIPSIBLINGS | WS_CLIPCHILDREN | dwStyle, 0, 0,
+																 winrect.right - winrect.left, winrect.bottom - winrect.top,
+																 NULL, NULL, hInst, NULL))) {
+			printf ("failed to create window\n");
+			exit (0);
+			}
+
+		if (!(hDC = GetDC (hWnd)) ||
+				!(PixelFormat = ChoosePixelFormat (hDC, &pfd)) ||
+				!SetPixelFormat (hDC, PixelFormat, &pfd) ||
+				!(hRC = wglCreateContext (hDC)) ||
+				!wglMakeCurrent (hDC, hRC)) {
+			printf ("failed to initialise opengl\n");
+			exit (0);
+			}
+
+		ShowWindow (hWnd, SW_SHOW);
+		SetForegroundWindow (hWnd);
+		SetFocus (hWnd);
+		}
+	//}}}
+	//{{{
+	int main (int argc, char *argv[]) {
+
+		make_window ("glxgears", 0, 0, 300, 300);
+		reshape (300, 300);
+
+		/* force vsync off */
+		#if 0
+			wglSwapIntervalEXT = wglGetProcAddress ("wglSwapIntervalEXT");
+			if (!wglSwapIntervalEXT)
+				printf ("warning: wglSwapIntervalEXT missing, cannot force vsync off\n");
+			else if (!wglSwapIntervalEXT(0))
+				printf ("warning: failed to force vsync off, it may still be on\n");
+		#endif
+
+		printf ("GL_RENDERER   = %s\n", (char *) glGetString(GL_RENDERER));
+		printf ("GL_VERSION    = %s\n", (char *) glGetString(GL_VERSION));
+		printf ("GL_VENDOR     = %s\n", (char *) glGetString(GL_VENDOR));
+		printf ("GL_EXTENSIONS = %s\n", (char *) glGetString(GL_EXTENSIONS));
+
+		init();
+		event_loop();
+
+		wglMakeCurrent (NULL, NULL);
+		wglDeleteContext (hRC);
+		ReleaseDC (hWnd, hDC);
+
+		return EXIT_SUCCESS;
+		}
+	//}}}
+#else
+	//{{{
+	/** Draw single frame, do SwapBuffers, compute FPS */
+	static void draw_frame (Display* dpy, Window win) {
+
+		static int frames = 0;
+		static double tRot0 = -1.0, tRate0 = -1.0;
+		double dt, t = current_time();
+
+		if (tRot0 < 0.0)
+			tRot0 = t;
+		dt = t - tRot0;
+		tRot0 = t;
+
+		if (animate) {
+			/* advance rotation for next frame */
+			angle += 70.0 * dt;  /* 70 degrees per second */
+			if (angle > 3600.0)
+				angle -= 3600.0;
+			}
+
+		draw();
+		glXSwapBuffers (dpy, win);
+
 		frames++;
-		if (t - t0 >= 5.0) {
-			GLfloat s = t - t0;
-			GLfloat fps = frames / s;
-			printf ("%d frames in %3.1f seconds = %6.3f FPS\n", frames, s, fps);
-			t0 = t;
+
+		if (tRate0 < 0.0)
+			tRate0 = t;
+		if (t - tRate0 >= 5.0) {
+			GLfloat seconds = t - tRate0;
+			GLfloat fps = frames / seconds;
+			printf ("%d frames in %3.1f seconds = %6.3f FPS\n", frames, seconds, fps);
+			fflush (stdout);
+			tRate0 = t;
 			frames = 0;
 			}
 		}
-	}
-//}}}
+	//}}}
+	//{{{
+	static int handle_event (Display* dpy, Window win, XEvent* event) {
+	// Handle one X event, return NOP, EXIT or DRAW
+		#define NOP 0
+		#define EXIT 1
+		#define DRAW 2
 
-//{{{
-LRESULT CALLBACK WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+		switch (event->type) {
+			case Expose:
+				return DRAW;
 
-	switch (uMsg) {
-		case WM_CLOSE:
-			PostQuitMessage(0);
-			return 0;
+			case ConfigureNotify:
+				reshape (event->xconfigure.width, event->xconfigure.height);
+				break;
 
-		case WM_SIZE:
-			reshape (LOWORD(lParam), HIWORD(lParam));
-			return 0;
-
-		case WM_KEYDOWN:
-			if (wParam == VK_LEFT)
-				view_roty += 5.0;
-			else if (wParam == VK_RIGHT)
-				view_roty -= 5.0;
-			else if (wParam == VK_UP)
-				view_rotx += 5.0;
-			else if (wParam == VK_DOWN)
-				view_rotx -= 5.0;
-			else if (wParam == VK_ESCAPE)
-				PostQuitMessage(0);
-			return 0;
+			case KeyPress: {
+				char buffer[10];
+				int code = XLookupKeysym (&event->xkey, 0);
+				if (code == XK_Left)
+					view_roty += 5.0;
+				else if (code == XK_Right)
+					view_roty -= 5.0;
+				else if (code == XK_Up)
+					view_rotx += 5.0;
+				else if (code == XK_Down)
+					view_rotx -= 5.0;
+				else {
+					XLookupString (&event->xkey, buffer, sizeof(buffer), NULL, NULL);
+					if (buffer[0] == 27) // escape
+						return EXIT;
+					else if (buffer[0] == 'a' || buffer[0] == 'A')
+						animate = !animate;
+					}
+				return DRAW;
+				}
 			}
 
-	return DefWindowProc(hWnd, uMsg, wParam, lParam);
-	}
-//}}}
-//{{{
-static void make_window (const char *name, int x, int y, int width, int height) {
-// Create an RGB, double-buffered window.
-// Return the window and context handles.
-
-	GLuint PixelFormat;
-	WNDCLASS wc;
-	DWORD dwExStyle, dwStyle;
-	static PIXELFORMATDESCRIPTOR pfd = {
-		sizeof(PIXELFORMATDESCRIPTOR),
-		1,
-		PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,
-		PFD_TYPE_RGBA,
-		24,
-		0, 0, 0, 0, 0, 0,
-		0,
-		0,
-		0,
-		0, 0, 0, 0,
-		16,
-		0,
-		0,
-		PFD_MAIN_PLANE,
-		0,
-		0, 0, 0
-		};
-
-	winrect.left = (long)0;
-	winrect.right = (long)width;
-	winrect.top = (long) 0;
-	winrect.bottom = (long)height;
-
-	hInst = GetModuleHandle(NULL);
-	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-	wc.lpfnWndProc = (WNDPROC)WndProc;
-	wc.cbClsExtra = 0;
-	wc.cbWndExtra = 0;
-	wc.hInstance = hInst;
-	wc.hIcon = LoadIcon(NULL, IDI_WINLOGO);
-	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wc.hbrBackground = NULL;
-	wc.lpszMenuName = NULL;
-	wc.lpszClassName = name;
-	if (!RegisterClass(&wc)) {
-		printf ("failed to register class\n");
-		exit (0);
+		return NOP;
 		}
+	//}}}
+	//{{{
+	static void event_loop (Display* dpy, Window win) {
 
-	dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
-	dwStyle = WS_OVERLAPPEDWINDOW;
-	AdjustWindowRectEx (&winrect, dwStyle, false, dwExStyle);
+		while (true) {
+			while (!animate || XPending(dpy) > 0) {
+				XEvent event;
+				XNextEvent (dpy, &event);
+				int op = handle_event (dpy, win, &event);
+				if (op == EXIT)
+					return;
+				else if (op == DRAW)
+					break;
+				}
 
-	if (!(hWnd = CreateWindowEx (dwExStyle, name, name,
-															 WS_CLIPSIBLINGS | WS_CLIPCHILDREN | dwStyle, 0, 0,
-															 winrect.right - winrect.left, winrect.bottom - winrect.top,
-															 NULL, NULL, hInst, NULL))) {
-		printf ("failed to create window\n");
-		exit (0);
+			draw_frame (dpy, win);
+			}
 		}
+	//}}}
+	//{{{
+	static void no_border (Display* dpy, Window w) {
+	// Remove window border/decorations.
 
-	if (!(hDC = GetDC (hWnd)) ||
-			!(PixelFormat = ChoosePixelFormat (hDC, &pfd)) ||
-			!SetPixelFormat (hDC, PixelFormat, &pfd) ||
-			!(hRC = wglCreateContext (hDC)) ||
-			!wglMakeCurrent (hDC, hRC)) {
-		printf ("failed to initialise opengl\n");
-		exit (0);
+		static const unsigned MWM_HINTS_DECORATIONS = (1 << 1);
+		static const int PROP_MOTIF_WM_HINTS_ELEMENTS = 5;
+
+		typedef struct {
+			unsigned long flags;
+			unsigned long functions;
+			unsigned long decorations;
+			long          inputMode;
+			unsigned long status;
+			} PropMotifWmHints;
+
+		PropMotifWmHints motif_hints;
+		Atom prop, proptype;
+		unsigned long flags = 0;
+
+		// setup the property
+		motif_hints.flags = MWM_HINTS_DECORATIONS;
+		motif_hints.decorations = flags;
+
+		// get the atom for the property
+		prop = XInternAtom (dpy, "_MOTIF_WM_HINTS", True );
+		if (!prop)
+			return;
+
+		// not sure this is correct, seems to work, XA_WM_HINTS didn't work */
+		proptype = prop;
+		XChangeProperty (dpy, w,                        /* display, window */
+										 prop, proptype,                /* property, type */
+										 32,                            /* format: 32-bit datums */
+										 PropModeReplace,               /* mode */
+										 (unsigned char*) &motif_hints, /* data */
+										 PROP_MOTIF_WM_HINTS_ELEMENTS   /* nelements */
+										 );
 		}
+	//}}}
+	//{{{
+	static void make_window (Display* dpy, const char* name, int x, int y, int width, int height,
+													 Window* winRet, GLXContext* ctxRet, VisualID* visRet) {
+	// Create an RGB, double-buffered window, Return the window and context handles.
 
-	ShowWindow (hWnd, SW_SHOW);
-	SetForegroundWindow (hWnd);
-	SetFocus (hWnd);
-	}
-//}}}
-//{{{
-int main (int argc, char *argv[]) {
+		int attribs[64];
+		int i = 0;
 
-	make_window ("glxgears", 0, 0, 300, 300);
-	reshape (300, 300);
+		int scrnum;
+		XSetWindowAttributes attr;
+		unsigned long mask;
+		Window root;
+		Window win;
+		GLXContext ctx;
+		XVisualInfo *visinfo;
 
-	/* force vsync off */
-	#if 0
-		wglSwapIntervalEXT = wglGetProcAddress ("wglSwapIntervalEXT");
-		if (!wglSwapIntervalEXT)
-			printf ("warning: wglSwapIntervalEXT missing, cannot force vsync off\n");
-		else if (!wglSwapIntervalEXT(0))
-			printf ("warning: failed to force vsync off, it may still be on\n");
-	#endif
+		// Singleton attributes
+		attribs[i++] = GLX_RGBA;
+		attribs[i++] = GLX_DOUBLEBUFFER;
 
-	printf ("GL_RENDERER   = %s\n", (char *) glGetString(GL_RENDERER));
-	printf ("GL_VERSION    = %s\n", (char *) glGetString(GL_VERSION));
-	printf ("GL_VENDOR     = %s\n", (char *) glGetString(GL_VENDOR));
-	printf ("GL_EXTENSIONS = %s\n", (char *) glGetString(GL_EXTENSIONS));
+		// Key/value attributes
+		attribs[i++] = GLX_RED_SIZE;
+		attribs[i++] = 1;
+		attribs[i++] = GLX_GREEN_SIZE;
+		attribs[i++] = 1;
+		attribs[i++] = GLX_BLUE_SIZE;
+		attribs[i++] = 1;
+		attribs[i++] = GLX_DEPTH_SIZE;
+		attribs[i++] = 1;
+		if (samples > 0) {
+			attribs[i++] = GLX_SAMPLE_BUFFERS;
+			attribs[i++] = 1;
+			attribs[i++] = GLX_SAMPLES;
+			attribs[i++] = samples;
+		 }
+		attribs[i++] = None;
 
-	init();
-	event_loop();
+		scrnum = DefaultScreen (dpy);
+		root = RootWindow (dpy, scrnum);
 
-	wglMakeCurrent (NULL, NULL);
-	wglDeleteContext (hRC);
-	ReleaseDC (hWnd, hDC);
+		visinfo = glXChooseVisual (dpy, scrnum, attribs);
+		if (!visinfo) {
+			printf ("Error: couldn't get an RGB, Double-buffered");
+			if (samples > 0)
+				printf(", Multisample");
+			printf (" visual\n");
+			exit (1);
+			}
 
-	return EXIT_SUCCESS;
-	}
-//}}}
+		// window attributes
+		attr.background_pixel = 0;
+		attr.border_pixel = 0;
+		attr.colormap = XCreateColormap (dpy, root, visinfo->visual, AllocNone);
+		attr.event_mask = StructureNotifyMask | ExposureMask | KeyPressMask;
+		// XXX this is a bad way to get a borderless window!
+		mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
+		win = XCreateWindow (dpy, root, x, y, width, height,
+												 0, visinfo->depth, InputOutput, visinfo->visual, mask, &attr);
+		if (fullscreen)
+			no_border (dpy, win);
+
+		// set hints and properties
+			{
+			XSizeHints sizehints;
+			sizehints.x = x;
+			sizehints.y = y;
+			sizehints.width  = width;
+			sizehints.height = height;
+			sizehints.flags = USSize | USPosition;
+			XSetNormalHints (dpy, win, &sizehints);
+			XSetStandardProperties (dpy, win, name, name, None, (char**)NULL, 0, &sizehints);
+			}
+
+		ctx = glXCreateContext (dpy, visinfo, NULL, True );
+		if (!ctx) {
+			printf ("Error: glXCreateContext failed\n");
+			exit (1);
+			}
+
+		*winRet = win;
+		*ctxRet = ctx;
+		*visRet = visinfo->visualid;
+
+		XFree (visinfo);
+		}
+	//}}}
+	//{{{
+	static int is_glx_extension_supported (Display* dpy, const char* query) {
+	// Determine whether or not a GLX extension is supported.
+
+		const int scrnum = DefaultScreen(dpy);
+		const char *glx_extensions = NULL;
+		const size_t len = strlen(query);
+		const char *ptr;
+
+		if (glx_extensions == NULL)
+			glx_extensions = glXQueryExtensionsString (dpy, scrnum);
+
+		ptr = strstr(glx_extensions, query);
+		return ((ptr != NULL) && ((ptr[len] == ' ') || (ptr[len] == '\0')));
+		}
+	//}}}
+	//{{{
+	static void query_vsync (Display* dpy, GLXDrawable drawable) {
+	// Attempt to determine whether or not the display is synched to vblank.
+
+		int interval = 0;
+
+		#if defined(GLX_EXT_swap_control)
+			if (is_glx_extension_supported(dpy, "GLX_EXT_swap_control")) {
+				unsigned int tmp = -1;
+				glXQueryDrawable(dpy, drawable, GLX_SWAP_INTERVAL_EXT, &tmp);
+				interval = tmp;
+				}
+			else
+		#endif
+
+		if (is_glx_extension_supported(dpy, "GLX_MESA_swap_control")) {
+			PFNGLXGETSWAPINTERVALMESAPROC pglXGetSwapIntervalMESA =
+					(PFNGLXGETSWAPINTERVALMESAPROC)glXGetProcAddressARB((const GLubyte *) "glXGetSwapIntervalMESA");
+			interval = (*pglXGetSwapIntervalMESA)();
+			}
+
+		else if (is_glx_extension_supported(dpy, "GLX_SGI_swap_control")) {
+			/* The default swap interval with this extension is 1.  Assume that it
+			 * is set to the default.
+			 * Many Mesa-based drivers default to 0, but all of these drivers also
+			 * export GLX_MESA_swap_control.  In that case, this branch will never
+			 * be taken, and the correct result should be reported.
+			 */
+			interval = 1;
+			}
+
+		if (interval > 0) {
+			printf ("Running synchronized to the vertical refresh.  The framerate should be\n");
+			if (interval == 1)
+				printf ("approximately the same as the monitor refresh rate.\n");
+			else if (interval > 1)
+				printf ("approximately 1/%d the monitor refresh rate.\n", interval);
+			}
+		}
+	//}}}
+	//{{{
+	int main (int argc, char* argv[]) {
+
+		char* dpyName = NULL;
+
+		int x = 0;
+		int y = 0;
+		unsigned int winWidth = 300;
+		unsigned int winHeight = 300;
+
+		for (int i = 1; i < argc; i++)
+			if (strcmp(argv[i], "-f") == 0)
+				fullscreen = GL_TRUE;
+			else if (strcmp(argv[i], "-d") == 0) {
+				dpyName = argv[i+1];
+				i++;
+				}
+			else if (i < argc-1 && strcmp(argv[i], "-s") == 0) {
+				samples = strtod (argv[i+1], NULL );
+				++i;
+				}
+			else if (i < argc-1 && strcmp(argv[i], "-g") == 0) {
+				XParseGeometry (argv[i+1], &x, &y, &winWidth, &winHeight);
+				i++;
+				}
+
+		Display* dpy = XOpenDisplay (dpyName);
+		if (!dpy) {
+			printf("Error: couldn't open display %s\n",
+			dpyName ? dpyName : getenv("DISPLAY"));
+			return -1;
+			}
+
+		if (fullscreen) {
+			int scrnum = DefaultScreen (dpy);
+			x = 0;
+			y = 0;
+			winWidth = DisplayWidth (dpy, scrnum);
+			winHeight = DisplayHeight (dpy, scrnum);
+			}
+
+		Window win;
+		GLXContext ctx;
+		VisualID visId;
+		make_window (dpy, "glxgears", x, y, winWidth, winHeight, &win, &ctx, &visId);
+
+		XMapWindow (dpy, win);
+		glXMakeCurrent (dpy, win, ctx);
+		query_vsync (dpy, win);
+
+		printf ("GL_RENDERER   = %s\n", (char *) glGetString(GL_RENDERER));
+		printf ("GL_VERSION    = %s\n", (char *) glGetString(GL_VERSION));
+		printf ("GL_VENDOR     = %s\n", (char *) glGetString(GL_VENDOR));
+		printf ("GL_EXTENSIONS = %s\n", (char *) glGetString(GL_EXTENSIONS));
+		printf ("VisualID %d, 0x%x\n", (int) visId, (int) visId);
+
+		init();
+		reshape (winWidth, winHeight);
+		event_loop (dpy, win);
+
+		glDeleteLists (gear1, 1);
+		glDeleteLists (gear2, 1);
+		glDeleteLists (gear3, 1);
+		glXMakeCurrent (dpy, None, NULL);
+		glXDestroyContext (dpy, ctx);
+		XDestroyWindow (dpy, win);
+		XCloseDisplay (dpy);
+
+		return 0;
+		}
+	//}}}
+#endif
