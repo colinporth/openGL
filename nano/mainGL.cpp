@@ -5,8 +5,6 @@
 #include "../../shared/glad/glad.h"
 #include "../../shared/GLFW/glfw3.h"
 
-//#define NANOVG_GL2_IMPLEMENTATION
-//#define NANOVG_GL3_IMPLEMENTATION
 //#define NANOVG_GLES2_IMPLEMENTATION
 #define NANOVG_GLES3_IMPLEMENTATION
 #include "nanoVgGL.h"
