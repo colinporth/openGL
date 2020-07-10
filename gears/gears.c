@@ -1,62 +1,46 @@
+//{{{  includes
 #ifdef _WIN32
-	//{{{  includes
 	#include <windows.h>
+#endif
 
-	#include <GL/gl.h>
-	//#include <GL/glx.h>
-	//#include <GL/glxext.h>
+#include <GL/gl.h>
+#include <time.h>
+#include <math.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 
-	#include <time.h>
+#ifndef _WIN32
+	#include <X11/Xlib.h>
+	#include <X11/keysym.h>
 
-	#include <math.h>
-  #include <stdbool.h>
-	#include <stdlib.h>
-	#include <stdio.h>
-	#include <string.h>
-	#include <ctype.h>
+	#include <GL/glx.h>
+	#include <GL/glxext.h>
 
-	#ifndef M_PI
-		#define M_PI 3.14159265
-	#endif
-	//}}}
+	#include <sys/time.h>
+	#include <unistd.h>
+	#define GLX_MESA_swap_control 1
+	typedef int (*PFNGLXGETSWAPINTERVALMESAPROC)(void);
+#endif
+
+#define M_PI 3.14159265
+//}}}
+
+#ifdef _WIN32
 	//PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = 0;
 	static HDC hDC;
 	static HGLRC hRC;
 	static HWND hWnd;
 	static HINSTANCE hInst;
 	static RECT winrect;
-#else
-	//{{{  includes
-	#include <X11/Xlib.h>
-	#include <X11/keysym.h>
-
-	#include <GL/gl.h>
-	#include <GL/glx.h>
-	#include <GL/glxext.h>
-
-	#include <sys/time.h>
-	#include <unistd.h>
-
-	#include <math.h>
-	#include <stdbool.h>
-	#include <stdlib.h>
-	#include <stdio.h>
-	#include <string.h>
-
-	#ifndef M_PI
-		#define M_PI 3.14159265
-	#endif
-
-	#ifndef GLX_MESA_swap_control
-		#define GLX_MESA_swap_control 1
-		typedef int (*PFNGLXGETSWAPINTERVALMESAPROC)(void);
-	#endif
-	//}}}
-	static bool fullscreen = false;
-	static bool animate = true;
-	static GLint samples = 0;
 #endif
 
+// common
+static bool fullscreen = false;
+static bool animate = true;
+static GLint samples = 0;
 static GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
 static GLint gear1, gear2, gear3;
 static GLfloat angle = 0.0;
@@ -534,6 +518,7 @@ static void draw() {
 			}
 		}
 	//}}}
+
 	//{{{
 	static void no_border (Display* dpy, Window w) {
 	// Remove window border/decorations.
