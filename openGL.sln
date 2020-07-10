@@ -11,7 +11,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "radio", "radio\radio.vcxpro
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tv", "tv\tv.vcxproj", "{7E5E3F32-296E-4BEF-AE33-BDDD6D53AF50}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glxgears", "gears\glxgears.vcxproj", "{F7FC70D1-2B13-45B2-9905-C30374848269}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gears", "gears\gears.vcxproj", "{F7FC70D1-2B13-45B2-9905-C30374848269}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
