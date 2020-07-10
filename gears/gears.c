@@ -19,13 +19,15 @@
 	#include <GL/glx.h>
 	#include <GL/glxext.h>
 
-	#include <sys/time.h>
-	#include <unistd.h>
+	//#include <sys/time.h>
+	//#include <unistd.h>
 	#define GLX_MESA_swap_control 1
 	typedef int (*PFNGLXGETSWAPINTERVALMESAPROC)(void);
 #endif
 
-#define M_PI 3.14159265
+#ifndef M_PI
+	#define M_PI 3.14159265
+#endif
 //}}}
 
 #ifdef _WIN32
