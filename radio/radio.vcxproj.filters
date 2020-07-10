@@ -78,6 +78,24 @@
     <ClInclude Include="..\..\shared\utils\cWinAudio16.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cPicWidget.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\decoders\cDecodePic.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\decoders\cGifPic.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\decoders\cJpegPic.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\decoders\cPngPic.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\decoders\iPic.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">

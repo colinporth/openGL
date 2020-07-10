@@ -162,6 +162,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\shared\decoders\cDecodePic.h" />
+    <ClInclude Include="..\..\shared\decoders\cGifPic.h" />
+    <ClInclude Include="..\..\shared\decoders\cJpegPic.h" />
+    <ClInclude Include="..\..\shared\decoders\cPngPic.h" />
+    <ClInclude Include="..\..\shared\decoders\iPic.h" />
     <ClInclude Include="..\..\shared\glad\glad.h" />
     <ClInclude Include="..\..\shared\hls\hls.h" />
     <ClInclude Include="..\..\shared\hls\hlsWidgets.h" />
@@ -182,6 +187,7 @@
     <ClInclude Include="..\..\shared\utils\cLog.h" />
     <ClInclude Include="..\..\shared\utils\cWinAudio16.h" />
     <ClInclude Include="..\..\shared\utils\date.h" />
+    <ClInclude Include="..\..\shared\widgets\cPicWidget.h" />
     <ClInclude Include="..\..\shared\widgets\cWidget.h" />
     <ClInclude Include="..\..\shared\widgets\iDraw.h" />
   </ItemGroup>
