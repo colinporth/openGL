@@ -5,20 +5,20 @@ CFLAGS = -I/usr/include/GL \
 	 -fno-strict-aliasing \
 	 -O2
 
-LFLAGS = -lm -lGL -lGLEW -lGLU -lX11 -lXext
+LFLAGS  = -lm -lGL -lGLEW -lGLU -lX11 -lXext
 
-all: main Makefile
+all: gears Makefile
+
+gears:  gears.o
+	$(CC) -o $@ $^ $(LFLAGS)
 
 main.o: main.c
-	$(CC) -c -o $@ $< $(CFLAGS) -MT $< -MD -MP -MF main.Tpo
-
-main:  main.o
-	$(CC) -o $@ $^ $(LFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS) -MT $< -MD -MP -MF gears.Tpo
 
 .PHONY: clean rebuild
 
 clean:
-	rm -f *.o *.~* %*~ main
+	rm -f *.o *.~* %*~ gears
 
 rebuild:
 	make clean && make -j 4
