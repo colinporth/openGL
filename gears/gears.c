@@ -1,32 +1,3 @@
-//{{{
-/*
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * BRIAN PAUL BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
- * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
-/*
- * This is a port of the infamous "gears" demo to straight GLX (i.e. no GLUT)
- * Port by Brian Paul  23 March 2001
- *
- * See usage() below for command line options.
- */
-//}}}
 //{{{  includes
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
@@ -39,6 +10,7 @@
 #include <unistd.h>
 
 #include <math.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -53,16 +25,18 @@
 #endif
 //}}}
 
-static GLboolean fullscreen = GL_FALSE; /* Create a single fullscreen window */
-static GLint samples = 0;               /* Choose visual with at least N samples. */
-static GLboolean animate = GL_TRUE; /* Animation */
-static GLfloat eyesep = 5.0;    /* Eye separation. */
-static GLfloat fix_point = 40.0;  /* Fixation point distance.  */
-static GLfloat left, right, asp;  /* Stereo frustum params.  */
+static bool fullscreen = false;
+static bool animate = true;
+static GLint samples = 0;
 
-static GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
-static GLint gear1, gear2, gear3;
+static GLint gear1;
+static GLint gear2;
+static GLint gear3;
 static GLfloat angle = 0.0;
+static GLfloat view_rotx = 20.0;
+static GLfloat view_roty = 30.0;
+static GLfloat view_rotz = 0.0;
+
 //{{{
 static double current_time() {
 	// return current time (in seconds)
@@ -359,7 +333,7 @@ static int handle_event (Display* dpy, Window win, XEvent* event) {
 				XLookupString (&event->xkey, buffer, sizeof(buffer), NULL, NULL);
 				if (buffer[0] == 27) // escape
 					return EXIT;
-				else if (buffer[0] == 'a' || buffer[0] == 'A') 
+				else if (buffer[0] == 'a' || buffer[0] == 'A')
 					animate = !animate;
 				}
 			return DRAW;
@@ -430,8 +404,7 @@ static void no_border (Display* dpy, Window w) {
 //{{{
 static void make_window (Display* dpy, const char* name, int x, int y, int width, int height,
 												 Window* winRet, GLXContext* ctxRet, VisualID* visRet) {
-// Create an RGB, double-buffered window.
-// Return the window and context handles.
+// Create an RGB, double-buffered window, Return the window and context handles.
 
 	int attribs[64];
 	int i = 0;

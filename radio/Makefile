@@ -1,5 +1,6 @@
 CC = gcc
-CFLAGS   += -Wall \
+CFLAGS   += -std=c11 \
+	    -Wall \
 	    -g \
 	    -O2 \
 	    -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64
@@ -24,7 +25,7 @@ SRC       = main.cpp \
 
 OBJS     += $(filter %.o,$(SRC:.cpp=.o)) $(filter %.o,$(SRC:.c=.o))
 
-LDFLAGS  += -l dl -l pthread -l asound -l glfw -l GL
+LDFLAGS  += -l dl -l pthread -l asound -l GL -l glfw
 
 all: radio Makefile
 

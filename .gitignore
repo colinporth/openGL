@@ -5,6 +5,7 @@
 [Rr]eleases/
 
 *.user
+*.Tpo
 *.suo
 *.db
 *.iobj
@@ -32,3 +33,4 @@ tv
 radio
 demo
 nano
+gears
