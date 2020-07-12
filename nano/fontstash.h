@@ -28,7 +28,7 @@ enum FONSflags {
 
 enum FONSalign {
 	// Horizontal align
-	FONS_ALIGN_LEFT   = 1<<0, // Default
+		FONS_ALIGN_LEFT   = 1<<0, // Default
 	FONS_ALIGN_CENTER   = 1<<1,
 	FONS_ALIGN_RIGHT  = 1<<2,
 	// Vertical align
@@ -890,8 +890,8 @@ int fonsAddFont(FONScontext* stash, const char* name, const char* path)
 {
 	FILE* fp = 0;
 	int dataSize = 0;
-	size_t readed;
 	unsigned char* data = NULL;
+	size_t readed;
 
 	// Read in the font data.
 	fp = fopen(path, "rb");
@@ -904,7 +904,7 @@ int fonsAddFont(FONScontext* stash, const char* name, const char* path)
 	readed = fread(data, 1, dataSize, fp);
 	fclose(fp);
 	fp = 0;
-	if (readed != dataSize) goto error;
+	if ((int)readed != dataSize) goto error;
 
 	return fonsAddFontMem(stash, name, data, dataSize, 1);
 
