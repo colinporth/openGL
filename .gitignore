@@ -3,6 +3,7 @@
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
+[B]uild/
 
 *.user
 *.Tpo
@@ -26,6 +27,7 @@
 *.*~
 Makefile~
 
+*.d
 *.o
 
 *.exe

@@ -173,7 +173,6 @@
     <ClInclude Include="..\..\shared\nanoVg\cGlWindow.h" />
     <ClInclude Include="..\..\shared\nanoVg\cPerfGraph.h" />
     <ClInclude Include="..\..\shared\nanoVg\cVg.h" />
-    <ClInclude Include="..\..\shared\nanoVg\cVgGL.h" />
     <ClInclude Include="..\..\shared\nanoVg\fontStash.h" />
     <ClInclude Include="..\..\shared\nanoVg\stb_image.h" />
     <ClInclude Include="..\..\shared\nanoVg\stb_truetype.h" />

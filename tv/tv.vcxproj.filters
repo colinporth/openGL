@@ -19,9 +19,6 @@
     <ClInclude Include="..\..\shared\nanoVg\cPerfGraph.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\cVgGL.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\widgets\cWidget.h">
       <Filter>h</Filter>
     </ClInclude>

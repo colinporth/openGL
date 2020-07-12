@@ -1,49 +1,43 @@
-CC = gcc
-CFLAGS   += -std=c11 \
-	    -Wall \
-	    -g \
-	    -O2 \
-	    -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64
-
-CXX = g++
-CXXFLAGS += -std=c++17 \
-	    -Wall\
-	    -g \
-	    -O2 \
-	    -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64
-
-INCLUDES +=
-
-SRC       = main.cpp \
+TARGET    = radio.out
+SRCS      = main.cpp \
 	    ../../shared/utils/cLog.cpp \
+	    ../../shared/glad/glad.c \
+	    ../../shared/nanoVg/cVg.cpp \
+	    ../../shared/nanoVg/cGlWindow.cpp \
+	    ../../shared/teensyAac/sbr.cpp \
 	    ../../shared/teensyAac/huffman.cpp \
 	    ../../shared/teensyAac/cAacDecoder.cpp \
-	    ../../shared/teensyAac/sbr.cpp \
-	    ../../shared/nanoVg/cGlWindow.cpp \
-	    ../../shared/nanoVg/cVg.cpp \
-	    ../../shared/glad/glad.c \
 
-OBJS     += $(filter %.o,$(SRC:.cpp=.o)) $(filter %.o,$(SRC:.c=.o))
+BUILD_DIR = ./build
+OBJS      = $(SRCS:%=$(BUILD_DIR)/%.o)
+DEPS      = $(OBJS:.o=.d)
+LIBS      = -l dl -l pthread -l asound -l GL -l glfw
 
-LDFLAGS  += -l dl -l pthread -l asound -l GL -l glfw
+COM_FLAGS = -Wall \
+	    -O2 -g \
+	    -MMD -MP \
+	    -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64 \
 
-all: radio Makefile
+INC_FLAGS =
+CFLAGS   += -std=c11 $(COM_FLAGS) $(INC_FLAGS)
+CXXFLAGS += -std=c++17 $(COM_FLAGS) $(INC_FLAGS)
 
-%.o: %.c Makefile
-	@rm -f $@
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+$(BUILD_DIR)/%.c.o: %.c
+	mkdir -p $(dir $@)
+	gcc $(CFLAGS) -c $< -o $@
 
-%.o: %.cpp  Makefile
-	@rm -f $@
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+$(BUILD_DIR)/%.cpp.o: %.cpp
+	mkdir -p $(dir $@)
+	g++ $(CXXFLAGS) -c $< -o $@
 
-radio: $(OBJS) Makefile
-	$(CXX) $(LDFLAGS) -o radio $(OBJS)
-
-.PHONY: clean rebuild
+$(TARGET): $(OBJS)
+	g++ $(OBJS) -o $@ $(LIBS)
 
 clean:
-	rm -f *.o *.~* %*~ radio
-
+	rm -rf $(BUILD_DIR) $(TARGET)
 rebuild:
 	make clean && make -j 4
+
+all: $(TARGET)
+
+-include $(DEPS)

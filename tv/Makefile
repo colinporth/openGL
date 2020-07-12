@@ -1,47 +1,42 @@
-CC = gcc
-CFLAGS   += -Wall \
-	    -g \
-	    -O2 \
-	    -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64
-
-CXX = g++
-CXXFLAGS += -std=c++17 \
-	    -Wall\
-	    -g \
-	    -O2 \
-	    -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64
-
-INCLUDES +=
-
-SRC       = main.cpp \
+TARGET    = tv.out
+SRCS      = main.cpp \
 	    ../../shared/utils/cLog.cpp \
+	    ../../shared/glad/glad.c \
+	    ../../shared/nanoVg/cVg.cpp \
+	    ../../shared/nanoVg/cGlWindow.cpp \
 	    ../../shared/dvb/cLinuxDvb.cpp \
 	    ../../shared/dvb/cTransportStream.cpp \
-	    ../../shared/nanoVg/cGlWindow.cpp \
-	    ../../shared/nanoVg/cVg.cpp \
-	    ../../shared/glad/glad.c
 
-OBJS     += $(filter %.o,$(SRC:.cpp=.o)) $(filter %.o,$(SRC:.c=.o))
+BUILD_DIR = ./build
+OBJS      = $(SRCS:%=$(BUILD_DIR)/%.o)
+DEPS      = $(OBJS:.o=.d)
+LIBS      = -l dl -l pthread -l asound -l GL -l glfw
 
-LDFLAGS  += -lpthread -ldl -lGL -lglfw
+COM_FLAGS = -Wall \
+	    -O2 -g \
+	    -MMD -MP \
+	    -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64 \
 
-all: tv Makefile
+INC_FLAGS =
+CFLAGS   += -std=c11 $(COM_FLAGS) $(INC_FLAGS)
+CXXFLAGS += -std=c++17 $(COM_FLAGS) $(INC_FLAGS)
 
-%.o: %.c Makefile
-	@rm -f $@
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+$(BUILD_DIR)/%.c.o: %.c
+	mkdir -p $(dir $@)
+	gcc $(CFLAGS) -c $< -o $@
 
-%.o: %.cpp  Makefile
-	@rm -f $@
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+$(BUILD_DIR)/%.cpp.o: %.cpp
+	mkdir -p $(dir $@)
+	g++ $(CXXFLAGS) -c $< -o $@
 
-tv: $(OBJS) Makefile
-	$(CXX) $(LDFLAGS) -o tv $(OBJS)
-
-.PHONY: clean rebuild
+$(TARGET): $(OBJS)
+	g++ $(OBJS) -o $@ $(LIBS)
 
 clean:
-	rm -f *.o *.~* %*~ tv
-
+	rm -rf $(BUILD_DIR) $(TARGET)
 rebuild:
 	make clean && make -j 4
+
+all: $(TARGET)
+
+-include $(DEPS)
