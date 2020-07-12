@@ -31,19 +31,19 @@
     <ClInclude Include="..\..\shared\widgets\iDraw.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\teensyAac\tables.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\nanoVg\stb_truetype.h">
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\nanoVg\cVg.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\dvb\cWinDvb.h">
+    <ClInclude Include="..\..\shared\glad\glad.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\glad\glad.h">
+    <ClInclude Include="..\..\shared\dvb\cDvb.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\dvb\huffmanTables.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>

@@ -8,6 +8,7 @@
   #include <windows.h>
   #include <winsock2.h>
   #include <WS2tcpip.h>
+  #include <objbase.h>
 #endif
 
 #include <string.h>
@@ -29,11 +30,7 @@
 #include "../../shared/widgets/cTextBox.h"
 #include "../../shared/widgets/cTransportStreamBox.h"
 
-#ifdef _WIN32
-  #include "../../shared/dvb/cWinDvb.h"
-#else
-  #include "../../shared/dvb/cLinuxDvb.h"
-#endif
+#include "../../shared/dvb/cDvb.h"
 
 using namespace std;
 //}}}
