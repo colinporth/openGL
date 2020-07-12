@@ -7,11 +7,11 @@ SRCS      = mainGL.cpp \
 
 BUILD_DIR = ./build
 CLEAN_DIRS = $(BUILD_DIR) ../../shared/build
+LIBS      = -l dl -l pthread -l asound -l GL -l glfw
 #
 #
 OBJS      = $(SRCS:%=$(BUILD_DIR)/%.o)
 DEPS      = $(OBJS:.o=.d)
-LIBS      = -l dl -l pthread -l asound -l GL -l glfw
 
 CFLAGS = -Wall -Wno-unused-result -Wno-unused-function \
 	 -O2 -g \
