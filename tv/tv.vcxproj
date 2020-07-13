@@ -164,6 +164,8 @@
   <ItemGroup>
     <ClInclude Include="..\..\shared\dvb\cDvb.h" />
     <ClInclude Include="..\..\shared\dvb\huffmanTables.h" />
+    <ClInclude Include="..\..\shared\fonts\DroidSansMono1.h" />
+    <ClInclude Include="..\..\shared\fonts\FreeSansBold.h" />
     <ClInclude Include="..\..\shared\glad\glad.h" />
     <ClInclude Include="..\..\shared\nanoVg\cGlWindow.h" />
     <ClInclude Include="..\..\shared\nanoVg\cPerfGraph.h" />
@@ -172,6 +174,9 @@
     <ClInclude Include="..\..\shared\nanoVg\stb_truetype.h" />
     <ClInclude Include="..\..\shared\utils\cLog.h" />
     <ClInclude Include="..\..\shared\utils\date.h" />
+    <ClInclude Include="..\..\shared\utils\utils.h" />
+    <ClInclude Include="..\..\shared\widgets\cTextBox.h" />
+    <ClInclude Include="..\..\shared\widgets\cTransportStreamBox.h" />
     <ClInclude Include="..\..\shared\widgets\cWidget.h" />
     <ClInclude Include="..\..\shared\widgets\iDraw.h" />
   </ItemGroup>

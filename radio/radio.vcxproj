@@ -167,6 +167,8 @@
     <ClInclude Include="..\..\shared\decoders\cJpegPic.h" />
     <ClInclude Include="..\..\shared\decoders\cPngPic.h" />
     <ClInclude Include="..\..\shared\decoders\iPic.h" />
+    <ClInclude Include="..\..\shared\fonts\DroidSansMono1.h" />
+    <ClInclude Include="..\..\shared\fonts\FreeSansBold.h" />
     <ClInclude Include="..\..\shared\glad\glad.h" />
     <ClInclude Include="..\..\shared\hls\hls.h" />
     <ClInclude Include="..\..\shared\hls\hlsWidgets.h" />

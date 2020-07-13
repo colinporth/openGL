@@ -46,6 +46,19 @@
     <ClInclude Include="..\..\shared\dvb\huffmanTables.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\utils\utils.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cTextBox.h" />
+    <ClInclude Include="..\..\shared\widgets\cTransportStreamBox.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fonts\FreeSansBold.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fonts\DroidSansMono1.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">
