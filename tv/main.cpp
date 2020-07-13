@@ -39,15 +39,18 @@ class cAppWindow : public cGlWindow {
 public:
   cAppWindow() {}
   //{{{
-  void run (const string& title, int width, int height, int frequency, bool headless, bool moreLogInfo) {
+  void run (const string& title, int width, int height,
+            int frequency, bool headless, bool moreLogInfo,
+            const std::vector <std::string>& channelNames,
+            const std::vector <std::string>& saveNames) {
 
     mMoreLogInfo = moreLogInfo;
     cLog::log (LOGINFO, "run %d", frequency);
 
     #ifdef _WIN32
-      auto mDvb = new cDvb (frequency*1000, "/tv", true);
+      auto mDvb = new cDvb (frequency*1000, "/tv", channelNames, saveNames);
     #else
-      auto mDvb = new cDvb (frequency*1000, "/home/pi/tv", true);
+      auto mDvb = new cDvb (frequency*1000, "/home/pi/tv", channelNames, saveNames);
     #endif
 
     if (!headless) {
@@ -82,6 +85,7 @@ public:
     cLog::log (LOGINFO, "run exit");
     }
   //}}}
+
 
 protected:
   //{{{
@@ -138,32 +142,41 @@ private:
 
 int main (int argc, char* argv[]) {
 
+  int xWinSize = 790;
+  int yWinSize = 400;
   #ifdef _WIN32
+     yWinSize = 600;
     CoInitializeEx (NULL, COINIT_MULTITHREADED);
   #endif
 
   bool moreLogInfo = false;
   bool headless = false;
+
   int frequency = 626;
+  vector<string> channelNames = { "BBC ONE HD", "BBC TWO HD", "ITV HD", "Channel 4 HD", "Channel 5 HD" };
+  vector<string> saveNames =    { "bbc1hd",     "bbc2hd",     "itv1hd", "c4hd",         "c5hd" };
 
   for (auto arg = 1; arg < argc; arg++)
     if (!strcmp(argv[arg], "l")) moreLogInfo = true;
     else if (!strcmp(argv[arg], "h")) headless = true;
     else if (!strcmp (argv[arg], "f")) frequency = atoi (argv[++arg]);
-    else if (!strcmp (argv[arg], "hd"))  frequency = 626;
-    else if (!strcmp (argv[arg], "itv")) frequency = 650;
-    else if (!strcmp (argv[arg], "bbc")) frequency = 674;
+    else if (!strcmp (argv[arg], "itv")) {
+      frequency = 650;
+      channelNames = { "ITV",  "ITV2", "ITV3", "ITV4", "Channel 4", "More 4", "Film4" , "E4", "Channel 5" };
+      saveNames =    { "itv1", "itv2", "itv3", "itv4", "c4",        "more4",  "film4",  "e4", "c5" };
+      }
+    else if (!strcmp (argv[arg], "bbc")) {
+      frequency = 674;
+      channelNames = { "BBC ONE S West", "BBC TWO", "BBC FOUR" };
+      saveNames =    { "bbc1",           "bbc2",    "bbc4" };
+      }
 
   cLog::init (moreLogInfo ? LOGINFO3 : LOGINFO, false, "");
   cLog::log (LOGNOTICE, "tv - moreLog:" + dec(moreLogInfo) + " freq:" + dec(frequency));
 
   cAppWindow appWindow;
-  #ifdef _WIN32
-    appWindow.run ("tv", 800, 480, frequency, headless, moreLogInfo);
-    CoUninitialize();
-  #else
-    appWindow.run ("tv", 790, 400, frequency, headless, moreLogInfo);
-  #endif
+  appWindow.run ("tv", xWinSize, yWinSize, frequency, headless, moreLogInfo, channelNames, saveNames);
 
+  // CoUninitialize();
   return 0;
   }
