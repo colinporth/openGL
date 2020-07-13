@@ -4,7 +4,7 @@ SRCS      = main.cpp \
 	    ../../shared/glad/glad.c \
 	    ../../shared/nanoVg/cVg.cpp \
 	    ../../shared/nanoVg/cGlWindow.cpp \
-	    ../../shared/dvb/cLinuxDvb.cpp \
+	    ../../shared/dvb/cDvb.cpp \
 	    ../../shared/dvb/cTransportStream.cpp \
 
 BUILD_DIR = ./build
