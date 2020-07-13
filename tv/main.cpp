@@ -55,9 +55,9 @@ public:
 
     if (!headless) {
       initialise (title, width, height, (unsigned char*)droidSansMono);
-      add (new cTextBox (mDvb->mErrorStr, 12.f));
+      add (new cTextBox (mDvb->mErrorStr, 14.f));
       add (new cTextBox (mDvb->mTuneStr, 12.f));
-      add (new cTextBox (mDvb->mSignalStr, 16.f));
+      add (new cTextBox (mDvb->mSignalStr, 14.f));
       addAt (new cTransportStreamBox (mDvb, 0.f, -2.f), 0.f, 1.f);
       }
 
