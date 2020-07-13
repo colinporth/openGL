@@ -48,9 +48,9 @@ public:
     cLog::log (LOGINFO, "run %d", frequency);
 
     #ifdef _WIN32
-      auto mDvb = new cDvb (frequency*1000, "/tv", channelNames, saveNames);
+      auto mDvb = new cDvb (frequency, "/tv", channelNames, saveNames);
     #else
-      auto mDvb = new cDvb (frequency*1000, "/home/pi/tv", channelNames, saveNames);
+      auto mDvb = new cDvb (frequency, "/home/pi/tv", channelNames, saveNames);
     #endif
 
     if (!headless) {
