@@ -154,22 +154,26 @@ int main (int argc, char* argv[]) {
 
   int frequency = 626;
   vector<string> channelNames = { "BBC ONE HD", "BBC TWO HD", "ITV HD", "Channel 4 HD", "Channel 5 HD" };
-  vector<string> saveNames =    { "bbc1hd",     "bbc2hd",     "itv1hd", "c4hd",         "c5hd" };
+  vector<string> saveNames =    { "bbc1hd",     "bbc2hd",     "itv1hd", "chn4hd",       "chn5hd" };
 
   for (auto arg = 1; arg < argc; arg++)
     if (!strcmp(argv[arg], "l")) moreLogInfo = true;
     else if (!strcmp(argv[arg], "h")) headless = true;
     else if (!strcmp (argv[arg], "f")) frequency = atoi (argv[++arg]);
     else if (!strcmp (argv[arg], "itv")) {
+      //{{{  itv
       frequency = 650;
       channelNames = { "ITV",  "ITV2", "ITV3", "ITV4", "Channel 4", "More 4", "Film4" , "E4", "Channel 5" };
-      saveNames =    { "itv1", "itv2", "itv3", "itv4", "c4",        "more4",  "film4",  "e4", "c5" };
+      saveNames =    { "itv1", "itv2", "itv3", "itv4", "chn4",      "more4",  "film4",  "e4", "chn5" };
       }
+      //}}}
     else if (!strcmp (argv[arg], "bbc")) {
+      //{{{  bbc
       frequency = 674;
       channelNames = { "BBC ONE S West", "BBC TWO", "BBC FOUR" };
       saveNames =    { "bbc1",           "bbc2",    "bbc4" };
       }
+      //}}}
 
   cLog::init (moreLogInfo ? LOGINFO3 : LOGINFO, false, "");
   cLog::log (LOGNOTICE, "tv - moreLog:" + dec(moreLogInfo) + " freq:" + dec(frequency));
