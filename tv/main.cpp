@@ -144,8 +144,9 @@ int main (int argc, char* argv[]) {
 
   int xWinSize = 790;
   int yWinSize = 400;
+
   #ifdef _WIN32
-     yWinSize = 600;
+    yWinSize = 600;
     CoInitializeEx (NULL, COINIT_MULTITHREADED);
   #endif
 
