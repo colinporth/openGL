@@ -185,7 +185,7 @@ int main (int numArgs, char* args[]) {
   bool headless = false;
   bool moreLogInfo = false;
   sMultiplex multiplex = kHdMultiplex;
-  for (auto arg = 1; arg < argStrings.size(); arg++)
+  for (size_t arg = 1; arg < argStrings.size(); arg++)
     if (argStrings[arg] == "h") headless = true;
     else if (argStrings[arg] == "l") moreLogInfo = true;
     else if (argStrings[arg] == "itv") multiplex = kItvMultiplex;
