@@ -35,22 +35,51 @@
 using namespace std;
 //}}}
 
+//{{{
+struct sMultiplex {
+  int mFrequency;
+  vector <string> mChannelStrings;
+  vector <string> mSaveStrings;
+  };
+//}}}
+//{{{
+const sMultiplex kHdMultiplex = { 626,
+  { "BBC ONE HD", "BBC TWO HD", "ITV HD", "Channel 4 HD", "Channel 5 HD" },
+  { "bbc1hd",     "bbc2hd",     "itv1hd", "chn4hd",       "chn5hd" }
+  };
+//}}}
+//{{{
+const sMultiplex kItvMultiplex = { 650,
+  { "ITV",  "ITV2", "ITV3", "ITV4", "Channel 4", "More 4", "Film4" , "E4", "Channel 5" },
+  { "itv1", "itv2", "itv3", "itv4", "chn4",      "more4",  "film4",  "e4", "chn5" }
+  };
+//}}}
+//{{{
+const sMultiplex kBbcMultiplex = { 674,
+  { "BBC ONE S West", "BBC TWO", "BBC FOUR" },
+  { "bbc1",           "bbc2",    "bbc4" }
+   };
+//}}}
+//{{{
+const sMultiplex kAllMultiplex = { 0,
+  { "All" },
+  { "" }
+  };
+//}}}
+
 class cAppWindow : public cGlWindow {
 public:
   cAppWindow() {}
   //{{{
   void run (const string& title, int width, int height,
-            int frequency, bool headless, bool moreLogInfo,
-            const std::vector <std::string>& channelStrings,
-            const std::vector <std::string>& saveStrings) {
+            bool headless, bool moreLogInfo, sMultiplex multiplex) {
 
     mMoreLogInfo = moreLogInfo;
-    cLog::log (LOGINFO, "run %d", frequency);
 
     #ifdef _WIN32
-      auto mDvb = new cDvb (frequency, "/tv", channelStrings, saveStrings);
+      auto mDvb = new cDvb (multiplex.mFrequency, "/tv", multiplex.mChannelStrings, multiplex.mSaveStrings);
     #else
-      auto mDvb = new cDvb (frequency, "/home/pi/tv", channelStrings, saveStrings);
+      auto mDvb = new cDvb (multiplex.mFrequency, "/home/pi/tv", multiplex.mChannelStrings, multiplex.mSaveStrings);
     #endif
 
     if (!headless) {
@@ -85,7 +114,6 @@ public:
     cLog::log (LOGINFO, "run exit");
     }
   //}}}
-
 
 protected:
   //{{{
@@ -139,8 +167,11 @@ private:
   bool mMoreLogInfo = false;
   };
 
+int main (int numArgs, char* args[]) {
 
-int main (int argc, char* argv[]) {
+  vector <string> argStrings;
+  for (int i = 1; i < numArgs; i++)
+    argStrings.push_back (args[i]);
 
   int xWinSize = 790;
   int yWinSize = 400;
@@ -150,38 +181,29 @@ int main (int argc, char* argv[]) {
     CoInitializeEx (NULL, COINIT_MULTITHREADED);
   #endif
 
-  bool moreLogInfo = false;
+  // really dumb option parser
   bool headless = false;
-
-  int frequency = 626;
-  vector<string> channelStrings = { "BBC ONE HD", "BBC TWO HD", "ITV HD", "Channel 4 HD", "Channel 5 HD" };
-  vector<string> saveStrings =    { "bbc1hd",     "bbc2hd",     "itv1hd", "chn4hd",       "chn5hd" };
-
-  for (auto arg = 1; arg < argc; arg++)
-    if (!strcmp(argv[arg], "l")) moreLogInfo = true;
-    else if (!strcmp(argv[arg], "h")) headless = true;
-    else if (!strcmp (argv[arg], "f")) frequency = atoi (argv[++arg]);
-    else if (!strcmp (argv[arg], "itv")) {
-      //{{{  itv
-      frequency = 650;
-      channelStrings = { "ITV",  "ITV2", "ITV3", "ITV4", "Channel 4", "More 4", "Film4" , "E4", "Channel 5" };
-      saveStrings =    { "itv1", "itv2", "itv3", "itv4", "chn4",      "more4",  "film4",  "e4", "chn5" };
-      }
-      //}}}
-    else if (!strcmp (argv[arg], "bbc")) {
-      //{{{  bbc
-      frequency = 674;
-      channelStrings = { "BBC ONE S West", "BBC TWO", "BBC FOUR" };
-      saveStrings =    { "bbc1",           "bbc2",    "bbc4" };
+  bool moreLogInfo = false;
+  sMultiplex multiplex = kHdMultiplex;
+  for (auto arg = 1; arg < argStrings.size(); arg++)
+    if (argStrings[arg] == "h") headless = true;
+    else if (argStrings[arg] == "l") moreLogInfo = true;
+    else if (argStrings[arg] == "itv") multiplex = kItvMultiplex;
+    else if (argStrings[arg] == "bbc") multiplex = kBbcMultiplex;
+    else if (argStrings[arg] == "f") {
+      //{{{  multiplex with frequency, all channels
+      multiplex = kAllMultiplex;
+      multiplex.mFrequency = atoi (args[++arg]);
       }
       //}}}
 
   cLog::init (moreLogInfo ? LOGINFO3 : LOGINFO, false, "");
-  cLog::log (LOGNOTICE, "tv - moreLog:" + dec(moreLogInfo) + " freq:" + dec(frequency));
+  cLog::log (LOGNOTICE, "tv - moreLog:" + dec(moreLogInfo) + " freq:" + dec(multiplex.mFrequency));
 
   cAppWindow appWindow;
-  appWindow.run ("tv", xWinSize, yWinSize, frequency, headless, moreLogInfo, channelStrings, saveStrings);
+  appWindow.run ("tv", xWinSize, yWinSize, headless, moreLogInfo, multiplex);
 
   // CoUninitialize();
   return 0;
   }
+
