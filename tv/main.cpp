@@ -41,16 +41,16 @@ public:
   //{{{
   void run (const string& title, int width, int height,
             int frequency, bool headless, bool moreLogInfo,
-            const std::vector <std::string>& channelNames,
-            const std::vector <std::string>& saveNames) {
+            const std::vector <std::string>& channelStrings,
+            const std::vector <std::string>& saveStrings) {
 
     mMoreLogInfo = moreLogInfo;
     cLog::log (LOGINFO, "run %d", frequency);
 
     #ifdef _WIN32
-      auto mDvb = new cDvb (frequency, "/tv", channelNames, saveNames);
+      auto mDvb = new cDvb (frequency, "/tv", channelStrings, saveStrings);
     #else
-      auto mDvb = new cDvb (frequency, "/home/pi/tv", channelNames, saveNames);
+      auto mDvb = new cDvb (frequency, "/home/pi/tv", channelStrings, saveStrings);
     #endif
 
     if (!headless) {
@@ -154,8 +154,8 @@ int main (int argc, char* argv[]) {
   bool headless = false;
 
   int frequency = 626;
-  vector<string> channelNames = { "BBC ONE HD", "BBC TWO HD", "ITV HD", "Channel 4 HD", "Channel 5 HD" };
-  vector<string> saveNames =    { "bbc1hd",     "bbc2hd",     "itv1hd", "chn4hd",       "chn5hd" };
+  vector<string> channelStrings = { "BBC ONE HD", "BBC TWO HD", "ITV HD", "Channel 4 HD", "Channel 5 HD" };
+  vector<string> saveStrings =    { "bbc1hd",     "bbc2hd",     "itv1hd", "chn4hd",       "chn5hd" };
 
   for (auto arg = 1; arg < argc; arg++)
     if (!strcmp(argv[arg], "l")) moreLogInfo = true;
@@ -164,15 +164,15 @@ int main (int argc, char* argv[]) {
     else if (!strcmp (argv[arg], "itv")) {
       //{{{  itv
       frequency = 650;
-      channelNames = { "ITV",  "ITV2", "ITV3", "ITV4", "Channel 4", "More 4", "Film4" , "E4", "Channel 5" };
-      saveNames =    { "itv1", "itv2", "itv3", "itv4", "chn4",      "more4",  "film4",  "e4", "chn5" };
+      channelStrings = { "ITV",  "ITV2", "ITV3", "ITV4", "Channel 4", "More 4", "Film4" , "E4", "Channel 5" };
+      saveStrings =    { "itv1", "itv2", "itv3", "itv4", "chn4",      "more4",  "film4",  "e4", "chn5" };
       }
       //}}}
     else if (!strcmp (argv[arg], "bbc")) {
       //{{{  bbc
       frequency = 674;
-      channelNames = { "BBC ONE S West", "BBC TWO", "BBC FOUR" };
-      saveNames =    { "bbc1",           "bbc2",    "bbc4" };
+      channelStrings = { "BBC ONE S West", "BBC TWO", "BBC FOUR" };
+      saveStrings =    { "bbc1",           "bbc2",    "bbc4" };
       }
       //}}}
 
@@ -180,7 +180,7 @@ int main (int argc, char* argv[]) {
   cLog::log (LOGNOTICE, "tv - moreLog:" + dec(moreLogInfo) + " freq:" + dec(frequency));
 
   cAppWindow appWindow;
-  appWindow.run ("tv", xWinSize, yWinSize, frequency, headless, moreLogInfo, channelNames, saveNames);
+  appWindow.run ("tv", xWinSize, yWinSize, frequency, headless, moreLogInfo, channelStrings, saveStrings);
 
   // CoUninitialize();
   return 0;
