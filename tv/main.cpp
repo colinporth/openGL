@@ -10,7 +10,7 @@
   #include <WS2tcpip.h>
   #include <objbase.h>
 #else
-  #include "../../shared/death/death.h"
+  #include "../../shared/crash/crash.h"
 #endif
 
 #include <string.h>
@@ -172,7 +172,7 @@ private:
 int main (int numArgs, char* args[]) {
 
   #ifndef _WIN32
-    Debug::cDeath death;
+    Debug::cCrash crash;
   #endif
 
   vector <string> argStrings;

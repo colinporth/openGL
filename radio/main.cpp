@@ -9,7 +9,7 @@
   #include <winsock2.h>
   #include <WS2tcpip.h>
 #else
-  #include "../../shared/death/death.h"
+  #include "../../shared/crash/crash.h"
 #endif
 
 #include <string.h>
@@ -147,7 +147,7 @@ int main (int numArgs, char* args[]) {
   #ifdef _WIN32
     CoInitializeEx (NULL, COINIT_MULTITHREADED);
   #else
-    Debug::cDeath death;
+    Debug::cCrash crash;
   #endif
 
   vector <string> argStrings;
