@@ -1,5 +1,6 @@
 TARGET    = tv.out
 SRCS      = main.cpp \
+	    ../../shared/death/death.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/glad/glad.c \
 	    ../../shared/nanoVg/cVg.cpp \

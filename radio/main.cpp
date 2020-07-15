@@ -8,6 +8,8 @@
   #include <windows.h>
   #include <winsock2.h>
   #include <WS2tcpip.h>
+#else
+  #include "../../shared/death/death.h"
 #endif
 
 #include <string.h>
@@ -140,31 +142,37 @@ private:
   };
 
 
-int main (int argc, char* argv[]) {
+int main (int numArgs, char* args[]) {
 
   #ifdef _WIN32
     CoInitializeEx (NULL, COINIT_MULTITHREADED);
+  #else
+    Debug::cDeath death;
   #endif
+
+  vector <string> argStrings;
+  for (int i = 1; i < numArgs; i++)
+    argStrings.push_back (args[i]);
 
   bool headless = false;
   bool moreLogInfo = false;
   uint32_t chan = kDefaultChan;
   uint32_t bitrate = kDefaultBitrate;
 
-  for (auto arg = 1; arg < argc; arg++)
-    if (!strcmp(argv[arg], "l")) moreLogInfo = true;
-    else if (!strcmp(argv[arg], "h")) headless = true;
-    else if (!strcmp(argv[arg], "b")) bitrate = 320000;
-    else if (!strcmp(argv[arg], "1")) chan = 1;
-    else if (!strcmp(argv[arg], "2")) chan = 2;
-    else if (!strcmp(argv[arg], "3")) chan = 3;
-    else if (!strcmp(argv[arg], "4")) chan = 4;
-    else if (!strcmp(argv[arg], "5")) chan = 5;
-    else if (!strcmp(argv[arg], "6")) chan = 6;
+  for (auto &arg : argStrings)
+    if (arg ==  "l") moreLogInfo = true;
+    else if (arg == "h") headless = true;
+    else if (arg == "b") bitrate = 320000;
+    else if (arg == "1") chan = 1;
+    else if (arg == "2") chan = 2;
+    else if (arg == "3") chan = 3;
+    else if (arg == "4") chan = 4;
+    else if (arg == "5") chan = 5;
+    else if (arg == "6") chan = 6;
 
   cLog::init (moreLogInfo ? LOGINFO3 : LOGINFO, false, "");
-  cLog::log (LOGNOTICE, "radio " + dec(moreLogInfo) + " chan:" + dec(chan) +
-                        " bitrate:" + dec(bitrate) + " headless" + dec(headless));
+  cLog::log (LOGNOTICE, "radio " + dec(moreLogInfo) + " chan " + dec(chan) +
+                        " bitrate " + dec(bitrate) + " headless " + dec(headless));
 
   cAppWindow appWindow (chan, bitrate);
   #ifdef _WIN32

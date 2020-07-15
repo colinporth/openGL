@@ -9,6 +9,8 @@
   #include <winsock2.h>
   #include <WS2tcpip.h>
   #include <objbase.h>
+#else
+  #include "../../shared/death/death.h"
 #endif
 
 #include <string.h>
@@ -169,6 +171,10 @@ private:
 
 int main (int numArgs, char* args[]) {
 
+  #ifndef _WIN32
+    Debug::cDeath death;
+  #endif
+
   vector <string> argStrings;
   for (int i = 1; i < numArgs; i++)
     argStrings.push_back (args[i]);
@@ -185,15 +191,15 @@ int main (int numArgs, char* args[]) {
   bool headless = false;
   bool moreLogInfo = false;
   sMultiplex multiplex = kHdMultiplex;
-  for (size_t arg = 1; arg < argStrings.size(); arg++)
-    if (argStrings[arg] == "h") headless = true;
-    else if (argStrings[arg] == "l") moreLogInfo = true;
-    else if (argStrings[arg] == "itv") multiplex = kItvMultiplex;
-    else if (argStrings[arg] == "bbc") multiplex = kBbcMultiplex;
-    else if (argStrings[arg] == "f") {
+  for (auto it = argStrings.begin(); it != argStrings.end(); ++it)
+    if (*it == "h") headless = true;
+    else if (*it == "l") moreLogInfo = true;
+    else if (*it == "itv") multiplex = kItvMultiplex;
+    else if (*it == "bbc") multiplex = kBbcMultiplex;
+    else if (*it == "f") {
       //{{{  multiplex with frequency, all channels
       multiplex = kAllMultiplex;
-      multiplex.mFrequency = atoi (args[++arg]);
+      multiplex.mFrequency = stoi (*(++it));
       }
       //}}}
 
