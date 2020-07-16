@@ -9,7 +9,7 @@
   #include <winsock2.h>
   #include <WS2tcpip.h>
 #else
-  #include "../../shared/crash/crash.h"
+  #include "../../shared/crash/crashSafe/crash.h"
 #endif
 
 #include <string.h>
