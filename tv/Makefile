@@ -1,6 +1,6 @@
 TARGET    = tv.out
 SRCS      = main.cpp \
-	    ../../shared/crash/crash.cpp \
+	    ../../shared/crash/crashSafe/crash.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/glad/glad.c \
 	    ../../shared/nanoVg/cVg.cpp \
@@ -30,7 +30,7 @@ $(BUILD_DIR)/%.cpp.o: %.cpp
 	g++ -std=c++17 $(CFLAGS) -c $< -o $@
 
 $(TARGET): $(OBJS)
-	g++ $(OBJS) -o $@ $(LIBS)
+	g++ $(OBJS) -rdynamic -o $@ $(LIBS)
 
 clean:
 	rm -rf $(CLEAN_DIRS) $(TARGET)

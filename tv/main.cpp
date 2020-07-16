@@ -9,8 +9,12 @@
   #include <winsock2.h>
   #include <WS2tcpip.h>
   #include <objbase.h>
+  #define YSIZE 800
 #else
-  #include "../../shared/crash/crash.h"
+  const int COINIT_MULTITHREADED = 0;
+  void CoInitializeEx (void*, int) {}
+  void CoUninitialize() {}
+  #define YSIZE 480
 #endif
 
 #include <string.h>
@@ -21,6 +25,9 @@
 #include <string>
 #include <thread>
 #include <chrono>
+
+#include "../../shared/crash/crashSafe/crash.h"
+
 #include "../../shared/date/date.h"
 #include "../../shared/utils/utils.h"
 #include "../../shared/utils/cLog.h"
@@ -171,21 +178,13 @@ private:
 
 int main (int numArgs, char* args[]) {
 
-  #ifndef _WIN32
-    Debug::cCrash crash;
-  #endif
+  CoInitializeEx (NULL, COINIT_MULTITHREADED);
+
+  Debug::cCrash crash;
 
   vector <string> argStrings;
   for (int i = 1; i < numArgs; i++)
     argStrings.push_back (args[i]);
-
-  int xWinSize = 790;
-  int yWinSize = 400;
-
-  #ifdef _WIN32
-    yWinSize = 600;
-    CoInitializeEx (NULL, COINIT_MULTITHREADED);
-  #endif
 
   // really dumb option parser
   bool headless = false;
@@ -207,9 +206,8 @@ int main (int numArgs, char* args[]) {
   cLog::log (LOGNOTICE, "tv - moreLog:" + dec(moreLogInfo) + " freq:" + dec(multiplex.mFrequency));
 
   cAppWindow appWindow;
-  appWindow.run ("tv", xWinSize, yWinSize, headless, moreLogInfo, multiplex);
+  appWindow.run ("tv", 790, YSIZE, headless, moreLogInfo, multiplex);
 
-  // CoUninitialize();
   return 0;
   }
 

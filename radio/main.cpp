@@ -8,8 +8,12 @@
   #include <windows.h>
   #include <winsock2.h>
   #include <WS2tcpip.h>
+  #define YSIZE 600
 #else
-  #include "../../shared/crash/crashSafe/crash.h"
+  const int COINIT_MULTITHREADED = 0;
+  void CoInitializeEx (void*, int) {}
+  void CoUninitialize() {}
+  #define YSIZE 480
 #endif
 
 #include <string.h>
@@ -19,6 +23,8 @@
 
 #include <thread>
 #include <chrono>
+
+#include "../../shared/crash/crashSafe/crash.h"
 #include "../../shared/date/date.h"
 
 #include "../../shared/nanoVg/cGlWindow.h"
@@ -144,11 +150,9 @@ private:
 
 int main (int numArgs, char* args[]) {
 
-  #ifdef _WIN32
-    CoInitializeEx (NULL, COINIT_MULTITHREADED);
-  #else
-    Debug::cCrash crash;
-  #endif
+  CoInitializeEx (NULL, COINIT_MULTITHREADED);
+
+  Debug::cCrash crash;
 
   vector <string> argStrings;
   for (int i = 1; i < numArgs; i++)
@@ -175,12 +179,9 @@ int main (int numArgs, char* args[]) {
                         " bitrate " + dec(bitrate) + " headless " + dec(headless));
 
   cAppWindow appWindow (chan, bitrate);
-  #ifdef _WIN32
-    appWindow.run ("hls", 800, 480, headless, moreLogInfo);
-    CoUninitialize();
-  #else
-    appWindow.run ("hls", 480, 272, headless, moreLogInfo);
-  #endif
+  appWindow.run ("hls", 800, YSIZE, headless, moreLogInfo);
+
+  CoUninitialize();
 
   return 0;
   }
