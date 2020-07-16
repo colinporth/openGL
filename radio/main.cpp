@@ -24,7 +24,7 @@
 #include <thread>
 #include <chrono>
 
-#include "../../shared/crash/crashSafe/crash.h"
+#include "../../shared/crash/crash.h"
 #include "../../shared/date/date.h"
 
 #include "../../shared/nanoVg/cGlWindow.h"

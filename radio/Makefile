@@ -1,6 +1,6 @@
 TARGET    = radio.out
 SRCS      = main.cpp \
-	    ../../shared/crash/crashSafe/crash.cpp \
+	    ../../shared/crash/crash.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/glad/glad.c \
 	    ../../shared/nanoVg/cVg.cpp \
@@ -11,16 +11,17 @@ SRCS      = main.cpp \
 
 BUILD_DIR = ./build
 CLEAN_DIRS = $(BUILD_DIR) ../../shared/build
-LIBS      = -l dl -l pthread -l asound -l GL -l glfw
+LIBS      = -ldl -lbfd -lpthread -lasound -lGL -lglfw
 #
 #
 OBJS      = $(SRCS:%=$(BUILD_DIR)/%.o)
 DEPS      = $(OBJS:.o=.d)
 
 CFLAGS = -Wall -Wno-unused-result \
-	 -O2 -g \
+	 -g \
 	 -MMD -MP \
-	 -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64
+	 -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64 \
+#         -O2 \
 
 $(BUILD_DIR)/%.c.o: %.c
 	mkdir -p $(dir $@)
@@ -31,7 +32,7 @@ $(BUILD_DIR)/%.cpp.o: %.cpp
 	g++ -std=c++17 $(CFLAGS) -c $< -o $@
 
 $(TARGET): $(OBJS)
-	g++ $(OBJS) -rdynamic -o $@ $(LIBS)
+	g++ $(OBJS) -o $@ $(LIBS)
 
 clean:
 	rm -rf $(CLEAN_DIRS) $(TARGET)
