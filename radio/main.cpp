@@ -38,7 +38,7 @@
   #include "../../shared/utils/cWinAudio16.h"
 #else
   #include "../../shared/net/cLinuxHttp.h"
-  #include "../../shared/utils/cLinuxAudio.h"
+  #include "../../shared/utils/cLinuxAudio16.h"
 #endif
 
 #include "../../shared/widgets/cValueBox.h"
