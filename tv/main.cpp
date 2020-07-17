@@ -177,7 +177,7 @@ private:
 int main (int numArgs, char* args[]) {
 
   CoInitializeEx (NULL, COINIT_MULTITHREADED);
-  cLog::init (LOGINFO, false, "");
+  cLog::init();
 
   vector <string> argStrings;
   for (int i = 1; i < numArgs; i++)
