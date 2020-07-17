@@ -24,15 +24,14 @@
 #include <thread>
 #include <chrono>
 
-#include "../../shared/crash/crash.h"
 #include "../../shared/date/date.h"
-
-#include "../../shared/nanoVg/cGlWindow.h"
-#include "../../shared/fonts/FreeSansBold.h"
-
 #include "../../shared/utils/utils.h"
 #include "../../shared/utils/cLog.h"
 #include "../../shared/utils/cSemaphore.h"
+
+#include "../../shared/nanoVg/cGlWindow.h"
+#include "../../shared/fonts/FreeSansBold.h"
+#include "../../shared/fonts/DroidSansMono1.h"
 
 #ifdef _WIN32
   #include "../../shared/net/cWinSockHttp.h"
@@ -151,8 +150,7 @@ private:
 int main (int numArgs, char* args[]) {
 
   CoInitializeEx (NULL, COINIT_MULTITHREADED);
-
-  Debug::cCrash crash;
+  cLog::init (LOGINFO, false, "");
 
   vector <string> argStrings;
   for (int i = 1; i < numArgs; i++)
@@ -174,9 +172,10 @@ int main (int numArgs, char* args[]) {
     else if (arg == "5") chan = 5;
     else if (arg == "6") chan = 6;
 
-  cLog::init (moreLogInfo ? LOGINFO3 : LOGINFO, false, "");
   cLog::log (LOGNOTICE, "radio " + dec(moreLogInfo) + " chan " + dec(chan) +
                         " bitrate " + dec(bitrate) + " headless " + dec(headless));
+  if (moreLogInfo)
+    cLog::setLogLevel (LOGINFO3);
 
   cAppWindow appWindow (chan, bitrate);
   appWindow.run ("hls", 800, YSIZE, headless, moreLogInfo);

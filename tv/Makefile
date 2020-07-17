@@ -1,6 +1,5 @@
 TARGET    = tv.out
 SRCS      = main.cpp \
-	    ../../shared/crash/crash.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/glad/glad.c \
 	    ../../shared/nanoVg/cVg.cpp \
@@ -21,6 +20,11 @@ CFLAGS = -Wall -Wno-unused-result \
 	 -MMD -MP \
 	 -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64 \
 #         -O2 \
+
+LD_VERSION = $(shell ld -v 2>&1 | sed -ne 's/.*\([0-9]\+\.[0-9]\+\).*/\1/p')
+ifeq "$(LD_VERSION)" "2.34"
+	CFLAGS += -D HAS_BINUTILS_234
+endif
 
 $(BUILD_DIR)/%.c.o: %.c
 	mkdir -p $(dir $@)

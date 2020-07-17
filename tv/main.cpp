@@ -26,8 +26,6 @@
 #include <thread>
 #include <chrono>
 
-#include "../../shared/crash/crash.h"
-
 #include "../../shared/date/date.h"
 #include "../../shared/utils/utils.h"
 #include "../../shared/utils/cLog.h"
@@ -179,8 +177,7 @@ private:
 int main (int numArgs, char* args[]) {
 
   CoInitializeEx (NULL, COINIT_MULTITHREADED);
-
-  Debug::cCrash crash;
+  cLog::init (LOGINFO, false, "");
 
   vector <string> argStrings;
   for (int i = 1; i < numArgs; i++)
@@ -202,8 +199,9 @@ int main (int numArgs, char* args[]) {
       }
       //}}}
 
-  cLog::init (moreLogInfo ? LOGINFO3 : LOGINFO, false, "");
   cLog::log (LOGNOTICE, "tv - moreLog:" + dec(moreLogInfo) + " freq:" + dec(multiplex.mFrequency));
+  if (moreLogInfo)
+    cLog::setLogLevel (LOGINFO3);
 
   cAppWindow appWindow;
   appWindow.run ("tv", 790, YSIZE, headless, moreLogInfo, multiplex);
