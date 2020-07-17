@@ -10,7 +10,7 @@ SRCS      = main.cpp \
 
 BUILD_DIR = ./build
 CLEAN_DIRS = $(BUILD_DIR) ../../shared/build
-LIBS      = -ldl -lbfd -lpthread -lasound -lGL -lglfw
+LIBS      = -ldl -lbfd -lpthread -lGL -lglfw -lasound
 #
 #
 OBJS      = $(SRCS:%=$(BUILD_DIR)/%.o)

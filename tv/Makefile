@@ -7,6 +7,7 @@ SRCS      = main.cpp \
 	    ../../shared/dvb/cDvb.cpp \
 	    ../../shared/dvb/cTransportStream.cpp \
 
+
 BUILD_DIR = ./build
 CLEAN_DIRS = $(BUILD_DIR) ../../shared/build
 LIBS      = -ldl -lbfd -lpthread -lGL -lglfw
@@ -19,7 +20,7 @@ CFLAGS = -Wall -Wno-unused-result \
 	 -g \
 	 -MMD -MP \
 	 -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64 \
-#         -O2 \
+#         -O2
 
 LD_VERSION = $(shell ld -v 2>&1 | sed -ne 's/.*\([0-9]\+\.[0-9]\+\).*/\1/p')
 ifeq "$(LD_VERSION)" "2.34"
@@ -35,7 +36,7 @@ $(BUILD_DIR)/%.cpp.o: %.cpp
 	g++ -std=c++17 $(CFLAGS) -c $< -o $@
 
 $(TARGET): $(OBJS)
-	g++ $(OBJS) -rdynamic -o $@ $(LIBS)
+	g++ $(OBJS) -o $@ $(LIBS)
 
 clean:
 	rm -rf $(CLEAN_DIRS) $(TARGET)
