@@ -25,9 +25,6 @@
     <ClInclude Include="..\..\shared\utils\date.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\fontStash.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\widgets\iDraw.h">
       <Filter>h</Filter>
     </ClInclude>
