@@ -1,4 +1,4 @@
-TARGET    = tv.out
+TARGET    = tv
 SRCS      = main.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/glad/glad.c \
@@ -9,7 +9,7 @@ SRCS      = main.cpp \
 
 
 BUILD_DIR = ./build
-CLEAN_DIRS = $(BUILD_DIR) ../../shared/build
+CLEAN_DIRS = $(BUILD_DIR) $(BUILD_DIR)../../shared
 LIBS      = -ldl -lbfd -lpthread -lGL -lglfw
 #
 #
@@ -39,7 +39,7 @@ $(TARGET): $(OBJS)
 	g++ $(OBJS) -o $@ $(LIBS)
 
 clean:
-	rm -rf $(CLEAN_DIRS) $(TARGET)
+	rm -rf $(TARGET) $(CLEAN_DIRS)
 rebuild:
 	make clean && make -j 4
 
