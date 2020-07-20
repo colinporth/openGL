@@ -9,7 +9,7 @@
   #include <winsock2.h>
   #include <WS2tcpip.h>
   #include <objbase.h>
-  #define YSIZE 800
+  #define YSIZE 600
 #else
   const int COINIT_MULTITHREADED = 0;
   void CoInitializeEx (void*, int) {}
