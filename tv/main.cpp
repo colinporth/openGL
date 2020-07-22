@@ -57,8 +57,8 @@ const sMultiplex kHdMultiplex = { 626,
 //}}}
 //{{{
 const sMultiplex kItvMultiplex = { 650,
-  { "ITV",  "ITV2", "ITV3", "ITV4", "Channel 4", "More 4", "Film4" , "E4", "Channel 5" },
-  { "itv1", "itv2", "itv3", "itv4", "chn4",      "more4",  "film4",  "e4", "chn5" }
+  { "ITV",  "ITV2", "ITV3", "ITV4", "Channel 4", "Channel 4+1", "More 4", "Film4" , "E4", "Channel 5" },
+  { "itv1", "itv2", "itv3", "itv4", "chn4",    , "c4+1",        "more4",  "film4",  "e4", "chn5" }
   };
 //}}}
 //{{{
