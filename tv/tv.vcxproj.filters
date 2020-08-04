@@ -58,6 +58,18 @@
     <ClInclude Include="..\..\shared\widgets\cTextBox.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\dvb\cSubtitleDecoder.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\dvb\cDumpTransportStream.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\dvb\cTransportStream.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cSubtitleWidget.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">

@@ -30,14 +30,16 @@
 #include "../../shared/utils/utils.h"
 #include "../../shared/utils/cLog.h"
 
+#include "../../shared/dvb/cDvb.h"
+#include "../../shared/dvb/cSubtitleDecoder.h"
+
 #include "../../shared/nanoVg/cGlWindow.h"
 #include "../../shared/fonts/FreeSansBold.h"
 #include "../../shared/fonts/DroidSansMono1.h"
 
 #include "../../shared/widgets/cTextBox.h"
 #include "../../shared/widgets/cTransportStreamBox.h"
-
-#include "../../shared/dvb/cDvb.h"
+#include "../../shared/widgets/cSubtitleWidget.h"
 
 using namespace std;
 //}}}
@@ -89,12 +91,13 @@ public:
       auto mDvb = new cDvb (multiplex.mFrequency, "/home/pi/tv", multiplex.mChannelStrings, multiplex.mSaveStrings);
     #endif
 
-    if (!headless) {
+   if (!headless) {
       initialise (title, width, height, (unsigned char*)droidSansMono);
       add (new cTextBox (mDvb->mErrorStr, 14.f));
       add (new cTextBox (mDvb->mTuneStr, 12.f));
       add (new cTextBox (mDvb->mSignalStr, 14.f));
-      addAt (new cTransportStreamBox (mDvb, 0.f, -2.f), 0.f, 1.f);
+      addAt (new cSubtitleWidget (&mDvb->mSubtitle, 2.f, 40.f), 0.f,1.f);
+      addAt (new cTransportStreamBox (mDvb, 0.f, -3.f), 0.f, 3.f);
       }
 
     if (fileName.empty()) {
@@ -203,7 +206,7 @@ int main (int numArgs, char* args[]) {
       multiplex.mFrequency = stoi (*(++it));
       }
       //}}}
-    else {
+    else if (!(*it).empty()) {
       //{{{  fileName
       multiplex.mFrequency = 0;
       fileName = *it;

@@ -162,7 +162,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\shared\dvb\cDumpTransportStream.h" />
     <ClInclude Include="..\..\shared\dvb\cDvb.h" />
+    <ClInclude Include="..\..\shared\dvb\cSubtitleDecoder.h" />
+    <ClInclude Include="..\..\shared\dvb\cTransportStream.h" />
     <ClInclude Include="..\..\shared\dvb\huffmanTables.h" />
     <ClInclude Include="..\..\shared\fonts\DroidSansMono1.h" />
     <ClInclude Include="..\..\shared\fonts\FreeSansBold.h" />
@@ -174,6 +177,7 @@
     <ClInclude Include="..\..\shared\utils\cLog.h" />
     <ClInclude Include="..\..\shared\utils\date.h" />
     <ClInclude Include="..\..\shared\utils\utils.h" />
+    <ClInclude Include="..\..\shared\widgets\cSubtitleWidget.h" />
     <ClInclude Include="..\..\shared\widgets\cTextBox.h" />
     <ClInclude Include="..\..\shared\widgets\cTransportStreamBox.h" />
     <ClInclude Include="..\..\shared\widgets\cWidget.h" />
