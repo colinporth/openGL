@@ -79,7 +79,7 @@ public:
   cAppWindow() {}
   //{{{
   void run (const string& title, int width, int height,
-            bool headless, bool moreLogInfo, sMultiplex multiplex) {
+            bool headless, bool moreLogInfo, sMultiplex multiplex, const string& fileName) {
 
     mMoreLogInfo = moreLogInfo;
 
@@ -97,15 +97,19 @@ public:
       addAt (new cTransportStreamBox (mDvb, 0.f, -2.f), 0.f, 1.f);
       }
 
-    #ifndef _WIN32
-      auto captureThread = thread ([=]() { mDvb->captureThread(); });
-      sched_param sch_params;
-      sch_params.sched_priority = sched_get_priority_max (SCHED_RR);
-      pthread_setschedparam (captureThread.native_handle(), SCHED_RR, &sch_params);
-      captureThread.detach();
-    #endif
+    if (fileName.empty()) {
+      #ifndef _WIN32
+        auto captureThread = thread ([=]() { mDvb->captureThread(); });
+        sched_param sch_params;
+        sch_params.sched_priority = sched_get_priority_max (SCHED_RR);
+        pthread_setschedparam (captureThread.native_handle(), SCHED_RR, &sch_params);
+        captureThread.detach();
+      #endif
 
-    thread ([=]() { mDvb->grabThread(); } ).detach();
+      thread ([=]() { mDvb->grabThread(); } ).detach();
+      }
+    else
+      thread ([=]() { mDvb->readThread (fileName); } ).detach();
 
     if (headless) {
       while (true)
@@ -184,6 +188,7 @@ int main (int numArgs, char* args[]) {
     argStrings.push_back (args[i]);
 
   // really dumb option parser
+  string fileName;
   bool headless = false;
   bool moreLogInfo = false;
   sMultiplex multiplex = kHdMultiplex;
@@ -198,13 +203,19 @@ int main (int numArgs, char* args[]) {
       multiplex.mFrequency = stoi (*(++it));
       }
       //}}}
+    else {
+      //{{{  fileName
+      multiplex.mFrequency = 0;
+      fileName = *it;
+      }
+      //}}}
 
   cLog::log (LOGNOTICE, "tv - moreLog:" + dec(moreLogInfo) + " freq:" + dec(multiplex.mFrequency));
   if (moreLogInfo)
     cLog::setLogLevel (LOGINFO3);
 
   cAppWindow appWindow;
-  appWindow.run ("tv", 790, YSIZE, headless, moreLogInfo, multiplex);
+  appWindow.run ("tv", 790, YSIZE, headless, moreLogInfo, multiplex, fileName);
 
   return 0;
   }
