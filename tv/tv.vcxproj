@@ -182,6 +182,7 @@
     <ClInclude Include="..\..\shared\widgets\cTransportStreamBox.h" />
     <ClInclude Include="..\..\shared\widgets\cWidget.h" />
     <ClInclude Include="..\..\shared\widgets\iDraw.h" />
+    <ClInclude Include="..\..\shared\widgets\iWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\shared\dvb\cDvb.cpp" />

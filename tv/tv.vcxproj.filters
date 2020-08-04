@@ -70,6 +70,9 @@
     <ClInclude Include="..\..\shared\widgets\cSubtitleWidget.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\iWindow.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">
