@@ -96,7 +96,7 @@ public:
       add (new cTextBox (mDvb->mErrorStr, 14.f));
       add (new cTextBox (mDvb->mTuneStr, 12.f));
       add (new cTextBox (mDvb->mSignalStr, 14.f));
-      addAt (new cSubtitleWidget (mDvb, 2.f, 40.f), 0.f,1.f);
+      addAt (new cSubtitleWidget (mDvb, 1.5f, 40.f), 0.f,1.f);
       addAt (new cTransportStreamBox (mDvb, 0.f, -3.f), 0.f, 3.f);
       }
 
