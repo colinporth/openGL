@@ -61,9 +61,6 @@
     <ClInclude Include="..\..\shared\dvb\cSubtitleDecoder.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\dvb\cDumpTransportStream.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\dvb\cTransportStream.h">
       <Filter>h</Filter>
     </ClInclude>
