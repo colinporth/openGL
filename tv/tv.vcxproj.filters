@@ -67,6 +67,9 @@
     <ClInclude Include="..\..\shared\widgets\cDvbWidget.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\dvb\cSubtitle.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">

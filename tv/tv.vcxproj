@@ -169,6 +169,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\dvb\cDvb.h" />
+    <ClInclude Include="..\..\shared\dvb\cSubtitle.h" />
     <ClInclude Include="..\..\shared\dvb\cSubtitleDecoder.h" />
     <ClInclude Include="..\..\shared\dvb\cTransportStream.h" />
     <ClInclude Include="..\..\shared\dvb\huffmanTables.h" />

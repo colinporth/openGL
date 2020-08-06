@@ -33,7 +33,6 @@
 #include "../../shared/utils/cLog.h"
 
 #include "../../shared/dvb/cDvb.h"
-#include "../../shared/dvb/cSubtitleDecoder.h"
 
 #include "../../shared/nanoVg/cGlWindow.h"
 #include "../../shared/fonts/FreeSansBold.h"
