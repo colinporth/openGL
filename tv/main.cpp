@@ -40,8 +40,7 @@
 #include "../../shared/fonts/DroidSansMono1.h"
 
 #include "../../shared/widgets/cTextBox.h"
-#include "../../shared/widgets/cTransportStreamBox.h"
-#include "../../shared/widgets/cSubtitleWidget.h"
+#include "../../shared/widgets/cDvbWidget.h"
 
 using namespace std;
 //}}}
@@ -110,8 +109,7 @@ public:
       add (new cTextBox (mDvb->mErrorStr, 15.f));
       add (new cTextBox (mDvb->mTuneStr, 12.f));
       add (new cTextBox (mDvb->mSignalStr, 14.f));
-      addAt (new cSubtitleWidget (mDvb, 1.5f, -11.f), 11.f,1.f);
-      addAt (new cTransportStreamBox (mDvb->getTransportStream(), 0.f, -1.f), 0.f, 1.f);
+      addAt (new cDvbWidget (mDvb, 0.f,-1.f), 0.f,1.f);
       }
 
     if (fileName.empty()) {

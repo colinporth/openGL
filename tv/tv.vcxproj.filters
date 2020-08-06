@@ -46,9 +46,6 @@
     <ClInclude Include="..\..\shared\utils\utils.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\widgets\cTransportStreamBox.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\fonts\FreeSansBold.h">
       <Filter>h</Filter>
     </ClInclude>
@@ -64,10 +61,10 @@
     <ClInclude Include="..\..\shared\dvb\cTransportStream.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\widgets\cSubtitleWidget.h">
+    <ClInclude Include="..\..\shared\widgets\iWindow.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\widgets\iWindow.h">
+    <ClInclude Include="..\..\shared\widgets\cDvbWidget.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>
