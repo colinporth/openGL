@@ -9,12 +9,14 @@
   #include <winsock2.h>
   #include <WS2tcpip.h>
   #include <objbase.h>
+
   #define YSIZE 600
 #else
+  #define YSIZE 480
   const int COINIT_MULTITHREADED = 0;
+
   void CoInitializeEx (void*, int) {}
   void CoUninitialize() {}
-  #define YSIZE 480
 #endif
 
 #include <string.h>
@@ -43,37 +45,46 @@
 
 using namespace std;
 //}}}
-
-//{{{
+//{{{  multiplexes
 struct sMultiplex {
+  string mName;
   int mFrequency;
-  vector <string> mChannelStrings;
-  vector <string> mSaveStrings;
+  vector <string> mSelectedChannels;
+  vector <string> mSaveNames;
   };
-//}}}
-//{{{
-const sMultiplex kHdMultiplex = { 626,
+
+const sMultiplex kHdMultiplex = {
+  "hd",
+  626,
   { "BBC ONE HD", "BBC TWO HD", "ITV HD", "Channel 4 HD", "Channel 5 HD" },
   { "bbc1hd",     "bbc2hd",     "itv1hd", "chn4hd",       "chn5hd" }
   };
-//}}}
-//{{{
-const sMultiplex kItvMultiplex = { 650,
+
+const sMultiplex kItvMultiplex = {
+  "itv",
+  650,
   { "ITV",  "ITV2", "ITV3", "ITV4", "Channel 4", "Channel 4+1", "More 4", "Film4" , "E4", "Channel 5" },
   { "itv1", "itv2", "itv3", "itv4", "chn4"     , "c4+1",        "more4",  "film4",  "e4", "chn5" }
   };
-//}}}
-//{{{
-const sMultiplex kBbcMultiplex = { 674,
+
+const sMultiplex kBbcMultiplex = {
+  "bbc",
+  674,
   { "BBC ONE S West", "BBC TWO", "BBC FOUR" },
   { "bbc1",           "bbc2",    "bbc4" }
-   };
-//}}}
-//{{{
-const sMultiplex kAllMultiplex = { 0,
-  { "All" },
+  };
+
+const sMultiplex kAllMultiplex = {
+  "all",
+  0,
+  { "all" },
   { "" }
   };
+
+struct sMultiplexes {
+  vector <sMultiplex> mMultiplexes;
+  };
+const sMultiplexes kMultiplexes = { { kHdMultiplex, kItvMultiplex, kBbcMultiplex } };
 //}}}
 
 class cAppWindow : public cGlWindow {
@@ -81,23 +92,26 @@ public:
   cAppWindow() {}
   //{{{
   void run (const string& title, int width, int height,
-            bool headless, bool moreLogInfo, sMultiplex multiplex, const string& fileName) {
+            bool headless, bool moreLogInfo, bool all,
+            sMultiplex multiplex, const string& fileName) {
 
     mMoreLogInfo = moreLogInfo;
 
     #ifdef _WIN32
-      auto mDvb = new cDvb (multiplex.mFrequency, "/tv", multiplex.mChannelStrings, multiplex.mSaveStrings);
+      const string kRootName = "/tv";
     #else
-      auto mDvb = new cDvb (multiplex.mFrequency, "/home/pi/tv", multiplex.mChannelStrings, multiplex.mSaveStrings);
+      const string kRootName = "/home/pi/tv";
     #endif
+
+    auto mDvb = new cDvb (multiplex.mFrequency, kRootName, multiplex.mSelectedChannels, multiplex.mSaveNames);
 
    if (!headless) {
       initialise (title, width, height, (unsigned char*)droidSansMono);
-      add (new cTextBox (mDvb->mErrorStr, 14.f));
+      add (new cTextBox (mDvb->mErrorStr, 15.f));
       add (new cTextBox (mDvb->mTuneStr, 12.f));
       add (new cTextBox (mDvb->mSignalStr, 14.f));
       addAt (new cSubtitleWidget (mDvb, 1.5f, -11.f), 11.f,1.f);
-      addAt (new cTransportStreamBox (mDvb->getTransportStream(), 0.f, -3.f), 0.f, 3.f);
+      addAt (new cTransportStreamBox (mDvb->getTransportStream(), 0.f, -1.f), 0.f, 1.f);
       }
 
     if (fileName.empty()) {
@@ -109,7 +123,7 @@ public:
         captureThread.detach();
       #endif
 
-      thread ([=]() { mDvb->grabThread(); } ).detach();
+      thread ([=]() { mDvb->grabThread (all ? kRootName : "", multiplex.mName); } ).detach();
       }
     else
       thread ([=]() { mDvb->readThread (fileName); } ).detach();
@@ -191,34 +205,49 @@ int main (int numArgs, char* args[]) {
     argStrings.push_back (args[i]);
 
   // really dumb option parser
-  string fileName;
+  bool all = false;
   bool headless = false;
   bool moreLogInfo = false;
   sMultiplex multiplex = kHdMultiplex;
-  for (auto it = argStrings.begin(); it != argStrings.end(); ++it)
-    if (*it == "h") headless = true;
-    else if (*it == "l") moreLogInfo = true;
-    else if (*it == "itv") multiplex = kItvMultiplex;
-    else if (*it == "bbc") multiplex = kBbcMultiplex;
-    else if (*it == "f") {
-      //{{{  multiplex with frequency, all channels
+  string fileName;
+
+  for (size_t i = 0; i < argStrings.size(); i++) {
+    //{{{  look for named multiplex
+    bool multiplexFound = false;
+
+    for (size_t j = 0; j < kMultiplexes.mMultiplexes.size() && !multiplexFound; j++) {
+      if (argStrings[i] == kMultiplexes.mMultiplexes[j].mName) {
+        multiplex = kMultiplexes.mMultiplexes[j];
+        multiplexFound = true;
+        }
+      }
+
+    if (multiplexFound)
+      continue;
+    //}}}
+    if (argStrings[i] == "all") all = true;
+    else if (argStrings[i] == "h") headless = true;
+    else if (argStrings[i] == "l") moreLogInfo = true;
+    else if (argStrings[i] == "f") {
+      //{{{  multiplex frequency all channels
       multiplex = kAllMultiplex;
-      multiplex.mFrequency = stoi (*(++it));
+      multiplex.mFrequency = stoi (argStrings[i++]);
       }
       //}}}
-    else if (!(*it).empty()) {
+    else if (!argStrings[i].empty()) {
       //{{{  fileName
       multiplex.mFrequency = 0;
-      fileName = *it;
+      fileName = argStrings[i];
       }
       //}}}
+    }
 
   cLog::log (LOGNOTICE, "tv - moreLog:" + dec(moreLogInfo) + " freq:" + dec(multiplex.mFrequency));
   if (moreLogInfo)
     cLog::setLogLevel (LOGINFO3);
 
   cAppWindow appWindow;
-  appWindow.run ("tv", 790, YSIZE, headless, moreLogInfo, multiplex, fileName);
+  appWindow.run ("tv", 790, YSIZE, headless, moreLogInfo, all, multiplex, fileName);
 
   return 0;
   }
