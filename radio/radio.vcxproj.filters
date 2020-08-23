@@ -96,6 +96,15 @@
     <ClInclude Include="..\..\shared\fonts\FreeSansBold.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\iWindow.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cRootContainer.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cContainer.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">

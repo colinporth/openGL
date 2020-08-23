@@ -193,9 +193,12 @@
     <ClInclude Include="..\..\shared\utils\cLog.h" />
     <ClInclude Include="..\..\shared\utils\cWinAudio16.h" />
     <ClInclude Include="..\..\shared\utils\date.h" />
+    <ClInclude Include="..\..\shared\widgets\cContainer.h" />
     <ClInclude Include="..\..\shared\widgets\cPicWidget.h" />
+    <ClInclude Include="..\..\shared\widgets\cRootContainer.h" />
     <ClInclude Include="..\..\shared\widgets\cWidget.h" />
     <ClInclude Include="..\..\shared\widgets\iDraw.h" />
+    <ClInclude Include="..\..\shared\widgets\iWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\shared\glad\glad.c" />

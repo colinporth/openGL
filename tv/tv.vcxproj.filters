@@ -70,6 +70,12 @@
     <ClInclude Include="..\..\shared\dvb\cSubtitle.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cRootContainer.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cContainer.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">
