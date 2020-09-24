@@ -2,7 +2,7 @@ TARGET    = radio
 SRCS      = main.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/glad/glad.c \
-	    ../../shared/net/cHttp.c \
+	    ../../shared/net/cHttp.cpp \
 	    ../../shared/nanoVg/cVg.cpp \
 	    ../../shared/nanoVg/cGlWindow.cpp \
 	    ../../shared/teensyAac/sbr.cpp \
