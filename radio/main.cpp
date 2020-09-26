@@ -35,7 +35,7 @@
 
 #ifdef _WIN32
   #include "../../shared/net/cWinSockHttp.h"
-  #include "../../shared/utils/cWinAudio16.h"
+  #include "../../shared/audio/cWinAudio16.h"
 #else
   #include "../../shared/net/cLinuxHttp.h"
   #include "../../shared/utils/cLinuxAudio16.h"
