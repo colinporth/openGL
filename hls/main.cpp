@@ -1,7 +1,6 @@
 // main.cpp
 //{{{  includes
 #ifdef _WIN32
-  #define YSIZE 600
   #define _CRT_SECURE_NO_WARNINGS
   #define WIN32_LEAN_AND_MEAN
   #define NOMINMAX
@@ -9,18 +8,16 @@
   #include <winsock2.h>
   #include <WS2tcpip.h>
   #include <objbase.h>
-#else
-  #define YSIZE 480
-  const int COINIT_MULTITHREADED = 0;
-  void CoInitializeEx (void*, int) {}
-  void CoUninitialize() {}
 #endif
 
+// c
 #include <string.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <math.h>
+#include <emmintrin.h>
 
+// c++
 #include <string>
 #include <thread>
 #include <chrono>
@@ -29,17 +26,20 @@
 #include "../../shared/utils/utils.h"
 #include "../../shared/utils/cLog.h"
 
-#include "../../shared/utils/cSong.h"
-
 #include "../../shared/decoders/cAudioDecode.h"
+#include "../../shared/utils/cSong.h"
 
 #ifdef _WIN32
   #include "../../shared/audio/audioWASAPI.h"
   #include "../../shared/audio/cWinAudio16.h"
   #include "../../shared/audio/cWinAudio32.h"
-  #include "../../shared/net/cWinSockHttp.h"
 #else
   #include "../../shared/audio/cLinuxAudio16.h"
+#endif
+
+#ifdef _WIN32
+  #include "../../shared/net/cWinSockHttp.h"
+#else
   #include "../../shared/net/cLinuxHttp.h"
 #endif
 
@@ -48,6 +48,12 @@
 #include "../../shared/fonts/DroidSansMono1.h"
 
 #include "../../shared/widgets/cTextBox.h"
+
+#ifdef _WIN32
+  #define YSIZE 600
+#else
+  #define YSIZE 480
+#endif
 
 using namespace std;
 using namespace chrono;
@@ -63,6 +69,434 @@ const vector <string> kChannels = { "bbc_one_hd",          "bbc_two_hd",        
 
 //}}}
 
+//{{{
+class cVideoDecode {
+public:
+  //{{{
+  class cFrame {
+  public:
+    cFrame (uint64_t pts) : mOk(false), mPts(pts) {}
+    //{{{
+    virtual ~cFrame() {
+
+    #ifdef __linux__
+      free (mYbuf);
+      free (mUbuf);
+      free (mVbuf);
+      free (mBgra);
+    #else
+      _aligned_free (mYbuf);
+      _aligned_free (mUbuf);
+      _aligned_free (mVbuf);
+      _aligned_free (mBgra);
+     #endif
+      }
+    //}}}
+
+    bool ok() { return mOk; }
+    uint64_t getPts() { return mPts; }
+
+    int getWidth() { return mWidth; }
+    int getHeight() { return mHeight; }
+    uint32_t* getBgra() { return mBgra; }
+
+    //{{{
+    void set (uint64_t pts) {
+      mOk = false;
+      mPts = pts;
+      }
+    //}}}
+  #ifdef __linux__
+    //{{{
+    void setNv12 (uint8_t* buffer, int width, int height, int stride) {
+
+      mOk = false;
+      mYStride = stride;
+      mUVStride = stride/2;
+
+      if ((mWidth != width) || (mHeight != height)) {
+        mWidth = width;
+        mHeight = height;
+
+        free (mYbuf);
+        free (mUbuf);
+        free (mVbuf);
+        free (mBgra);
+
+        mYbuf = (uint8_t*)aligned_alloc (height * mYStride * 3 / 2, 128);
+        mUbuf = (uint8_t*)aligned_alloc ((height/2) * mUVStride, 128);
+        mVbuf = (uint8_t*)aligned_alloc ((height/2) * mUVStride, 128);
+        mBgra = (uint32_t*)aligned_alloc (mWidth * 4 * mHeight, 128);
+        }
+
+      // copy all of nv12 to yBuf
+      memcpy (mYbuf, buffer, height * mYStride * 3 / 2);
+
+      // unpack nv12 to planar uv
+      uint8_t* uv = mYbuf + (height * mYStride);
+      uint8_t* u = mUbuf;
+      uint8_t* v = mVbuf;
+      for (int i = 0; i < height/2 * mUVStride; i++) {
+        *u++ = *uv++;
+        *v++ = *uv++;
+        }
+
+      int argbStride = mWidth;
+
+      __m128i ysub  = _mm_set1_epi32 (0x00100010);
+      __m128i uvsub = _mm_set1_epi32 (0x00800080);
+      __m128i facy  = _mm_set1_epi32 (0x004a004a);
+      __m128i facrv = _mm_set1_epi32 (0x00660066);
+      __m128i facgu = _mm_set1_epi32 (0x00190019);
+      __m128i facgv = _mm_set1_epi32 (0x00340034);
+      __m128i facbu = _mm_set1_epi32 (0x00810081);
+      __m128i zero  = _mm_set1_epi32 (0x00000000);
+
+      for (int y = 0; y < mHeight; y += 2) {
+        __m128i* srcy128r0 = (__m128i*)(mYbuf + mYStride*y);
+        __m128i* srcy128r1 = (__m128i*)(mYbuf + mYStride*y + mYStride);
+        __m64* srcu64 = (__m64*)(mUbuf + mUVStride * (y/2));
+        __m64* srcv64 = (__m64*)(mVbuf + mUVStride * (y/2));
+        __m128i* dstrgb128r0 = (__m128i*)(mBgra + argbStride * y);
+        __m128i* dstrgb128r1 = (__m128i*)(mBgra + argbStride * y + argbStride);
+
+        for (int x = 0; x < mWidth; x += 16) {
+          __m128i u0 = _mm_loadl_epi64 ((__m128i *)srcu64 );
+          srcu64++;
+          __m128i v0 = _mm_loadl_epi64 ((__m128i *)srcv64 );
+          srcv64++;
+          __m128i y0r0 = _mm_load_si128 (srcy128r0++);
+          __m128i y0r1 = _mm_load_si128 (srcy128r1++);
+          //{{{  constant y factors
+          __m128i y00r0 = _mm_mullo_epi16 (_mm_sub_epi16 (_mm_unpacklo_epi8 (y0r0, zero), ysub), facy);
+          __m128i y01r0 = _mm_mullo_epi16 (_mm_sub_epi16 (_mm_unpackhi_epi8 (y0r0, zero), ysub), facy);
+          __m128i y00r1 = _mm_mullo_epi16 (_mm_sub_epi16 (_mm_unpacklo_epi8 (y0r1, zero), ysub), facy);
+          __m128i y01r1 = _mm_mullo_epi16 (_mm_sub_epi16 (_mm_unpackhi_epi8 (y0r1, zero), ysub), facy);
+          //}}}
+          //{{{  expand u and v so they're aligned with y values
+          u0 = _mm_unpacklo_epi8 (u0, zero);
+          __m128i u00 = _mm_sub_epi16 (_mm_unpacklo_epi16 (u0, u0), uvsub);
+          __m128i u01 = _mm_sub_epi16 (_mm_unpackhi_epi16 (u0, u0), uvsub);
+
+          v0 = _mm_unpacklo_epi8( v0,  zero );
+          __m128i v00 = _mm_sub_epi16 (_mm_unpacklo_epi16 (v0, v0), uvsub);
+          __m128i v01 = _mm_sub_epi16 (_mm_unpackhi_epi16 (v0, v0), uvsub);
+          //}}}
+          //{{{  common factors on both rows.
+          __m128i rv00 = _mm_mullo_epi16 (facrv, v00);
+          __m128i rv01 = _mm_mullo_epi16 (facrv, v01);
+          __m128i gu00 = _mm_mullo_epi16 (facgu, u00);
+          __m128i gu01 = _mm_mullo_epi16 (facgu, u01);
+          __m128i gv00 = _mm_mullo_epi16 (facgv, v00);
+          __m128i gv01 = _mm_mullo_epi16 (facgv, v01);
+          __m128i bu00 = _mm_mullo_epi16 (facbu, u00);
+          __m128i bu01 = _mm_mullo_epi16 (facbu, u01);
+          //}}}
+          //{{{  row 0
+          __m128i r00 = _mm_srai_epi16 (_mm_add_epi16 (y00r0, rv00), 6);
+          __m128i r01 = _mm_srai_epi16 (_mm_add_epi16 (y01r0, rv01), 6);
+          __m128i g00 = _mm_srai_epi16 (_mm_sub_epi16 (_mm_sub_epi16 (y00r0, gu00), gv00), 6);
+          __m128i g01 = _mm_srai_epi16 (_mm_sub_epi16 (_mm_sub_epi16 (y01r0, gu01), gv01), 6);
+          __m128i b00 = _mm_srai_epi16 (_mm_add_epi16 (y00r0, bu00), 6);
+          __m128i b01 = _mm_srai_epi16 (_mm_add_epi16 (y01r0, bu01), 6);
+
+          r00 = _mm_packus_epi16 (r00, r01);                // rrrr.. saturated
+          g00 = _mm_packus_epi16 (g00, g01);                // gggg.. saturated
+          b00 = _mm_packus_epi16 (b00, b01);                // bbbb.. saturated
+
+          r01 = _mm_unpacklo_epi8 (r00, zero);              // 0r0r..
+          __m128i gbgb    = _mm_unpacklo_epi8 (b00, g00);   // gbgb..
+          __m128i rgb0123 = _mm_unpacklo_epi16 (gbgb, r01); // 0rgb0rgb..
+          __m128i rgb4567 = _mm_unpackhi_epi16 (gbgb, r01); // 0rgb0rgb..
+
+          r01 = _mm_unpackhi_epi8 (r00, zero);
+          gbgb = _mm_unpackhi_epi8 (b00, g00);
+          __m128i rgb89ab = _mm_unpacklo_epi16 (gbgb, r01);
+          __m128i rgbcdef = _mm_unpackhi_epi16 (gbgb, r01);
+
+          _mm_stream_si128 (dstrgb128r0++, rgb0123);
+          _mm_stream_si128 (dstrgb128r0++, rgb4567);
+          _mm_stream_si128 (dstrgb128r0++, rgb89ab);
+          _mm_stream_si128 (dstrgb128r0++, rgbcdef);
+          //}}}
+          //{{{  row 1
+          r00 = _mm_srai_epi16 (_mm_add_epi16 (y00r1, rv00), 6);
+          r01 = _mm_srai_epi16 (_mm_add_epi16 (y01r1, rv01), 6);
+          g00 = _mm_srai_epi16 (_mm_sub_epi16 (_mm_sub_epi16 (y00r1, gu00), gv00), 6);
+          g01 = _mm_srai_epi16 (_mm_sub_epi16 (_mm_sub_epi16 (y01r1, gu01), gv01), 6);
+          b00 = _mm_srai_epi16 (_mm_add_epi16 (y00r1, bu00), 6);
+          b01 = _mm_srai_epi16 (_mm_add_epi16 (y01r1, bu01), 6);
+
+          r00 = _mm_packus_epi16 (r00, r01);        // rrrr.. saturated
+          g00 = _mm_packus_epi16 (g00, g01);        // gggg.. saturated
+          b00 = _mm_packus_epi16 (b00, b01);        // bbbb.. saturated
+
+          r01     = _mm_unpacklo_epi8 (r00, zero);  // 0r0r..
+          gbgb    = _mm_unpacklo_epi8 (b00, g00);   // gbgb..
+          rgb0123 = _mm_unpacklo_epi16 (gbgb, r01); // 0rgb0rgb..
+          rgb4567 = _mm_unpackhi_epi16 (gbgb, r01); // 0rgb0rgb..
+
+          r01     = _mm_unpackhi_epi8 (r00, zero);
+          gbgb    = _mm_unpackhi_epi8 (b00, g00);
+          rgb89ab = _mm_unpacklo_epi16 (gbgb, r01);
+          rgbcdef = _mm_unpackhi_epi16 (gbgb, r01);
+
+          _mm_stream_si128 (dstrgb128r1++, rgb0123);
+          _mm_stream_si128 (dstrgb128r1++, rgb4567);
+          _mm_stream_si128 (dstrgb128r1++, rgb89ab);
+          _mm_stream_si128 (dstrgb128r1++, rgbcdef);
+          //}}}
+          }
+        }
+      mOk = true;
+      }
+    //}}}
+  #else
+    //{{{
+    void setNv12 (uint8_t* buffer, int width, int height, int stride) {
+
+      mOk = false;
+      mYStride = stride;
+      mUVStride = stride/2;
+
+      mWidth = width;
+      mHeight = height;
+
+      // copy all of nv12 to yBuf
+      mYbuf = (uint8_t*)_aligned_realloc (mYbuf, height * mYStride * 3 / 2, 128);
+      memcpy (mYbuf, buffer, height * mYStride * 3 / 2);
+
+      // unpack nv12 to planar uv
+      mUbuf = (uint8_t*)_aligned_realloc (mUbuf, (mHeight/2) * mUVStride, 128);
+      mVbuf = (uint8_t*)_aligned_realloc (mVbuf, (mHeight/2) * mUVStride, 128);
+
+      uint8_t* uv = mYbuf + (mHeight * mYStride);
+      uint8_t* u = mUbuf;
+      uint8_t* v = mVbuf;
+      for (int i = 0; i < mHeight/2 * mUVStride; i++) {
+        *u++ = *uv++;
+        *v++ = *uv++;
+        }
+
+      int argbStride = mWidth;
+      mBgra = (uint32_t*)_aligned_realloc (mBgra, mWidth * 4 * mHeight, 128);
+
+      __m128i ysub  = _mm_set1_epi32 (0x00100010);
+      __m128i uvsub = _mm_set1_epi32 (0x00800080);
+      __m128i facy  = _mm_set1_epi32 (0x004a004a);
+      __m128i facrv = _mm_set1_epi32 (0x00660066);
+      __m128i facgu = _mm_set1_epi32 (0x00190019);
+      __m128i facgv = _mm_set1_epi32 (0x00340034);
+      __m128i facbu = _mm_set1_epi32 (0x00810081);
+      __m128i zero  = _mm_set1_epi32 (0x00000000);
+
+      for (int y = 0; y < mHeight; y += 2) {
+        __m128i* srcy128r0 = (__m128i*)(mYbuf + mYStride*y);
+        __m128i* srcy128r1 = (__m128i*)(mYbuf + mYStride*y + mYStride);
+        __m64* srcu64 = (__m64*)(mUbuf + mUVStride * (y/2));
+        __m64* srcv64 = (__m64*)(mVbuf + mUVStride * (y/2));
+        __m128i* dstrgb128r0 = (__m128i*)(mBgra + argbStride * y);
+        __m128i* dstrgb128r1 = (__m128i*)(mBgra + argbStride * y + argbStride);
+
+        for (int x = 0; x < mWidth; x += 16) {
+          __m128i u0 = _mm_loadl_epi64 ((__m128i *)srcu64 );
+          srcu64++;
+          __m128i v0 = _mm_loadl_epi64 ((__m128i *)srcv64 );
+          srcv64++;
+          __m128i y0r0 = _mm_load_si128 (srcy128r0++);
+          __m128i y0r1 = _mm_load_si128 (srcy128r1++);
+          //{{{  constant y factors
+          __m128i y00r0 = _mm_mullo_epi16 (_mm_sub_epi16 (_mm_unpacklo_epi8 (y0r0, zero), ysub), facy);
+          __m128i y01r0 = _mm_mullo_epi16 (_mm_sub_epi16 (_mm_unpackhi_epi8 (y0r0, zero), ysub), facy);
+          __m128i y00r1 = _mm_mullo_epi16 (_mm_sub_epi16 (_mm_unpacklo_epi8 (y0r1, zero), ysub), facy);
+          __m128i y01r1 = _mm_mullo_epi16 (_mm_sub_epi16 (_mm_unpackhi_epi8 (y0r1, zero), ysub), facy);
+          //}}}
+          //{{{  expand u and v so they're aligned with y values
+          u0 = _mm_unpacklo_epi8 (u0, zero);
+          __m128i u00 = _mm_sub_epi16 (_mm_unpacklo_epi16 (u0, u0), uvsub);
+          __m128i u01 = _mm_sub_epi16 (_mm_unpackhi_epi16 (u0, u0), uvsub);
+
+          v0 = _mm_unpacklo_epi8( v0,  zero );
+          __m128i v00 = _mm_sub_epi16 (_mm_unpacklo_epi16 (v0, v0), uvsub);
+          __m128i v01 = _mm_sub_epi16 (_mm_unpackhi_epi16 (v0, v0), uvsub);
+          //}}}
+          //{{{  common factors on both rows.
+          __m128i rv00 = _mm_mullo_epi16 (facrv, v00);
+          __m128i rv01 = _mm_mullo_epi16 (facrv, v01);
+          __m128i gu00 = _mm_mullo_epi16 (facgu, u00);
+          __m128i gu01 = _mm_mullo_epi16 (facgu, u01);
+          __m128i gv00 = _mm_mullo_epi16 (facgv, v00);
+          __m128i gv01 = _mm_mullo_epi16 (facgv, v01);
+          __m128i bu00 = _mm_mullo_epi16 (facbu, u00);
+          __m128i bu01 = _mm_mullo_epi16 (facbu, u01);
+          //}}}
+          //{{{  row 0
+          __m128i r00 = _mm_srai_epi16 (_mm_add_epi16 (y00r0, rv00), 6);
+          __m128i r01 = _mm_srai_epi16 (_mm_add_epi16 (y01r0, rv01), 6);
+          __m128i g00 = _mm_srai_epi16 (_mm_sub_epi16 (_mm_sub_epi16 (y00r0, gu00), gv00), 6);
+          __m128i g01 = _mm_srai_epi16 (_mm_sub_epi16 (_mm_sub_epi16 (y01r0, gu01), gv01), 6);
+          __m128i b00 = _mm_srai_epi16 (_mm_add_epi16 (y00r0, bu00), 6);
+          __m128i b01 = _mm_srai_epi16 (_mm_add_epi16 (y01r0, bu01), 6);
+
+          r00 = _mm_packus_epi16 (r00, r01);                // rrrr.. saturated
+          g00 = _mm_packus_epi16 (g00, g01);                // gggg.. saturated
+          b00 = _mm_packus_epi16 (b00, b01);                // bbbb.. saturated
+
+          r01 = _mm_unpacklo_epi8 (r00, zero);              // 0r0r..
+          __m128i gbgb    = _mm_unpacklo_epi8 (b00, g00);   // gbgb..
+          __m128i rgb0123 = _mm_unpacklo_epi16 (gbgb, r01); // 0rgb0rgb..
+          __m128i rgb4567 = _mm_unpackhi_epi16 (gbgb, r01); // 0rgb0rgb..
+
+          r01 = _mm_unpackhi_epi8 (r00, zero);
+          gbgb = _mm_unpackhi_epi8 (b00, g00);
+          __m128i rgb89ab = _mm_unpacklo_epi16 (gbgb, r01);
+          __m128i rgbcdef = _mm_unpackhi_epi16 (gbgb, r01);
+
+          _mm_stream_si128 (dstrgb128r0++, rgb0123);
+          _mm_stream_si128 (dstrgb128r0++, rgb4567);
+          _mm_stream_si128 (dstrgb128r0++, rgb89ab);
+          _mm_stream_si128 (dstrgb128r0++, rgbcdef);
+          //}}}
+          //{{{  row 1
+          r00 = _mm_srai_epi16 (_mm_add_epi16 (y00r1, rv00), 6);
+          r01 = _mm_srai_epi16 (_mm_add_epi16 (y01r1, rv01), 6);
+          g00 = _mm_srai_epi16 (_mm_sub_epi16 (_mm_sub_epi16 (y00r1, gu00), gv00), 6);
+          g01 = _mm_srai_epi16 (_mm_sub_epi16 (_mm_sub_epi16 (y01r1, gu01), gv01), 6);
+          b00 = _mm_srai_epi16 (_mm_add_epi16 (y00r1, bu00), 6);
+          b01 = _mm_srai_epi16 (_mm_add_epi16 (y01r1, bu01), 6);
+
+          r00 = _mm_packus_epi16 (r00, r01);        // rrrr.. saturated
+          g00 = _mm_packus_epi16 (g00, g01);        // gggg.. saturated
+          b00 = _mm_packus_epi16 (b00, b01);        // bbbb.. saturated
+
+          r01     = _mm_unpacklo_epi8 (r00, zero);  // 0r0r..
+          gbgb    = _mm_unpacklo_epi8 (b00, g00);   // gbgb..
+          rgb0123 = _mm_unpacklo_epi16 (gbgb, r01); // 0rgb0rgb..
+          rgb4567 = _mm_unpackhi_epi16 (gbgb, r01); // 0rgb0rgb..
+
+          r01     = _mm_unpackhi_epi8 (r00, zero);
+          gbgb    = _mm_unpackhi_epi8 (b00, g00);
+          rgb89ab = _mm_unpacklo_epi16 (gbgb, r01);
+          rgbcdef = _mm_unpackhi_epi16 (gbgb, r01);
+
+          _mm_stream_si128 (dstrgb128r1++, rgb0123);
+          _mm_stream_si128 (dstrgb128r1++, rgb4567);
+          _mm_stream_si128 (dstrgb128r1++, rgb89ab);
+          _mm_stream_si128 (dstrgb128r1++, rgbcdef);
+          //}}}
+          }
+        }
+      mOk = true;
+      }
+    //}}}
+  #endif
+    //{{{
+    void clear() {
+      mOk = false;
+      mPts = 0;
+      }
+    //}}}
+
+  private:
+    bool mOk = false;
+    uint64_t mPts = 0;
+
+    int mWidth = 0;
+    int mHeight = 0;
+    int mYStride = 0;
+    int mUVStride = 0;
+
+    uint8_t* mYbuf = nullptr;
+    uint8_t* mUbuf = nullptr;
+    uint8_t* mVbuf = nullptr;
+
+    uint32_t* mBgra = nullptr;
+    };
+  //}}}
+
+  cVideoDecode() {}
+  //{{{
+  virtual ~cVideoDecode() {
+
+    for (auto frame : mFramePool)
+      delete frame;
+    }
+  //}}}
+
+  int getWidth() { return mWidth; }
+  int getHeight() { return mHeight; }
+  int getFramePoolSize() { return (int)mFramePool.size(); }
+  virtual int getSurfacePoolSize() = 0;
+
+  void setPlayPts (uint64_t playPts) { mPlayPts = playPts; }
+  //{{{
+  cFrame* findPlayFrame() {
+  // returns nearest frame within a 25fps frame of mPlayPts, nullptr if none
+
+    uint64_t nearDist = 90000 / 25;
+
+    cFrame* nearFrame = nullptr;
+    for (auto frame : mFramePool) {
+      if (frame->ok()) {
+        uint64_t dist = frame->getPts() > mPlayPts ? frame->getPts() - mPlayPts : mPlayPts - frame->getPts();
+        if (dist < nearDist) {
+          nearDist = dist;
+          nearFrame = frame;
+          }
+        }
+      }
+
+    return nearFrame;
+    }
+  //}}}
+  //{{{
+  void clear() {
+  // returns nearest frame within a 25fps frame of mPlayPts, nullptr if none
+
+    for (auto frame : mFramePool)
+      frame->clear();
+    }
+  //}}}
+
+  virtual void decode (uint64_t pts, uint8_t* pesBuffer, unsigned int pesBufferLen) = 0;
+
+protected:
+  static constexpr int kMaxVideoFramePoolSize = 200;
+  //{{{
+  cFrame* getFreeFrame (uint64_t pts) {
+  // return first frame older than mPlayPts, otherwise add new frame
+
+    while (true) {
+      for (auto frame : mFramePool) {
+        if (frame->ok() && (frame->getPts() < mPlayPts)) {
+          // reuse frame
+          frame->set (pts);
+          return frame;
+          }
+        }
+
+      if (mFramePool.size() < kMaxVideoFramePoolSize) {
+        // allocate new frame
+        mFramePool.push_back (new cFrame (pts));
+        cLog::log (LOGINFO1, "allocated newFrame %d for %u at play:%u", mFramePool.size(), pts, mPlayPts);
+        return mFramePool.back();
+        }
+      else
+        this_thread::sleep_for (40ms);
+      }
+
+    // cannot reach here
+    return nullptr;
+    }
+  //}}}
+
+  int mWidth = 0;
+  int mHeight = 0;
+
+  uint64_t mPlayPts = 0;
+  vector <cFrame*> mFramePool;
+  };
+//}}}
 //{{{
 //class cSongBox : public cD2dWindow::cBox {
 //public:
@@ -1115,23 +1549,21 @@ class cAppWindow : public cGlWindow {
 public:
   cAppWindow() {}
   //{{{
-  void run (const string& title, int width, int height, bool headless, bool moreLogInfo, bool all,
+  void run (const string& title, int width, int height, bool headless, bool moreLogInfo,
             int channelNum, int audBitrate, int vidBitrate)  {
 
     mMoreLogInfo = moreLogInfo;
 
-    if (!headless) {
-      initialise (title, width, height, (unsigned char*)droidSansMono);
-      add (new cSongWidget (&mSong, 0,0));
-      }
-
-    thread ([=](){ hlsThread (kHost, kChannels[channelNum], audBitrate, vidBitrate); }).detach();
-
     if (headless) {
+      thread ([=](){ hlsThread (kHost, kChannels[channelNum], audBitrate, vidBitrate); }).detach();
       while (true)
         this_thread::sleep_for (1s);
-      }
+       }
+
     else {
+      initialise (title, width, height, (unsigned char*)droidSansMono);
+      add (new cSongWidget (&mSong, 0,0));
+      thread ([=](){ hlsThread (kHost, kChannels[channelNum], audBitrate, vidBitrate); }).detach();
       glClearColor (0, 0, 0, 1.f);
       cGlWindow::run();
       }
@@ -1190,7 +1622,7 @@ protected:
 
 private:
   //{{{
-  static uint64_t getPts (uint8_t* ts) {
+  static uint64_t getPts (const uint8_t* ts) {
   // return 33 bits of pts,dts
 
     if ((ts[0] & 0x01) && (ts[2] & 0x01) && (ts[4] & 0x01)) {
@@ -1209,9 +1641,9 @@ private:
     }
   //}}}
   //{{{
-  static string getTagValue (uint8_t* buffer, const char* tag) {
+  static string getTagValue (const uint8_t* buffer, const char* tag) {
 
-    const char* tagPtr = strstr ((char*)buffer, tag);
+    const char* tagPtr = strstr ((const char*)buffer, tag);
     const char* valuePtr = tagPtr + strlen (tag);
     const char* endPtr = strchr (valuePtr, '\n');
 
@@ -1418,20 +1850,20 @@ private:
   // audio player thread, video just follows play pts
 
     cLog::setThreadName ("play");
+    shared_mutex lock;
 
   #ifdef _WIN32
     SetThreadPriority (GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
   #endif
 
-    int16_t silence [2048*2] = { 0 };
     int16_t samples [2048*2] = { 0 };
+    int16_t silence [2048*2] = { 0 };
 
     cAudio16 audio (2, mSong.getSampleRate());
     cAudioDecode decode (mSong.getFrameType());
 
     while (true && !mSongChanged) {
-      shared_lock<shared_mutex> lock (mSong.getSharedMutex());
-
+      lock.lock();
       auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
       if (mPlaying && framePtr && framePtr->getSamples()) {
         float* src = framePtr->getSamples();
@@ -1440,13 +1872,17 @@ private:
           *dst++ = int16_t((*src++) * 0x8000);
           *dst++ = int16_t((*src++) * 0x8000);
           }
+        lock.unlock();
         audio.play (2, samples, mSong.getSamplesPerFrame(), 1.f);
         }
-      else
+      else {
+        lock.unlock();
         audio.play (2, silence, mSong.getSamplesPerFrame(), 1.f);
+        }
 
       if (mPlaying && framePtr) {
-        //mVideoDecode->setPlayPts (framePtr->getPts());
+        if (mVideoDecode)
+          mVideoDecode->setPlayPts (framePtr->getPts());
         mSong.incPlayFrame (1, true);
         changed();
         }
@@ -1483,7 +1919,8 @@ private:
         audio.play (2, silence, mSong.getSamplesPerFrame(), 1.f);
 
       if (mPlaying && framePtr) {
-        //mVideoDecode->setPlayPts (framePtr->getPts());
+        if (mVideoDecode)
+          mVideoDecode->setPlayPts (framePtr->getPts());
         mSong.incPlayFrame (1, true);
         changed();
         }
@@ -1538,7 +1975,8 @@ private:
           numSrcSamples = mSong.getSamplesPerFrame();
 
           if (mPlaying && framePtr) {
-            //mVideoDecode->setPlayPts (framePtr->getPts());
+            if (mVideoDecode)
+              mVideoDecode->setPlayPts (framePtr->getPts());
             mSong.incPlayFrame (1, true);
             changed();
             }
@@ -1559,36 +1997,34 @@ private:
   cSong mSong;
   bool mSongChanged = false;
   bool mPlaying = true;
-  //cVideoDecode* mVideoDecode = nullptr;
+  cVideoDecode* mVideoDecode = nullptr;
   bool mMoreLogInfo = false;
   //}}}
   };
 
 int main (int numArgs, char* args[]) {
 
+#ifdef _WIN32
   CoInitializeEx (NULL, COINIT_MULTITHREADED);
+#endif
   cLog::init();
 
   vector <string> argStrings;
   for (int i = 1; i < numArgs; i++)
     argStrings.push_back (args[i]);
 
-  bool all = false;
   bool headless = false;
-  bool moreLogInfo = false;
-
+  bool moreLog = false;
   for (size_t i = 0; i < argStrings.size(); i++) {
-    if (argStrings[i] == "all") all = true;
-    else if (argStrings[i] == "h") headless = true;
-    else if (argStrings[i] == "l") moreLogInfo = true;
+    if (argStrings[i] == "h") headless = true;
+    else if (argStrings[i] == "l") moreLog = true;
     }
 
-  cLog::log (LOGNOTICE, "hls - moreLog:" + dec(moreLogInfo));
-  if (moreLogInfo)
-    cLog::setLogLevel (LOGINFO3);
+  cLog::log (LOGNOTICE, "hls " + moreLog ? "moreLog " : "" + headless ? "headless " : "");
+  cLog::setLogLevel (moreLog ? LOGINFO3 : LOGINFO);
 
   cAppWindow appWindow;
-  appWindow.run ("hls", 790, YSIZE, headless, moreLogInfo, all, kDefaultChannelNum, kAudBitrate, kVidBitrate);
+  appWindow.run ("hls", 790, YSIZE, headless, moreLog, kDefaultChannelNum, kAudBitrate, kVidBitrate);
 
   return 0;
   }
