@@ -5,7 +5,6 @@
     <ClCompile Include="..\..\shared\nanoVg\cVg.cpp" />
     <ClCompile Include="..\..\shared\utils\cLog.cpp" />
     <ClCompile Include="..\..\shared\glad\glad.c" />
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="..\..\shared\utils\cSong.cpp" />
     <ClCompile Include="..\..\shared\kissFft\kiss_fft.c" />
     <ClCompile Include="..\..\shared\kissFft\kiss_fftr.c" />
@@ -15,6 +14,7 @@
     <ClCompile Include="..\..\shared\decoders\cMp3Decoder.cpp" />
     <ClCompile Include="..\..\shared\audio\cWinAudio32.cpp" />
     <ClCompile Include="..\..\shared\audio\cWinAudio16.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\nanoVg\cGlWindow.h">
