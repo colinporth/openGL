@@ -1423,6 +1423,8 @@ private:
     cLog::log (LOGINFO, "exit");
     }
   //}}}
+
+  // 3 versions of playThread
   //{{{
   void playThread16 (bool streaming) {
   // audio player thread, video just follows play pts
@@ -1565,7 +1567,7 @@ private:
     }
   //}}}
 #endif
-  //{{{   vars
+  //{{{  vars
   cSong mSong;
   bool mSongChanged = false;
   bool mPlaying = true;
