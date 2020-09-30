@@ -1,20 +1,17 @@
 // main.cpp
 //{{{  includes
 #ifdef _WIN32
+  #define YSIZE 600
   #define _CRT_SECURE_NO_WARNINGS
   #define WIN32_LEAN_AND_MEAN
   #define NOMINMAX
-
   #include <windows.h>
   #include <winsock2.h>
   #include <WS2tcpip.h>
   #include <objbase.h>
-
-  #define YSIZE 600
 #else
   #define YSIZE 480
   const int COINIT_MULTITHREADED = 0;
-
   void CoInitializeEx (void*, int) {}
   void CoUninitialize() {}
 #endif
@@ -1212,7 +1209,7 @@ private:
     }
   //}}}
   //{{{
-  static string getTagValue (uint8_t* buffer, char* tag) {
+  static string getTagValue (uint8_t* buffer, const char* tag) {
 
     const char* tagPtr = strstr ((char*)buffer, tag);
     const char* valuePtr = tagPtr + strlen (tag);
@@ -1271,9 +1268,8 @@ private:
               //{{{  process audio first
               int seqFrameNum = mSong.getHlsFrameFromChunkNum (chunkNum);
 
-              uint64_t pts = 0;
-
               // parse ts packets
+              uint64_t pts = 0;
               uint8_t* ts = http.getContent();
               uint8_t* tsEnd = ts + http.getContentSize();
               while ((ts < tsEnd) && (*ts++ == 0x47)) {
@@ -1287,10 +1283,9 @@ private:
                   // audio pid
                   if (payStart && !ts[0] && !ts[1] && (ts[2] == 1) && (ts[3] == 0xC0)) {
                     if (pesBufferLen) {
-                      //{{{  process prev audioPes
+                      //  process prev audioPes
                       uint8_t* pesBufferPtr = pesBuffer;
                       uint8_t* pesBufferEnd = pesBuffer + pesBufferLen;
-
                       while (audioDecode.parseFrame (pesBufferPtr, pesBufferEnd)) {
                         // several aacFrames per audio pes
                         float* samples = audioDecode.decodeFrame (seqFrameNum);
@@ -1300,22 +1295,15 @@ private:
                           mSong.addAudioFrame (seqFrameNum++, samples, true, mSong.getNumFrames(), nullptr, pts);
                           pts += (audioDecode.getNumSamples() * 90) / 48;
                           changed();
-
                           if (firstTime) {
-                            // launch player
                             firstTime = false;
-                            player = thread ([=](){ playThread16 (true); });
-                            //player = thread ([=](){ playThread32 (true); });
-                            //player = thread ([=](){ playThreadWSAPI (true); });
+                            player = thread ([=](){ playThread16 (true); });  // playThread16 playThread32 playThreadWSAPI
                             }
                           }
-
                         pesBufferPtr += audioDecode.getNextFrameOffset();
                         }
-
                       pesBufferLen = 0;
                       }
-                      //}}}
 
                     if (ts[7] & 0x80)
                       pts = getPts (ts+9);
