@@ -594,10 +594,6 @@ public:
   void onDraw (iDraw* draw) {
 
     auto context = draw->getContext();
-    //context->fillColor (kVgDarkGrey);
-    //context->beginPath();
-    //context->rect (mX+x, y, nextxF - x, getBoxHeight()/2.0f);
-    //context->triangleFill();
     //{{{  src bitmap layout
     mWaveHeight = 100.f;
     mOverviewHeight = 100.f;
@@ -631,7 +627,7 @@ public:
     // lock
     std::shared_lock<std::shared_mutex> lock (mSong->getSharedMutex());
 
-    //reallocBitmap (mWindow->getDc());
+    reallocBitmap (context);
     if (mSong->getId() != mSongLastId) {
       mFramesBitmapOk = false;
       mOverviewBitmapOk = false;
@@ -650,14 +646,16 @@ public:
     //drawRange (dc, playFrame, leftWaveFrame, rightWaveFrame);
 
     if (mSong->getNumFrames()) {
-      //drawWave (dc, playFrame, leftWaveFrame, rightWaveFrame, mono);
-      //drawOverview (dc, playFrame, mono);
-      //drawFreq (dc, playFrame);
+      drawWave (context, playFrame, leftWaveFrame, rightWaveFrame, mono);
+      drawOverview (context, playFrame, mono);
+      drawFreq (context, playFrame);
       }
 
     if (mSong->hasHlsBase())
-      drawTime (context, getFrameString (mSong->getFirstFrame()),
-                    getFrameString (mSong->getPlayFrame()), getFrameString (mSong->getLastFrame()));
+      drawTime (context,
+                getFrameString (mSong->getFirstFrame()),
+                getFrameString (mSong->getPlayFrame()),
+                getFrameString (mSong->getLastFrame()));
     else
       drawTime (context, "", getFrameString (mSong->getPlayFrame()), getFrameString (mSong->getTotalFrames()));
     }
@@ -720,7 +718,7 @@ private:
   //}}}
 
   //{{{
-  void reallocBitmap (/*ID2D1DeviceContext* dc*/) {
+  void reallocBitmap (cVg* context) {
   // fixed bitmap width for big cache, src bitmap height tracks dst box height
 
     mBitmapWidth = 0x800; // 2048, power of 2
@@ -1110,6 +1108,11 @@ private:
       auto framePtr = mSong->getAudioFramePtr (playFrame);
       if (framePtr && framePtr->getPowerValues()) {
         auto powerValues = framePtr->getPowerValues();
+        float xorg = playFrameX;
+        float yorg = mono ? mDstOverviewTop + mOverviewHeight - (*powerValues++ * valueScale)*2.f :
+                                 mDstOverviewCentre - (*powerValues++ * valueScale);
+        float xlen = playFrameX+1.f - xorg;
+        float ylen = (mono ? mDstOverviewTop + mOverviewHeight : mDstOverviewCentre + (*powerValues * valueScale)) - yorg;
         //cRect dstRect = { mRect.left + playFrameX,
         //                  mono ? mDstOverviewTop + mOverviewHeight - (*powerValues++ * valueScale)*2.f :
         //                         mDstOverviewCentre - (*powerValues++ * valueScale),
@@ -1117,6 +1120,10 @@ private:
         //                  mono ? mDstOverviewTop + mOverviewHeight :
         //                         mDstOverviewCentre + (*powerValues * valueScale) };
         //dc->FillRectangle (dstRect, mWindow->getWhiteBrush());
+        context->fillColor (kVgWhite);
+        context->beginPath();
+        context->rect (mX+xorg, mY+yorg, xlen, ylen);
+        context->triangleFill();
         }
       }
     }
@@ -1319,27 +1326,27 @@ private:
   void drawTime (cVg* context, const std::string& first, const std::string& play, const std::string& last) {
 
     // big play, centred
-    //cRect dstRect = mRect;
-    //dstRect.top = mRect.bottom - mBigTimeTextFormat->GetFontSize();
-    //dc->DrawText (play.data(), (uint32_t)play.size(), mBigTimeTextFormat, dstRect, mWindow->getWhiteBrush());
     context->fontSize ((float)getBigFontHeight());
-    //context->textAlign (cVg::ALIGN_CENTER | cVg::ALIGN_TOP);
-    context->textAlign (cVg::ALIGN_LEFT | cVg::ALIGN_TOP);
+    context->textAlign (cVg::ALIGN_CENTER | cVg::ALIGN_TOP);
     context->fillColor (kVgWhite);
-    context->text (0.f, mHeight-getBigFontHeight(), play);
-
+    context->text (mWidth/2.f, mHeight-getBigFontHeight(), play);
 
     // small first, left
-    //mSmallTimeTextFormat->SetTextAlignment (DWRITE_TEXT_ALIGNMENT_LEADING);
-    //dstRect.top = mRect.bottom - mSmallTimeTextFormat->GetFontSize();
-    //dc->DrawText (first.data(), (uint32_t)first.size(), mSmallTimeTextFormat, dstRect, mWindow->getWhiteBrush());
+    context->fontSize ((float)getFontHeight());
+    context->textAlign (cVg::ALIGN_LEFT | cVg::ALIGN_TOP);
+    context->fillColor (kVgWhite);
+    context->text (0.f, mHeight-getFontHeight(), first);
 
     // small coloured last, right
-    //mSmallTimeTextFormat->SetTextAlignment (DWRITE_TEXT_ALIGNMENT_TRAILING);
-    //dstRect.top = mRect.bottom - mSmallTimeTextFormat->GetFontSize();
-    //dc->DrawText (last.data(), (uint32_t)last.size(), mSmallTimeTextFormat, dstRect,
-    //              (mSong->getHlsLoad() == cSong::eHlsIdle) ? mWindow->getWhiteBrush() :
-    //                (mSong->getHlsLoad() == cSong::eHlsFailed) ? mWindow->getRedBrush() : mWindow->getGreenBrush());
+    context->fontSize ((float)getFontHeight());
+    context->textAlign (cVg::ALIGN_RIGHT | cVg::ALIGN_TOP);
+    if (mSong->getHlsLoad() == cSong::eHlsIdle)
+      context->fillColor (kVgWhite);
+    else if (mSong->getHlsLoad() == cSong::eHlsFailed)
+      context->fillColor (kVgRed);
+    else
+      context->fillColor (kVgGreen);
+    context->text (mWidth, mHeight-getFontHeight(), last);
     }
   //}}}
 
@@ -1426,7 +1433,7 @@ public:
     if (headless) {
       thread ([=](){ hlsThread (kHost, kChannels[channelNum], audBitrate, vidBitrate); }).detach();
       while (true)
-        this_thread::sleep_for (1s);
+        this_thread::sleep_for (200ms);
        }
 
     else {
