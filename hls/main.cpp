@@ -536,9 +536,9 @@ public:
       setZoom (mZoom - ((int)delta/120));
     }
   //}}}
-
   //{{{
   void onDown (float x, float y) {
+
     cWidget::onDown (x, y);
 
     //std::shared_lock<std::shared_mutex> lock (mSong->getSharedMutex());
@@ -598,10 +598,6 @@ public:
     //context->beginPath();
     //context->rect (mX+x, y, nextxF - x, getBoxHeight()/2.0f);
     //context->triangleFill();
-    //context->fontSize ((float)getBigFontHeight());
-    //context->textAlign (cVg::ALIGN_LEFT | cVg::ALIGN_TOP);
-    //context->fillColor (kVgWhite);
-    //context->text (midx-60.0f+3.0f, y+1.0f, getTimeString (mHls->getPlayTzSeconds()));
     //{{{  src bitmap layout
     mWaveHeight = 100.f;
     mOverviewHeight = 100.f;
@@ -1326,6 +1322,12 @@ private:
     //cRect dstRect = mRect;
     //dstRect.top = mRect.bottom - mBigTimeTextFormat->GetFontSize();
     //dc->DrawText (play.data(), (uint32_t)play.size(), mBigTimeTextFormat, dstRect, mWindow->getWhiteBrush());
+    context->fontSize ((float)getBigFontHeight());
+    //context->textAlign (cVg::ALIGN_CENTER | cVg::ALIGN_TOP);
+    context->textAlign (cVg::ALIGN_LEFT | cVg::ALIGN_TOP);
+    context->fillColor (kVgWhite);
+    context->text (0.f, mHeight-getBigFontHeight(), play);
+
 
     // small first, left
     //mSmallTimeTextFormat->SetTextAlignment (DWRITE_TEXT_ALIGNMENT_LEADING);
