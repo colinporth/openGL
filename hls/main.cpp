@@ -598,7 +598,7 @@ public:
     mWaveHeight = 100.f;
     mOverviewHeight = 100.f;
     mRangeHeight = 8.f;
-    mFreqHeight = getHeight() - mOverviewHeight - mRangeHeight - mWaveHeight;
+    mFreqHeight = mHeight - mOverviewHeight - mRangeHeight - mWaveHeight;
 
     mSrcPeakHeight = mWaveHeight;
     mSrcSilenceHeight = 2.f;
@@ -646,7 +646,7 @@ public:
     //drawRange (dc, playFrame, leftWaveFrame, rightWaveFrame);
 
     if (mSong->getNumFrames()) {
-      drawWave (context, playFrame, leftWaveFrame, rightWaveFrame, mono);
+      drawWaveSimple (context, playFrame, leftWaveFrame, rightWaveFrame, mono);
       drawOverview (context, playFrame, mono);
       drawFreq (context, playFrame);
       }
@@ -714,6 +714,130 @@ private:
 
     // zoomOut summing mFrameStep frames per pix
     mFrameStep = (mZoom > 0) ? mZoom+1 : 1;
+    }
+  //}}}
+
+  //{{{
+  void drawWaveSimple (cVg* context, int playFrame, int leftFrame, int rightFrame, bool mono) {
+
+    float values[2] = { 0.f };
+    float xlen = (float)mFrameStep;
+
+    float xorg = mX;
+    if (mFrameStep == 1) {
+      context->beginPath();
+      for (auto frame = leftFrame; frame < rightFrame; frame += mFrameStep) {
+        //{{{  get peak values scaled to maxPeak
+        auto framePtr = mSong->getAudioFramePtr (frame);
+        if (framePtr) {
+          if (framePtr->getPowerValues()) {
+            float valueScale = mWaveHeight / 2.f / mSong->getMaxPeakValue();
+            auto peakValuesPtr = framePtr->getPeakValues();
+            for (auto i = 0; i < 2; i++)
+              values[i] = *peakValuesPtr++ * valueScale;
+            }
+          }
+        //}}}
+        context->rect (xorg, mY + mDstWaveCentre - values[0], xlen, values[0] + values[1]);
+        xorg += 1.f;
+        }
+      context->fillColor (kVgDarkGrey);
+      context->triangleFill();
+      }
+
+    values[2] = { 0.f };
+    xorg = mX;
+    context->beginPath();
+    for (auto frame = leftFrame; frame < playFrame; frame += mFrameStep) {
+      if (mFrameStep == 1) {
+        //{{{  power scaled to maxPeak
+        auto framePtr = mSong->getAudioFramePtr (frame);
+        if (framePtr) {
+          if (framePtr->getPowerValues()) {
+            float valueScale = mWaveHeight / 2.f / mSong->getMaxPeakValue();
+            auto powerValuesPtr = framePtr->getPowerValues();
+            for (auto i = 0; i < 2; i++)
+              values[i] = *powerValuesPtr++ * valueScale;
+            }
+          }
+        }
+        //}}}
+      else {
+        //{{{  sum mFrameStep frames, mFrameStep aligned, power scaled to maxPower
+        float valueScale = mWaveHeight / 2.f / mSong->getMaxPowerValue();
+
+        for (auto i = 0; i < 2; i++)
+          values[i] = 0.f;
+
+        auto alignedFrame = frame - (frame % mFrameStep);
+        auto toSumFrame = std::min (alignedFrame + mFrameStep, rightFrame);
+        for (auto sumFrame = alignedFrame; sumFrame < toSumFrame; sumFrame++) {
+          auto framePtr = mSong->getAudioFramePtr (sumFrame);
+          if (framePtr) {
+            if (framePtr->getPowerValues()) {
+              auto powerValuesPtr = framePtr->getPowerValues();
+              for (auto i = 0; i < 2; i++)
+                values[i] += *powerValuesPtr++ * valueScale;
+              }
+            }
+          }
+
+        for (auto i = 0; i < 2; i++)
+          values[i] /= toSumFrame - alignedFrame + 1;
+        }
+        //}}}
+      context->rect (xorg, mY + mDstWaveCentre - values[0], xlen, values[0] + values[1]);
+      xorg += 1.f;
+      }
+    context->fillColor (kVgBlue);
+    context->triangleFill();
+
+    values[2] = { 0.f };
+    xorg = mX + (playFrame - leftFrame) * mFrameStep;
+    context->beginPath();
+    for (auto frame = playFrame; frame < rightFrame; frame += mFrameStep) {
+      if (mFrameStep == 1) {
+        //{{{  power scaled to maxPeak
+        auto framePtr = mSong->getAudioFramePtr (frame);
+        if (framePtr) {
+          if (framePtr->getPowerValues()) {
+            float valueScale = mWaveHeight / 2.f / mSong->getMaxPeakValue();
+            auto powerValuesPtr = framePtr->getPowerValues();
+            for (auto i = 0; i < 2; i++)
+              values[i] = *powerValuesPtr++ * valueScale;
+            }
+          }
+        }
+        //}}}
+      else {
+        //{{{  sum mFrameStep frames, mFrameStep aligned, power scaled to maxPower
+        float valueScale = mWaveHeight / 2.f / mSong->getMaxPowerValue();
+
+        for (auto i = 0; i < 2; i++)
+          values[i] = 0.f;
+
+        auto alignedFrame = frame - (frame % mFrameStep);
+        auto toSumFrame = std::min (alignedFrame + mFrameStep, rightFrame);
+        for (auto sumFrame = alignedFrame; sumFrame < toSumFrame; sumFrame++) {
+          auto framePtr = mSong->getAudioFramePtr (sumFrame);
+          if (framePtr) {
+            if (framePtr->getPowerValues()) {
+              auto powerValuesPtr = framePtr->getPowerValues();
+              for (auto i = 0; i < 2; i++)
+                values[i] += *powerValuesPtr++ * valueScale;
+              }
+            }
+          }
+
+        for (auto i = 0; i < 2; i++)
+          values[i] /= toSumFrame - alignedFrame + 1;
+        }
+        //}}}
+      context->rect (xorg, mY + mDstWaveCentre - values[0], xlen, values[0] + values[1]);
+      xorg += 1.f;
+      }
+    context->fillColor (kVgGrey);
+    context->triangleFill();
     }
   //}}}
 
