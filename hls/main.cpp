@@ -1554,6 +1554,8 @@ public:
 
     mMoreLogInfo = moreLogInfo;
 
+    //mVideoDecode = new cFFmpegVideoDecode();
+
     if (headless) {
       thread ([=](){ hlsThread (kHost, kChannels[channelNum], audBitrate, vidBitrate); }).detach();
       while (true)
