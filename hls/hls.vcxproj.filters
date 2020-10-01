@@ -14,7 +14,7 @@
     <ClCompile Include="..\..\shared\decoders\cMp3Decoder.cpp" />
     <ClCompile Include="..\..\shared\audio\cWinAudio32.cpp" />
     <ClCompile Include="..\..\shared\audio\cWinAudio16.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="hls.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\nanoVg\cGlWindow.h">

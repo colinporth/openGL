@@ -1,5 +1,5 @@
 TARGET    = tv
-SRCS      = main.cpp \
+SRCS      = tv.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/glad/glad.c \
 	    ../../shared/nanoVg/cVg.cpp \

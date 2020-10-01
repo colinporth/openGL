@@ -6,8 +6,8 @@
     <ClCompile Include="..\..\shared\utils\cLog.cpp" />
     <ClCompile Include="..\..\shared\dvb\cTransportStream.cpp" />
     <ClCompile Include="..\..\shared\glad\glad.c" />
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="..\..\shared\dvb\cDvb.cpp" />
+    <ClCompile Include="tv.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\nanoVg\cGlWindow.h">

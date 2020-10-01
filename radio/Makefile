@@ -1,5 +1,5 @@
 TARGET    = radio
-SRCS      = main.cpp \
+SRCS      = radio.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/glad/glad.c \
 	    ../../shared/net/cHttp.cpp \

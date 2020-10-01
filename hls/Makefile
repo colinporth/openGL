@@ -1,5 +1,5 @@
 TARGET    = hls
-SRCS      = main.cpp \
+SRCS      = hls.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/glad/glad.c \
 	    ../../shared/net/cHttp.cpp \
