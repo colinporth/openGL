@@ -12,9 +12,13 @@ SRCS      = hls.cpp \
 	    ../../shared/kissFft/kiss_fftr.c \
 	    ../../shared/utils/cSong.cpp \
 
+# pkg-config --cflags $(FFMPEG_LIBS)
+
 BUILD_DIR = ./build
 CLEAN_DIRS = $(BUILD_DIR) $(BUILD_DIR)../../shared
-LIBS      = -ldl -lbfd -lpthread -lGL -lglfw -lasound
+LIBS      = -ldl -lbfd -lpthread -lGL -lglfw -lasound \
+	    `pkg-config --libs libavformat` \
+	    `pkg-config --libs libavcodec` \
 #
 #
 OBJS      = $(SRCS:%=$(BUILD_DIR)/%.o)
@@ -24,6 +28,8 @@ CFLAGS = -Wall -Wno-unused-result \
 	 -g \
 	 -MMD -MP \
 	 -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64 \
+	 `pkg-config --cflags libavformat` \
+	 `pkg-config --cflags libavcodec` \
 #         -O2
 
 LD_VERSION = $(shell ld -v 2>&1 | sed -ne 's/.*\([0-9]\+\.[0-9]\+\).*/\1/p')
