@@ -93,7 +93,7 @@ public:
       auto context = draw->getContext();
       if (frame->getPts() != mPts) {
         // !!!!!!!! bodge fixup alpha !!!!!
-        auto ptr = frame->getBgra();
+        auto ptr = frame->get32();
         for (int y = 0; y < frame->getHeight(); y++)
           for (int x = 0; x < frame->getWidth(); x++)
             *ptr++ = *ptr | 0xFF000000;
@@ -101,9 +101,9 @@ public:
         // new Frame, update image
         mPts = frame->getPts();
         if (mImage == -1)
-          mImage = context->createImageRGBA (frame->getWidth(), frame->getHeight(), 0, (uint8_t*)frame->getBgra());
+          mImage = context->createImageRGBA (frame->getWidth(), frame->getHeight(), 0, (uint8_t*)frame->get32());
         else
-          context->updateImage (mImage, (uint8_t*)frame->getBgra());
+          context->updateImage (mImage, (uint8_t*)frame->get32());
         }
 
       // draw rect image

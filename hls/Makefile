@@ -19,17 +19,20 @@ CLEAN_DIRS = $(BUILD_DIR) $(BUILD_DIR)../../shared
 LIBS      = -ldl -lbfd -lpthread -lGL -lglfw -lasound \
 	    `pkg-config --libs libavformat` \
 	    `pkg-config --libs libavcodec` \
+	    `pkg-config --libs libswscale` \
 #
 #
 OBJS      = $(SRCS:%=$(BUILD_DIR)/%.o)
 DEPS      = $(OBJS:.o=.d)
 
 CFLAGS = -Wall -Wno-unused-result \
-	 -g \
-	 -MMD -MP \
 	 -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64 \
+	 -MMD -MP \
+	 -msse3 \
 	 `pkg-config --cflags libavformat` \
 	 `pkg-config --cflags libavcodec` \
+	 `pkg-config --cflags libswscale` \
+	 -g \
 #         -O2
 
 LD_VERSION = $(shell ld -v 2>&1 | sed -ne 's/.*\([0-9]\+\.[0-9]\+\).*/\1/p')
