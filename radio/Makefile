@@ -1,4 +1,4 @@
-TARGET    = radio
+TARGET    = app
 SRCS      = radio.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/glad/glad.c \

@@ -32,9 +32,6 @@ Makefile~
 
 *.exe
 
-tv
-radio
 demo
 nano
 gears
-hls
