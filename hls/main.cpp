@@ -520,7 +520,7 @@ public:
   void onWheel (float delta) {
 
     //if (getShow())
-      setZoom (mZoom - ((int)delta/120));
+    setZoom (mZoom - (int)delta);
     }
   //}}}
   //{{{
@@ -912,14 +912,13 @@ private:
 
   //{{{
   void drawOverviewWave (cVg* context, int firstFrame, int playFrame, float playFrameX, float valueScale, bool mono) {
-  // dumb overview, expensive but simple, should cache but don't need bitmap
+  // dumb overview, expensive but simple, should cache
 
     int lastFrame = mSong->getLastFrame();
     int totalFrames = mSong->getTotalFrames();
+    float values[2] = { 0.f };
 
     context->beginPath();
-
-    float values[2] = { 0.f };
     float xorg = mX;
     float xlen = 1.f;
     for (auto x = 0; x < int(mWidth); x++) {
