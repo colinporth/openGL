@@ -107,6 +107,9 @@
     <ClInclude Include="..\..\shared\audio\cCaptureWASAPI.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cSongWidget.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">
