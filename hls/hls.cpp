@@ -81,7 +81,6 @@ public:
   virtual ~cVideoDecodeWidget() {}
 
   void onDraw (iDraw* draw) {
-
     auto frame = mVideoDecode->findPlayFrame();
     if (frame) {
       auto context = draw->getContext();
