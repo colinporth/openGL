@@ -109,6 +109,9 @@
     <ClInclude Include="..\..\shared\utils\cVideoDecode.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cVideoDecodeWidget.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">

@@ -58,6 +58,7 @@
 #include "../../shared/widgets/cSongWidget.h"
 
 #include "../../shared/utils/cVideoDecode.h"
+#include "../../shared/widgets/cVideoDecodeWidget.h"
 
 using namespace std;
 using namespace chrono;
@@ -71,41 +72,6 @@ const vector <string> kChannels = { "bbc_one_hd",          "bbc_two_hd",        
                                     "bbc_news_channel_hd", "bbc_one_scotland_hd", "s4cpbs",      // pa4
                                     "bbc_one_south_west",  "bbc_parliament" };                   // pa3
 
-//}}}
-
-//{{{
-class cVideoDecodeWidget : public cWidget {
-public:
-  cVideoDecodeWidget (cVideoDecode* videoDecode, float width, float height)
-    : cWidget (COL_BLACK, width, height), mVideoDecode(videoDecode) {}
-  virtual ~cVideoDecodeWidget() {}
-
-  void onDraw (iDraw* draw) {
-    auto frame = mVideoDecode->findPlayFrame();
-    if (frame) {
-      auto context = draw->getContext();
-      if (frame->getPts() != mPts) {
-        // newFrame, update image
-        mPts = frame->getPts();
-        if (mImage == -1)
-          mImage = context->createImageRGBA (frame->getWidth(), frame->getHeight(), 0, (uint8_t*)frame->get32());
-        else
-          context->updateImage (mImage, (uint8_t*)frame->get32());
-        }
-
-      // paint image rect
-      context->beginPath();
-      context->rect (0, 0, mWidth, mHeight);
-      context->fillPaint (context->imagePattern (0, 0, mWidth, mHeight, 0.f, mImage, 1.f));
-      context->triangleFill();
-      }
-    }
-
-private:
-  cVideoDecode* mVideoDecode;
-  uint64_t mPts = 0;
-  int mImage = -1;
-  };
 //}}}
 
 class cAppWindow : public cGlWindow {
@@ -605,15 +571,15 @@ int main (int numArgs, char* args[]) {
   for (int i = 1; i < numArgs; i++)
     argStrings.push_back (args[i]);
 
-  bool logInfo3 = false;
   bool headless = false;
+  bool logInfo3 = false;
   for (size_t i = 0; i < argStrings.size(); i++) {
     if (argStrings[i] == "h") headless = true;
     else if (argStrings[i] == "l") logInfo3 = true;
     }
 
   cLog::init (logInfo3 ? LOGINFO3 : LOGINFO);
-  cLog::log (LOGNOTICE, "hls " + logInfo3 ? "logInfo3 " : "" + headless ? "headless " : "");
+  cLog::log (LOGNOTICE, "openGL hls " + string(logInfo3 ? "logInfo3 " : "") + string(headless ? "headless " : ""));
 
   cAppWindow appWindow;
   appWindow.run ("hls", 790, 450, headless, logInfo3, kDefaultChannelNum, kAudBitrate, kVidBitrate);

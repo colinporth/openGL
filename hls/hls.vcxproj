@@ -202,6 +202,7 @@
     <ClInclude Include="..\..\shared\widgets\cRootContainer.h" />
     <ClInclude Include="..\..\shared\widgets\cSongWidget.h" />
     <ClInclude Include="..\..\shared\widgets\cTextBox.h" />
+    <ClInclude Include="..\..\shared\widgets\cVideoDecodeWidget.h" />
     <ClInclude Include="..\..\shared\widgets\cWidget.h" />
     <ClInclude Include="..\..\shared\widgets\iDraw.h" />
     <ClInclude Include="..\..\shared\widgets\iWindow.h" />
