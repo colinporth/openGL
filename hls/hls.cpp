@@ -68,10 +68,10 @@
 using namespace std;
 using namespace chrono;
 //}}}
-//{{{  channels
 constexpr int kDefaultChannelNum = 3;
-constexpr int kAudBitrate = 128000; //  96000  128000
 constexpr int kVidBitrate = 827008; // 827008 1604032 2812032 5070016
+//{{{  channels
+constexpr int kAudBitrate = 128000; // 96000  128000
 const string kHost = "vs-hls-uk-live.akamaized.net";
 const vector <string> kChannels = { "bbc_one_hd",          "bbc_two_hd",          "bbc_four_hd", // pa4
                                     "bbc_news_channel_hd", "bbc_one_scotland_hd", "s4cpbs",      // pa4
@@ -83,7 +83,7 @@ const vector <string> kChannels = { "bbc_one_hd",          "bbc_two_hd",        
 class cVideoDecodeWidget : public cWidget {
 public:
   cVideoDecodeWidget (cVideoDecode* videoDecode, float width, float height)
-    : cWidget (COL_BLUE, width, height), mVideoDecode(videoDecode) {}
+    : cWidget (COL_BLACK, width, height), mVideoDecode(videoDecode) {}
   virtual ~cVideoDecodeWidget() {}
 
   void onDraw (iDraw* draw) {
@@ -92,13 +92,7 @@ public:
     if (frame) {
       auto context = draw->getContext();
       if (frame->getPts() != mPts) {
-        // !!!!!!!! bodge fixup alpha !!!!!
-        auto ptr = frame->get32();
-        for (int y = 0; y < frame->getHeight(); y++)
-          for (int x = 0; x < frame->getWidth(); x++)
-            *ptr++ = *ptr | 0xFF000000;
-
-        // new Frame, update image
+        // newFrame, update image
         mPts = frame->getPts();
         if (mImage == -1)
           mImage = context->createImageRGBA (frame->getWidth(), frame->getHeight(), 0, (uint8_t*)frame->get32());
@@ -106,20 +100,18 @@ public:
           context->updateImage (mImage, (uint8_t*)frame->get32());
         }
 
-      // draw rect image
-      auto imagePaint = context->imagePattern (0, 0, mWidth, mHeight, 0.f, mImage, 1.f);
-
+      // paint image rect
       context->beginPath();
       context->rect (0, 0, mWidth, mHeight);
-      context->fillPaint (imagePaint);
-      context->fill();
+      context->fillPaint (context->imagePattern (0, 0, mWidth, mHeight, 0.f, mImage, 1.f));
+      context->triangleFill();
       }
     }
 
 private:
   cVideoDecode* mVideoDecode;
-  int mImage = -1;
   uint64_t mPts = 0;
+  int mImage = -1;
   };
 //}}}
 
@@ -131,7 +123,6 @@ public:
             int channelNum, int audBitrate, int vidBitrate)  {
 
     mMoreLogInfo = moreLogInfo;
-
     mVideoDecode = new cFFmpegVideoDecode();
 
     if (headless) {
@@ -144,7 +135,9 @@ public:
       initialise (title, width, height, (unsigned char*)droidSansMono);
       addTopLeft (new cVideoDecodeWidget (mVideoDecode, 0,0));
       addTopLeft (new cSongWidget (&mSong, 0,0));
+
       thread ([=](){ hlsThread (kHost, kChannels[channelNum], audBitrate, vidBitrate); }).detach();
+
       glClearColor (0, 0, 0, 1.f);
       cGlWindow::run();
       }
