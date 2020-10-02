@@ -17,6 +17,7 @@ CLEAN_DIRS = $(BUILD_DIR) $(BUILD_DIR)../../shared
 LIBS      = -ldl -lbfd -lpthread -lGL -lglfw -lasound \
 	    `pkg-config --libs libavformat` \
 	    `pkg-config --libs libavcodec` \
+	    `pkg-config --libs libavutil` \
 	    `pkg-config --libs libswscale` \
 #
 #
