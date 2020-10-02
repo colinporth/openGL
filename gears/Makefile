@@ -17,7 +17,7 @@ CXXFLAGS += -std=c++17 \
 
 LDFLAGS = -lm -ldl -lGL -lGLEW -lGLU -lX11 -lXext
 
-gears:  gears.o
+gearsapp:  gears.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 main.o: main.cpp
@@ -25,10 +25,10 @@ main.o: main.cpp
 
 .PHONY: clean rebuild
 
-all: gears Makefile
+all: gearsapp Makefile
 
 clean:
-	rm -f *.o *.~* %*~ gears
+	rm -f *.o *.~* %*~ gearsapp
 
 rebuild:
 	make clean && make -j 4

@@ -1,5 +1,4 @@
 // main.cpp - hls audio/video windows/linux
-// aligned alloc prob
 //{{{  includes
 #ifdef _WIN32
   //{{{  windows headers, defines
@@ -65,7 +64,9 @@ using namespace chrono;
 //}}}
 //{{{  channels
 constexpr int kAudBitrate = 128000; // 96000  128000
+
 const string kHost = "vs-hls-uk-live.akamaized.net";
+
 const vector <string> kChannels = { "bbc_one_hd",          "bbc_two_hd",          "bbc_four_hd", // pa4
                                     "bbc_news_channel_hd", "bbc_one_scotland_hd", "s4cpbs",      // pa4
                                     "bbc_one_south_west",  "bbc_parliament" };                   // pa3
@@ -81,6 +82,7 @@ public:
             int channelNum, int audBitrate, int vidBitrate)  {
 
     mLogInfo3 = logInfo3;
+
     //mVideoDecode = new cMfxVideoDecode();
     mVideoDecode = new cFFmpegVideoDecode();
 
@@ -115,6 +117,7 @@ protected:
         //{{{
         case GLFW_KEY_ESCAPE: // exit
           glfwSetWindowShouldClose (mWindow, GL_TRUE);
+          mExit = true;
           break;
         //}}}
 
@@ -254,11 +257,12 @@ private:
   void hlsThread (const string& host, const string& channel, int audBitrate, int vidBitrate) {
   // hls http chunk load and decode thread
 
+    constexpr int kHlsPreload = 2;
+    constexpr int kPesBufferSize = 1000000;
+
     cLog::setThreadName ("hls ");
 
-    constexpr int kHlsPreload = 2;
-
-    uint8_t* pesBuffer = nullptr;
+    uint8_t* pesBuffer = (uint8_t*)malloc (kPesBufferSize);
     int pesBufferLen = 0;
 
     mSong.setChannel (channel);
@@ -291,7 +295,7 @@ private:
         bool firstTime = true;
         bool firstVideoPts = true;
         mSongChanged = false;
-        while (true && !mSongChanged) {
+        while (!mExit && !mSongChanged) {
           int chunkNum = mSong.getHlsLoadChunkNum (system_clock::now(), 12s, kHlsPreload);
           if (chunkNum) {
             // get hls chunkNum chunk
@@ -346,10 +350,13 @@ private:
                     tsBodyBytes -= pesHeaderBytes;
                     }
 
-                  // copy ts payload into pesBuffer
-                  pesBuffer = (uint8_t*)realloc (pesBuffer, pesBufferLen + tsBodyBytes);
-                  memcpy (pesBuffer + pesBufferLen, ts, tsBodyBytes);
-                  pesBufferLen += tsBodyBytes;
+                  if (pesBufferLen + tsBodyBytes <= kPesBufferSize) {
+                    // copy ts payload into pesBuffer
+                    memcpy (pesBuffer + pesBufferLen, ts, tsBodyBytes);
+                    pesBufferLen += tsBodyBytes;
+                    }
+                  else
+                    cLog::log (LOGERROR, "pesBuffer overflowed %d", pesBufferLen + tsBodyBytes);
                   }
 
                 ts += tsBodyBytes;
@@ -406,10 +413,13 @@ private:
                     tsBodyBytes -= pesHeaderBytes;
                     }
 
-                  // copy ts payload into pesBuffer
-                  pesBuffer = (uint8_t*)realloc (pesBuffer, pesBufferLen + tsBodyBytes);
-                  memcpy (pesBuffer + pesBufferLen, ts, tsBodyBytes);
-                  pesBufferLen += tsBodyBytes;
+                  if (pesBufferLen + tsBodyBytes <= kPesBufferSize) {
+                    // copy ts payload into pesBuffer
+                    memcpy (pesBuffer + pesBufferLen, ts, tsBodyBytes);
+                    pesBufferLen += tsBodyBytes;
+                    }
+                  else
+                    cLog::log (LOGERROR, "pesBuffer overflowed %d", pesBufferLen + tsBodyBytes);
                   }
 
                 ts += tsBodyBytes;
@@ -463,7 +473,7 @@ private:
         cAudioDecode decode (mSong.getFrameType());
 
         device->start();
-        while (true && !mSongChanged) {
+        while (!mExit && !mSongChanged) {
           device->process ([&](float*& srcSamples, int& numSrcSamples) mutable noexcept {
             // lambda callback - load srcSamples
             shared_lock<shared_mutex> lock (mSong.getSharedMutex());
@@ -521,7 +531,7 @@ private:
       cAudioDecode decode (mSong.getFrameType());
 
       shared_mutex lock;
-      while (true && !mSongChanged) {
+      while (!mExit && !mSongChanged) {
         lock.lock();
         auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
         if (mPlaying && framePtr && framePtr->getSamples()) {
@@ -560,6 +570,7 @@ private:
   bool mPlaying = true;
   cVideoDecode* mVideoDecode = nullptr;
   bool mLogInfo3 = false;
+  bool mExit = false;
   //}}}
   };
 
@@ -574,6 +585,7 @@ int main (int numArgs, char* args[]) {
   int channelNum = 3;
   int vidBitrate = 827008;
   for (size_t i = 0; i < argStrings.size(); i++) {
+    //{{{  parse params
     if (argStrings[i] == "h") headless = true;
     else if (argStrings[i] == "l") logInfo3 = true;
     else if (argStrings[i] == "1") channelNum = 0;
@@ -588,12 +600,16 @@ int main (int numArgs, char* args[]) {
     else if (argStrings[i] == "v2") vidBitrate = 2812032;
     else if (argStrings[i] == "v3") vidBitrate = 5070016;
     }
+    //}}}
 
   cLog::init (logInfo3 ? LOGINFO3 : LOGINFO);
-  cLog::log (LOGNOTICE, "openGL hls " + string(logInfo3 ? "logInfo3 " : "") + string(headless ? "headless " : ""));
+  cLog::log (LOGNOTICE, "openGL hls " + kChannels[channelNum] + " " +
+                                        dec (vidBitrate) + " " +
+                                        string(logInfo3 ? "logInfo3 " : "") +
+                                        string(headless ? "headless " : ""));
 
   cAppWindow appWindow;
-  appWindow.run ("hls", 790, 450, headless, logInfo3, channelNum, kAudBitrate, vidBitrate);
+  appWindow.run ("hls", 800, 450, headless, logInfo3, channelNum, kAudBitrate, vidBitrate);
 
   return 0;
   }
