@@ -31,7 +31,7 @@ CFLAGS = -Wall -Wno-unused-result \
 	 `pkg-config --cflags libswscale` \
 	 -g \
 	 -O2
-//         -msse3 \
+#         -msse3 \
 #
 LD_VERSION = $(shell ld -v 2>&1 | sed -ne 's/.*\([0-9]\+\.[0-9]\+\).*/\1/p')
 ifeq "$(LD_VERSION)" "2.34"
