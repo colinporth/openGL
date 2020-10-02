@@ -12,17 +12,16 @@
   //}}}
 #endif
 
+// c++
+#include <string>
+#include <thread>
+#include <chrono>
+
 // c
 #include <string.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <math.h>
-#include <emmintrin.h>
-
-// c++
-#include <string>
-#include <thread>
-#include <chrono>
 
 // utils
 #include "../../shared/date/date.h"
@@ -573,6 +572,7 @@ private:
   bool mExit = false;
   //}}}
   };
+
 
 int main (int numArgs, char* args[]) {
 
