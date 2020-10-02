@@ -63,8 +63,6 @@
 using namespace std;
 using namespace chrono;
 //}}}
-constexpr int kDefaultChannelNum = 3;
-constexpr int kVidBitrate = 827008; // 827008 1604032 2812032 5070016
 //{{{  channels
 constexpr int kAudBitrate = 128000; // 96000  128000
 const string kHost = "vs-hls-uk-live.akamaized.net";
@@ -573,16 +571,29 @@ int main (int numArgs, char* args[]) {
 
   bool headless = false;
   bool logInfo3 = false;
+  int channelNum = 3;
+  int vidBitrate = 827008;
   for (size_t i = 0; i < argStrings.size(); i++) {
     if (argStrings[i] == "h") headless = true;
     else if (argStrings[i] == "l") logInfo3 = true;
+    else if (argStrings[i] == "1") channelNum = 0;
+    else if (argStrings[i] == "2") channelNum = 1;
+    else if (argStrings[i] == "4") channelNum = 2;
+    else if (argStrings[i] == "news") channelNum = 3;
+    else if (argStrings[i] == "scot") channelNum = 4;
+    else if (argStrings[i] == "s4c") channelNum = 5;
+    else if (argStrings[i] == "sw") channelNum = 6;
+    else if (argStrings[i] == "parl") channelNum = 7;
+    else if (argStrings[i] == "v1") vidBitrate = 1604032;
+    else if (argStrings[i] == "v2") vidBitrate = 2812032;
+    else if (argStrings[i] == "v3") vidBitrate = 5070016;
     }
 
   cLog::init (logInfo3 ? LOGINFO3 : LOGINFO);
   cLog::log (LOGNOTICE, "openGL hls " + string(logInfo3 ? "logInfo3 " : "") + string(headless ? "headless " : ""));
 
   cAppWindow appWindow;
-  appWindow.run ("hls", 790, 450, headless, logInfo3, kDefaultChannelNum, kAudBitrate, kVidBitrate);
+  appWindow.run ("hls", 790, 450, headless, logInfo3, channelNum, kAudBitrate, vidBitrate);
 
   return 0;
   }
