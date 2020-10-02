@@ -59,12 +59,6 @@
 
 #include "../../shared/utils/cVideoDecode.h"
 
-#ifdef _WIN32
-  #define YSIZE 600
-#else
-  #define YSIZE 480
-#endif
-
 using namespace std;
 using namespace chrono;
 //}}}
@@ -119,10 +113,12 @@ class cAppWindow : public cGlWindow {
 public:
   cAppWindow() {}
   //{{{
-  void run (const string& title, int width, int height, bool headless, bool moreLogInfo,
+  void run (const string& title, int width, int height,
+            bool headless, bool logInfo3,
             int channelNum, int audBitrate, int vidBitrate)  {
 
-    mMoreLogInfo = moreLogInfo;
+    mLogInfo3 = logInfo3;
+    //mVideoDecode = new cMfxVideoDecode();
     mVideoDecode = new cFFmpegVideoDecode();
 
     if (headless) {
@@ -248,9 +244,9 @@ protected:
         case GLFW_KEY_W: fringeWidth (getFringeWidth() + 0.25f); break;
 
         //{{{
-        case GLFW_KEY_L:
-          mMoreLogInfo = ! mMoreLogInfo;
-          cLog::setLogLevel (mMoreLogInfo ? LOGINFO3 : LOGINFO);
+        case GLFW_KEY_L: // toggle log level LOGINFO : LOGINFO3
+          mLogInfo3 = ! mLogInfo3;
+          cLog::setLogLevel (mLogInfo3 ? LOGINFO3 : LOGINFO);
           break;
         //}}}
 
@@ -486,147 +482,142 @@ private:
     }
   //}}}
 
-#ifdef _WIN32
-  //{{{
-  void playThread (bool streaming) {
-  // WSAPI player thread, video just follows play pts
+  #ifdef _WIN32
+    //{{{
+    void playThread (bool streaming) {
+    // WSAPI player thread, video just follows play pts
 
-    cLog::setThreadName ("play");
-    SetThreadPriority (GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+      cLog::setThreadName ("play");
+      SetThreadPriority (GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 
-    float silence [2048*2] = { 0.f };
-    float samples [2048*2] = { 0.f };
+      float silence [2048*2] = { 0.f };
+      float samples [2048*2] = { 0.f };
 
-    auto device = getDefaultAudioOutputDevice();
-    if (device) {
-      cLog::log (LOGINFO, "device @ %d", mSong.getSampleRate());
-      device->setSampleRate (mSong.getSampleRate());
+      auto device = getDefaultAudioOutputDevice();
+      if (device) {
+        cLog::log (LOGINFO, "device @ %d", mSong.getSampleRate());
+        device->setSampleRate (mSong.getSampleRate());
+        cAudioDecode decode (mSong.getFrameType());
+
+        device->start();
+        while (true && !mSongChanged) {
+          device->process ([&](float*& srcSamples, int& numSrcSamples) mutable noexcept {
+            // lambda callback - load srcSamples
+            shared_lock<shared_mutex> lock (mSong.getSharedMutex());
+
+            auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
+            if (mPlaying && framePtr && framePtr->getSamples()) {
+              if (mSong.getNumChannels() == 1) {
+                //{{{  mono to stereo
+                auto src = framePtr->getSamples();
+                auto dst = samples;
+                for (int i = 0; i < mSong.getSamplesPerFrame(); i++) {
+                  *dst++ = *src;
+                  *dst++ = *src++;
+                  }
+                }
+                //}}}
+              else
+                memcpy (samples, framePtr->getSamples(), mSong.getSamplesPerFrame() * mSong.getNumChannels() * sizeof(float));
+              srcSamples = samples;
+              }
+            else
+              srcSamples = silence;
+            numSrcSamples = mSong.getSamplesPerFrame();
+
+            if (mPlaying && framePtr) {
+              if (mVideoDecode)
+                mVideoDecode->setPlayPts (framePtr->getPts());
+              mSong.incPlayFrame (1, true);
+              changed();
+              }
+            });
+
+          if (!streaming && (mSong.getPlayFrame() > mSong.getLastFrame()))
+            break;
+          }
+
+        device->stop();
+        }
+
+      cLog::log (LOGINFO, "exit");
+      }
+    //}}}
+  #else
+    //{{{
+    void playThread (bool streaming) {
+    // audio16 player thread, video just follows play pts
+
+      cLog::setThreadName ("play");
+      //SetThreadPriority (GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+
+      int16_t samples [2048*2] = { 0 };
+      int16_t silence [2048*2] = { 0 };
+
+      cAudio16 audio (2, mSong.getSampleRate());
       cAudioDecode decode (mSong.getFrameType());
 
-      device->start();
+      shared_mutex lock;
       while (true && !mSongChanged) {
-        device->process ([&](float*& srcSamples, int& numSrcSamples) mutable noexcept {
-          // lambda callback - load srcSamples
-          shared_lock<shared_mutex> lock (mSong.getSharedMutex());
-
-          auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
-          if (mPlaying && framePtr && framePtr->getSamples()) {
-            if (mSong.getNumChannels() == 1) {
-              //{{{  mono to stereo
-              auto src = framePtr->getSamples();
-              auto dst = samples;
-              for (int i = 0; i < mSong.getSamplesPerFrame(); i++) {
-                *dst++ = *src;
-                *dst++ = *src++;
-                }
-              }
-              //}}}
-            else
-              memcpy (samples, framePtr->getSamples(), mSong.getSamplesPerFrame() * mSong.getNumChannels() * sizeof(float));
-            srcSamples = samples;
+        lock.lock();
+        auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
+        if (mPlaying && framePtr && framePtr->getSamples()) {
+          float* src = framePtr->getSamples();
+          int16_t* dst = samples;
+          for (int i = 0; i <mSong.getSamplesPerFrame(); i++) {
+            *dst++ = int16_t((*src++) * 0x8000);
+            *dst++ = int16_t((*src++) * 0x8000);
             }
-          else
-            srcSamples = silence;
-          numSrcSamples = mSong.getSamplesPerFrame();
+          lock.unlock();
+          audio.play (2, samples, mSong.getSamplesPerFrame(), 1.f);
+          }
+        else {
+          lock.unlock();
+          audio.play (2, silence, mSong.getSamplesPerFrame(), 1.f);
+          }
 
-          if (mPlaying && framePtr) {
-            if (mVideoDecode)
-              mVideoDecode->setPlayPts (framePtr->getPts());
-            mSong.incPlayFrame (1, true);
-            changed();
-            }
-          });
+        if (mPlaying && framePtr) {
+          if (mVideoDecode)
+            mVideoDecode->setPlayPts (framePtr->getPts());
+          mSong.incPlayFrame (1, true);
+          changed();
+          }
 
         if (!streaming && (mSong.getPlayFrame() > mSong.getLastFrame()))
           break;
         }
 
-      device->stop();
+      cLog::log (LOGINFO, "exit");
       }
-
-    cLog::log (LOGINFO, "exit");
-    }
-  //}}}
-#else
-  //{{{
-  void playThread (bool streaming) {
-  // audio16 player thread, video just follows play pts
-
-    cLog::setThreadName ("play");
-    //SetThreadPriority (GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
-
-    int16_t samples [2048*2] = { 0 };
-    int16_t silence [2048*2] = { 0 };
-
-    cAudio16 audio (2, mSong.getSampleRate());
-    cAudioDecode decode (mSong.getFrameType());
-
-    shared_mutex lock;
-    while (true && !mSongChanged) {
-      lock.lock();
-      auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
-      if (mPlaying && framePtr && framePtr->getSamples()) {
-        float* src = framePtr->getSamples();
-        int16_t* dst = samples;
-        for (int i = 0; i <mSong.getSamplesPerFrame(); i++) {
-          *dst++ = int16_t((*src++) * 0x8000);
-          *dst++ = int16_t((*src++) * 0x8000);
-          }
-        lock.unlock();
-        audio.play (2, samples, mSong.getSamplesPerFrame(), 1.f);
-        }
-      else {
-        lock.unlock();
-        audio.play (2, silence, mSong.getSamplesPerFrame(), 1.f);
-        }
-
-      if (mPlaying && framePtr) {
-        if (mVideoDecode)
-          mVideoDecode->setPlayPts (framePtr->getPts());
-        mSong.incPlayFrame (1, true);
-        changed();
-        }
-
-      if (!streaming && (mSong.getPlayFrame() > mSong.getLastFrame()))
-        break;
-      }
-
-    cLog::log (LOGINFO, "exit");
-    }
-  //}}}
-#endif
+    //}}}
+  #endif
   //{{{  vars
   cSong mSong;
   bool mSongChanged = false;
   bool mPlaying = true;
   cVideoDecode* mVideoDecode = nullptr;
-  bool mMoreLogInfo = false;
+  bool mLogInfo3 = false;
   //}}}
   };
 
 int main (int numArgs, char* args[]) {
 
-#ifdef _WIN32
-  CoInitializeEx (NULL, COINIT_MULTITHREADED);
-#endif
-  cLog::init();
-
   vector <string> argStrings;
   for (int i = 1; i < numArgs; i++)
     argStrings.push_back (args[i]);
 
-  bool moreLog = false;
+  bool logInfo3 = false;
   bool headless = false;
   for (size_t i = 0; i < argStrings.size(); i++) {
     if (argStrings[i] == "h") headless = true;
-    else if (argStrings[i] == "l") moreLog = true;
+    else if (argStrings[i] == "l") logInfo3 = true;
     }
 
-  cLog::log (LOGNOTICE, "hls " + moreLog ? "moreLog " : "" + headless ? "headless " : "");
-  cLog::setLogLevel (moreLog ? LOGINFO3 : LOGINFO);
+  cLog::init (logInfo3 ? LOGINFO3 : LOGINFO);
+  cLog::log (LOGNOTICE, "hls " + logInfo3 ? "logInfo3 " : "" + headless ? "headless " : "");
 
   cAppWindow appWindow;
-  appWindow.run ("hls", 790, YSIZE, headless, moreLog, kDefaultChannelNum, kAudBitrate, kVidBitrate);
+  appWindow.run ("hls", 790, 450, headless, logInfo3, kDefaultChannelNum, kAudBitrate, kVidBitrate);
 
   return 0;
   }

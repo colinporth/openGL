@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\mfx_critical_section.cpp" />
+    <ClCompile Include="src\mfx_dispatcher.cpp" />
+    <ClCompile Include="src\mfx_dispatcher_log.cpp" />
+    <ClCompile Include="src\mfx_dxva2_device.cpp" />
+    <ClCompile Include="src\mfx_function_table.cpp" />
+    <ClCompile Include="src\mfx_library_iterator.cpp" />
+    <ClCompile Include="src\mfx_load_dll.cpp" />
+    <ClCompile Include="src\mfx_load_plugin.cpp" />
+    <ClCompile Include="src\mfx_plugin_hive.cpp" />
+    <ClCompile Include="src\mfx_win_reg_key.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\mfx_critical_section.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mfx_dispatcher_log.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mfx_dispatcher_defs.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mfx_dispatcher.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mfx_dxva2_device.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mfx_library_iterator.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mfx_load_dll.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mfx_load_plugin.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mfx_plugin_hive.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mfx_win_reg_key.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mfxaudio_exposed_functions_list.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mfx_exposed_functions_list.h">
+      <Filter>header</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="header">
+      <UniqueIdentifier>{95407559-43e7-4274-8908-5dcda32de80c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
