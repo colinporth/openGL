@@ -370,7 +370,7 @@ private:
                           changed();
                           if (firstTime) {
                             firstTime = false;
-                            player = thread ([=](){ playThread16 (true); });  // playThread16 playThread32 playThreadWSAPI
+                            player = thread ([=](){ playThread (true); });  // playThread16 playThread32 playThreadWSAPI
                             }
                           }
                         pesBufferPtr += audioDecode.getNextFrameOffset();
@@ -486,98 +486,10 @@ private:
     }
   //}}}
 
-  //{{{
-  void playThread16 (bool streaming) {
-  // audio player thread, video just follows play pts
-
-    cLog::setThreadName ("play");
-    shared_mutex lock;
-
-  #ifdef _WIN32
-    SetThreadPriority (GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
-  #else
-    // nnn
-  #endif
-
-    int16_t samples [2048*2] = { 0 };
-    int16_t silence [2048*2] = { 0 };
-
-    cAudio16 audio (2, mSong.getSampleRate());
-    cAudioDecode decode (mSong.getFrameType());
-
-    while (true && !mSongChanged) {
-      lock.lock();
-      auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
-      if (mPlaying && framePtr && framePtr->getSamples()) {
-        float* src = framePtr->getSamples();
-        int16_t* dst = samples;
-        for (int i = 0; i <mSong.getSamplesPerFrame(); i++) {
-          *dst++ = int16_t((*src++) * 0x8000);
-          *dst++ = int16_t((*src++) * 0x8000);
-          }
-        lock.unlock();
-        audio.play (2, samples, mSong.getSamplesPerFrame(), 1.f);
-        }
-      else {
-        lock.unlock();
-        audio.play (2, silence, mSong.getSamplesPerFrame(), 1.f);
-        }
-
-      if (mPlaying && framePtr) {
-        if (mVideoDecode)
-          mVideoDecode->setPlayPts (framePtr->getPts());
-        mSong.incPlayFrame (1, true);
-        changed();
-        }
-
-      if (!streaming && (mSong.getPlayFrame() > mSong.getLastFrame()))
-        break;
-      }
-
-    cLog::log (LOGINFO, "exit");
-    }
-  //}}}
 #ifdef _WIN32
   //{{{
-  void playThread32 (bool streaming) {
-  // audio player thread, video just follows play pts
-
-    cLog::setThreadName ("play");
-
-    SetThreadPriority (GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
-
-    float silence [2048*2] = { 0.f };
-    float samples [2048*2] = { 0.f };
-
-    cAudio16 audio (2, mSong.getSampleRate());
-    cAudioDecode decode (mSong.getFrameType());
-
-    while (true && !mSongChanged) {
-      shared_lock<shared_mutex> lock (mSong.getSharedMutex());
-
-      auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
-      if (mPlaying && framePtr && framePtr->getSamples())
-        audio.play (2, framePtr->getSamples(), mSong.getSamplesPerFrame(), 1.f);
-      else
-        audio.play (2, silence, mSong.getSamplesPerFrame(), 1.f);
-
-      if (mPlaying && framePtr) {
-        if (mVideoDecode)
-          mVideoDecode->setPlayPts (framePtr->getPts());
-        mSong.incPlayFrame (1, true);
-        changed();
-        }
-
-      if (!streaming && (mSong.getPlayFrame() > mSong.getLastFrame()))
-        break;
-      }
-
-    cLog::log (LOGINFO, "exit");
-    }
-  //}}}
-  //{{{
-  void playThreadWSAPI (bool streaming) {
-  // audio player thread, video just follows play pts
+  void playThread (bool streaming) {
+  // WSAPI player thread, video just follows play pts
 
     cLog::setThreadName ("play");
     SetThreadPriority (GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
@@ -630,6 +542,53 @@ private:
         }
 
       device->stop();
+      }
+
+    cLog::log (LOGINFO, "exit");
+    }
+  //}}}
+#else
+  //{{{
+  void playThread (bool streaming) {
+  // audio16 player thread, video just follows play pts
+
+    cLog::setThreadName ("play");
+    //SetThreadPriority (GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+
+    int16_t samples [2048*2] = { 0 };
+    int16_t silence [2048*2] = { 0 };
+
+    cAudio16 audio (2, mSong.getSampleRate());
+    cAudioDecode decode (mSong.getFrameType());
+
+    shared_mutex lock;
+    while (true && !mSongChanged) {
+      lock.lock();
+      auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
+      if (mPlaying && framePtr && framePtr->getSamples()) {
+        float* src = framePtr->getSamples();
+        int16_t* dst = samples;
+        for (int i = 0; i <mSong.getSamplesPerFrame(); i++) {
+          *dst++ = int16_t((*src++) * 0x8000);
+          *dst++ = int16_t((*src++) * 0x8000);
+          }
+        lock.unlock();
+        audio.play (2, samples, mSong.getSamplesPerFrame(), 1.f);
+        }
+      else {
+        lock.unlock();
+        audio.play (2, silence, mSong.getSamplesPerFrame(), 1.f);
+        }
+
+      if (mPlaying && framePtr) {
+        if (mVideoDecode)
+          mVideoDecode->setPlayPts (framePtr->getPts());
+        mSong.incPlayFrame (1, true);
+        changed();
+        }
+
+      if (!streaming && (mSong.getPlayFrame() > mSong.getLastFrame()))
+        break;
       }
 
     cLog::log (LOGINFO, "exit");
