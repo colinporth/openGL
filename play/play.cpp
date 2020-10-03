@@ -1,4 +1,4 @@
- // ffplay.c
+ // play.cpp
 //{{{  includes
 #include "config.h"
 
