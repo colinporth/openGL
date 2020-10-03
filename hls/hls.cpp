@@ -341,7 +341,17 @@ private:
           if (chunkNum) {
             // get hls chunkNum chunk
             mSong.setHlsLoad (cSong::eHlsLoading, chunkNum);
-            if (http.get (redirectedHost, path + '-' + dec(chunkNum) + ".ts") == 200) {
+
+            // get chunk with callbacks
+            if (http.get (redirectedHost, path + '-' + dec(chunkNum) + ".ts", "",
+                          [&](const string& key, const string& value) noexcept {
+                            //cLog::log (LOGINFO, "get headerCallback"); 
+                            },
+                          [&] (const uint8_t* data, int length) noexcept {
+                            //cLog::log (LOGINFO, "get dataCallback " + dec (length) + " " + dec (http.getContentSize()));
+                            return true; 
+                            }
+              ) == 200) {
               //{{{  process audio first
               int seqFrameNum = mSong.getHlsFrameFromChunkNum (chunkNum);
 
