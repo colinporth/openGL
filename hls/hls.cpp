@@ -113,13 +113,6 @@ protected:
 
     if ((action == GLFW_PRESS) || (action == GLFW_REPEAT)) {
       switch (key) {
-        //{{{
-        case GLFW_KEY_ESCAPE: // exit
-          glfwSetWindowShouldClose (mWindow, GL_TRUE);
-          mExit = true;
-          break;
-        //}}}
-
         case GLFW_KEY_1:
         case GLFW_KEY_2:
         case GLFW_KEY_3:
@@ -137,59 +130,70 @@ protected:
           mSong.getSelect().clearAll(); changed();
           break;
         //}}}
-
         //{{{
-        case GLFW_KEY_HOME:
+        case GLFW_KEY_HOME:    // skip beginning
          mSong.setPlayFrame (mSong.getSelect().empty() ? mSong.getFirstFrame() : mSong.getSelect().getFirstFrame());
           if (mVideoDecode) {
             auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
             if (framePtr)
               mVideoDecode->setPlayPts (framePtr->getPts());
-            mVideoDecode->clear();
+            mVideoDecode->clear (framePtr->getPts());
             }
          //changed();
          break;
         //}}}
         //{{{
-        case GLFW_KEY_END:
+        case GLFW_KEY_END:     // skip end
           mSong.setPlayFrame (mSong.getSelect().empty() ? mSong.getLastFrame() : mSong.getSelect().getLastFrame());
           if (mVideoDecode) {
             auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
             if (framePtr)
               mVideoDecode->setPlayPts (framePtr->getPts());
-            mVideoDecode->clear();
+            mVideoDecode->clear (framePtr->getPts());
             }
           //changed();
           break;
         //}}}
         //{{{
-        case GLFW_KEY_LEFT:
+        case GLFW_KEY_LEFT:    // skip back
           mSong.incPlaySec (-(mods == GLFW_MOD_SHIFT ? 300 : mods == GLFW_MOD_CONTROL ? 10 : 1), false);
           if (mVideoDecode) {
             auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
             if (framePtr)
               mVideoDecode->setPlayPts (framePtr->getPts());
-            mVideoDecode->clear();
+            mVideoDecode->clear (framePtr->getPts());
             }
           //changed();
           break;
         //}}}
         //{{{
-        case GLFW_KEY_RIGHT:
+        case GLFW_KEY_RIGHT:   // skip forward
           mSong.incPlaySec ((mods == GLFW_MOD_SHIFT ? 300 : mods == GLFW_MOD_CONTROL ? 10 : 1), false);
           if (mVideoDecode) {
             auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
             if (framePtr)
               mVideoDecode->setPlayPts (framePtr->getPts());
-            mVideoDecode->clear();
+            mVideoDecode->clear (framePtr->getPts());
             }
           //changed();
           break;
         //}}}
-        case GLFW_KEY_DOWN:  break;
-        case GLFW_KEY_UP:    break;
-        case GLFW_KEY_PAGE_UP:   break;
-        case GLFW_KEY_PAGE_DOWN: break;
+        //{{{
+        case GLFW_KEY_DOWN:    // nothing
+          break;
+        //}}}
+        //{{{
+        case GLFW_KEY_UP:      // nothing
+          break;
+        //}}}
+        //{{{
+        case GLFW_KEY_PAGE_UP:   // nothing
+          break;
+        //}}}
+        //{{{
+        case GLFW_KEY_PAGE_DOWN: // nothing
+          break;
+        //}}}
 
         //{{{
         case GLFW_KEY_M: // mark
@@ -198,15 +202,47 @@ protected:
           break;
         //}}}
 
-        case GLFW_KEY_V: toggleVsync(); break;
-        case GLFW_KEY_P: togglePerf(); break;
-        case GLFW_KEY_S: toggleStats(); break;
-        case GLFW_KEY_T: toggleTests(); break;
+        //{{{
+        case GLFW_KEY_V: // toggle vsync
+          toggleVsync();
+          break;
+        //}}}
+        //{{{
+        case GLFW_KEY_P: // toggle perf stats
+          togglePerf();
+          break;
+        //}}}
+        //{{{
+        case GLFW_KEY_S: // toggle vg stats
+          toggleStats();
+          break;
+        //}}}
+        //{{{
+        case GLFW_KEY_T: // toggle tests
+          toggleTests();
+          break;
+        //}}}
 
-        case GLFW_KEY_I: toggleSolid(); break;
-        case GLFW_KEY_A: toggleEdges(); break;
-        case GLFW_KEY_Q: fringeWidth (getFringeWidth() - 0.25f); break;
-        case GLFW_KEY_W: fringeWidth (getFringeWidth() + 0.25f); break;
+        //{{{
+        case GLFW_KEY_I: // toggle solid
+          toggleSolid();
+          break;
+        //}}}
+        //{{{
+        case GLFW_KEY_A: // toggle edges
+          toggleEdges();
+          break;
+        //}}}
+        //{{{
+        case GLFW_KEY_Q: // less edge
+          fringeWidth (getFringeWidth() - 0.25f);
+          break;
+        //}}}
+        //{{{
+        case GLFW_KEY_W: // more edge
+          fringeWidth (getFringeWidth() + 0.25f);
+          break;
+        //}}}
 
         //{{{
         case GLFW_KEY_L: // toggle log level LOGINFO : LOGINFO3
@@ -214,7 +250,12 @@ protected:
           cLog::setLogLevel (mLogInfo3 ? LOGINFO3 : LOGINFO);
           break;
         //}}}
-
+        //{{{
+        case GLFW_KEY_ESCAPE: // exit
+          glfwSetWindowShouldClose (mWindow, GL_TRUE);
+          mExit = true;
+          break;
+        //}}}
         default: cLog::log (LOGNOTICE, "Keyboard %x", key); break;
         }
       }
