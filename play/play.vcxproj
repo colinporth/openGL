@@ -30,8 +30,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{16759aca-fc6b-458e-b59c-c0e4a1f9695d}</ProjectGuid>
-    <RootNamespace>ffplay</RootNamespace>
+    <ProjectGuid>{D04E2646-F931-4225-AB45-C18A9C1102CD}</ProjectGuid>
+    <RootNamespace>play</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
