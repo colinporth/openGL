@@ -1,4 +1,4 @@
-TARGET    = hlsapp
+TARGET    = app
 SRCS      = hls.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/glad/glad.c \

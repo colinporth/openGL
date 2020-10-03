@@ -261,6 +261,7 @@ private:
 
     cLog::setThreadName ("hls ");
 
+    // !!! should parse audio/video together, ANOTHER TASK? !!!
     uint8_t* pesBuffer = (uint8_t*)malloc (kPesBufferSize);
     int pesBufferLen = 0;
 
@@ -588,17 +589,18 @@ int main (int numArgs, char* args[]) {
     //{{{  parse params
     if (argStrings[i] == "h") headless = true;
     else if (argStrings[i] == "l") logInfo3 = true;
-    else if (argStrings[i] == "1") channelNum = 0;
-    else if (argStrings[i] == "2") channelNum = 1;
-    else if (argStrings[i] == "4") channelNum = 2;
+    else if (argStrings[i] == "bbc1") channelNum = 0;
+    else if (argStrings[i] == "bbc2") channelNum = 1;
+    else if (argStrings[i] == "bbc4") channelNum = 2;
     else if (argStrings[i] == "news") channelNum = 3;
     else if (argStrings[i] == "scot") channelNum = 4;
     else if (argStrings[i] == "s4c") channelNum = 5;
     else if (argStrings[i] == "sw") channelNum = 6;
     else if (argStrings[i] == "parl") channelNum = 7;
-    else if (argStrings[i] == "v1") vidBitrate = 1604032;
-    else if (argStrings[i] == "v2") vidBitrate = 2812032;
-    else if (argStrings[i] == "v3") vidBitrate = 5070016;
+    else if (argStrings[i] == "v1") vidBitrate = 827008;
+    else if (argStrings[i] == "v2") vidBitrate = 1604032;
+    else if (argStrings[i] == "v3") vidBitrate = 2812032;
+    else if (argStrings[i] == "v4") vidBitrate = 5070016;
     }
     //}}}
 

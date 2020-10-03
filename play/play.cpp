@@ -3327,17 +3327,17 @@ namespace {
             int tns  = int(cur_stream->ic->duration / 1000000LL);
             int thh  = tns / 3600;
             int tmm  = (tns % 3600) / 60;
-            int tss  = (tns % 60);
-            float frac = int(x / cur_stream->width);
+            int tss  = tns % 60;
+            float frac = float(x / cur_stream->width);
             int ns   = int(frac * tns);
             int hh   = ns / 3600;
             int mm   = (ns % 3600) / 60;
-            int ss   = (ns % 60);
+            int ss   = ns % 60;
             av_log (NULL, AV_LOG_INFO,
                     "Seek to %2.0f%% (%2d:%02d:%02d) of total duration (%2d:%02d:%02d)       \n",
                     frac*100.f, hh, mm, ss, thh, tmm, tss);
 
-            int64_t ts = int64_t(frac * cur_stream->ic->duration);
+            int64_t ts = int64_t (frac * cur_stream->ic->duration);
             if (cur_stream->ic->start_time != AV_NOPTS_VALUE)
               ts += cur_stream->ic->start_time;
             stream_seek (cur_stream, ts, 0, 0);

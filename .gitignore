@@ -32,9 +32,6 @@ Makefile~
 
 *.exe
 
+app
 demo
 nano
-hlsapp
-tvapp
-radioapp
-app
