@@ -1,4 +1,4 @@
- // play.cpp
+ // play.cpp - ffplay based SDL player
 //{{{  includes
 #include "config.h"
 

@@ -571,24 +571,25 @@ private:
       cAudio16 audio (2, mSong.getSampleRate());
       cAudioDecode decode (mSong.getFrameType());
 
-      shared_mutex lock;
       while (!mExit && !mSongChanged) {
-        lock.lock();
-        auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
-        if (mPlaying && framePtr && framePtr->getSamples()) {
-          float* src = framePtr->getSamples();
-          int16_t* dst = samples;
-          for (int i = 0; i <mSong.getSamplesPerFrame(); i++) {
-            *dst++ = int16_t((*src++) * 0x8000);
-            *dst++ = int16_t((*src++) * 0x8000);
+        int16_t* playSamples = silence;
+          {
+          // scoped song mutex
+          shared_lock<shared_mutex> lock (mSong.getSharedMutex());
+          auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
+          bool gotSamples = mPlaying && framePtr && framePtr->getSamples();
+          if (gotSamples) {
+            float* src = framePtr->getSamples();
+            int16_t* dst = samples;
+            for (int i = 0; i <mSong.getSamplesPerFrame(); i++) {
+              *dst++ = int16_t((*src++) * 0x8000);
+              *dst++ = int16_t((*src++) * 0x8000);
+              }
+            playSamples = samples;
             }
-          lock.unlock();
-          audio.play (2, samples, mSong.getSamplesPerFrame(), 1.f);
           }
-        else {
-          lock.unlock();
-          audio.play (2, silence, mSong.getSamplesPerFrame(), 1.f);
-          }
+        audio.play (2, playSamples, mSong.getSamplesPerFrame(), 1.f);
+        cLog::log (LOGINFO, "audio.play");
 
         if (mPlaying && framePtr) {
           if (mVideoDecode)
