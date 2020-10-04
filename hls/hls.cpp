@@ -92,7 +92,7 @@ public:
        }
 
     else {
-      initialise (title, width, height, (unsigned char*)droidSansMono);
+      initialise (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
       addTopLeft (new cVideoDecodeWidget (mVideoDecode, 0,0));
       addTopLeft (new cSongWidget (&mSong, 0,0));
 
@@ -345,11 +345,11 @@ private:
             // get chunk with callbacks
             if (http.get (redirectedHost, path + '-' + dec(chunkNum) + ".ts", "",
                           [&](const string& key, const string& value) noexcept {
-                            //cLog::log (LOGINFO, "get headerCallback"); 
+                            //cLog::log (LOGINFO, "get headerCallback");
                             },
                           [&] (const uint8_t* data, int length) noexcept {
                             //cLog::log (LOGINFO, "get dataCallback " + dec (length) + " " + dec (http.getContentSize()));
-                            return true; 
+                            return true;
                             }
               ) == 200) {
               //{{{  process audio first

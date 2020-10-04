@@ -104,7 +104,7 @@ public:
     auto mDvb = new cDvb (multiplex.mFrequency, kRootName, multiplex.mSelectedChannels, multiplex.mSaveNames);
 
    if (!headless) {
-      initialise (title, width, height, (unsigned char*)droidSansMono);
+      initialise (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
       add (new cTextBox (mDvb->mErrorStr, 15.f));
       add (new cTextBox (mDvb->mTuneStr, 12.f));
       add (new cTextBox (mDvb->mSignalStr, 14.f));

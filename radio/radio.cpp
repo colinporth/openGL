@@ -60,7 +60,7 @@ public:
     cLog::log (LOGINFO, "run chan:%d bitrate:%d", mChan, mBitrate);
 
     if (!headless) {
-      auto root = cGlWindow::initialise (title, width, height, (unsigned char*)freeSansBold);
+      auto root = cGlWindow::initialise (title, width, height, (unsigned char*)freeSansBold, sizeof(freeSansBold));
       hlsMenu (root, this);
       }
 
