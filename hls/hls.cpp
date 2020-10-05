@@ -585,7 +585,7 @@ private:
       int16_t samples [2048*2] = { 0 };
       int16_t silence [2048*2] = { 0 };
 
-      cSong::cAudioFrame* framePtr;
+      cSong::cFrame* framePtr;
       cAudio16 audio (2, mSong.getSampleRate());
       cAudioDecode decode (mSong.getFrameType());
 
