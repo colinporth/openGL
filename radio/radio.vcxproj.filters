@@ -56,13 +56,7 @@
     <ClInclude Include="..\..\shared\teensyAac\sbr.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\stb_image.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\teensyAac\tables.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\stb_truetype.h">
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\nanoVg\cVg.h">
@@ -108,6 +102,12 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\nanoVg\cAtlasText.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\stb_image.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\stb_truetype.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>
