@@ -19,12 +19,6 @@
 #include <thread>
 #include <chrono>
 
-// c
-#include <string.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <math.h>
-
 // utils
 #include "../../shared/date/date.h"
 #include "../../shared/utils/utils.h"
@@ -38,7 +32,6 @@
 #ifdef _WIN32
   #include "../../shared/audio/audioWASAPI.h"
   #include "../../shared/audio/cWinAudio16.h"
-  #include "../../shared/audio/cWinAudio32.h"
 #else
   #include "../../shared/audio/cLinuxAudio16.h"
 #endif
