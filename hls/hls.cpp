@@ -349,9 +349,13 @@ private:
                             },
                           [&] (const uint8_t* data, int length) noexcept {
                             //cLog::log (LOGINFO, "get dataCallback " + dec (length) + " " + dec (http.getContentSize()));
+                            if (mVideoDecode)
+                              mVideoDecode->setDecodeFrac (float(http.getContentSize()) / http.getHeaderContentSize());
                             return true;
                             }
               ) == 200) {
+              if (mVideoDecode)
+                mVideoDecode->setDecodeFrac (1.f);
               //{{{  process audio first
               int seqFrameNum = mSong.getHlsFrameFromChunkNum (chunkNum);
 
