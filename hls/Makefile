@@ -4,6 +4,7 @@ SRCS      = hls.cpp \
 	    ../../shared/glad/glad.c \
 	    ../../shared/net/cHttp.cpp \
 	    ../../shared/nanoVg/cVg.cpp \
+	    ../../shared/nanoVg/cAtlasText.cpp \
 	    ../../shared/nanoVg/cGlWindow.cpp \
 	    ../../shared/decoders/cAudioDecode.cpp \
 	    ../../shared/decoders/cAacDecoder.cpp \
