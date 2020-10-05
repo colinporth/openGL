@@ -5,6 +5,7 @@
   #define _CRT_SECURE_NO_WARNINGS
   #define WIN32_LEAN_AND_MEAN
   #define NOMINMAX
+
   #include <windows.h>
   #include <winsock2.h>
   #include <WS2tcpip.h>
@@ -13,6 +14,7 @@
 #endif
 
 // c++
+#include <cstdint>
 #include <string>
 #include <thread>
 #include <chrono>
@@ -48,14 +50,15 @@
   #include "../../shared/net/cLinuxHttp.h"
 #endif
 
+// video
+#include "../../shared/utils/cVideoDecode.h"
+
 // widgets
 #include "../../shared/nanoVg/cGlWindow.h"
 #include "../../shared/fonts/FreeSansBold.h"
 #include "../../shared/fonts/DroidSansMono1.h"
 #include "../../shared/widgets/cTextBox.h"
 #include "../../shared/widgets/cSongWidget.h"
-
-#include "../../shared/utils/cVideoDecode.h"
 #include "../../shared/widgets/cVideoDecodeWidget.h"
 
 using namespace std;
