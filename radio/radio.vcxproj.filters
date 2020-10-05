@@ -11,6 +11,7 @@
     <ClCompile Include="..\..\shared\net\cHttp.cpp" />
     <ClCompile Include="..\..\shared\audio\cWinAudio16.cpp" />
     <ClCompile Include="radio.cpp" />
+    <ClCompile Include="..\..\shared\nanoVg\cAtlasText.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\teensyAac\aaccommon.h">
@@ -104,6 +105,9 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\widgets\cContainer.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\cAtlasText.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>

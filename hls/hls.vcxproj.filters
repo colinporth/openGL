@@ -14,6 +14,7 @@
     <ClCompile Include="..\..\shared\decoders\cMp3Decoder.cpp" />
     <ClCompile Include="..\..\shared\audio\cWinAudio16.cpp" />
     <ClCompile Include="hls.cpp" />
+    <ClCompile Include="..\..\shared\nanoVg\cAtlasText.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\nanoVg\cGlWindow.h">
@@ -110,6 +111,9 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\widgets\cVideoDecodeWidget.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\cAtlasText.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>

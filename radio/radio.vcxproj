@@ -178,6 +178,7 @@
     <ClInclude Include="..\..\shared\glad\glad.h" />
     <ClInclude Include="..\..\shared\hls\hls.h" />
     <ClInclude Include="..\..\shared\hls\hlsWidgets.h" />
+    <ClInclude Include="..\..\shared\nanoVg\cAtlasText.h" />
     <ClInclude Include="..\..\shared\nanoVg\cGlWindow.h" />
     <ClInclude Include="..\..\shared\nanoVg\cPerfGraph.h" />
     <ClInclude Include="..\..\shared\nanoVg\cVg.h" />
@@ -203,6 +204,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\shared\audio\cWinAudio16.cpp" />
     <ClCompile Include="..\..\shared\glad\glad.c" />
+    <ClCompile Include="..\..\shared\nanoVg\cAtlasText.cpp" />
     <ClCompile Include="..\..\shared\nanoVg\cGlWindow.cpp" />
     <ClCompile Include="..\..\shared\nanoVg\cVg.cpp" />
     <ClCompile Include="..\..\shared\net\cHttp.cpp" />

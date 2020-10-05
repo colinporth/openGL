@@ -578,6 +578,7 @@ private:
       int16_t samples [2048*2] = { 0 };
       int16_t silence [2048*2] = { 0 };
 
+      cSong::cAudioFrame* framePtr;
       cAudio16 audio (2, mSong.getSampleRate());
       cAudioDecode decode (mSong.getFrameType());
 
@@ -586,7 +587,7 @@ private:
           {
           // scoped song mutex
           shared_lock<shared_mutex> lock (mSong.getSharedMutex());
-          auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
+          framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
           bool gotSamples = mPlaying && framePtr && framePtr->getSamples();
           if (gotSamples) {
             float* src = framePtr->getSamples();
@@ -599,7 +600,7 @@ private:
             }
           }
         audio.play (2, playSamples, mSong.getSamplesPerFrame(), 1.f);
-        cLog::log (LOGINFO, "audio.play");
+        //cLog::log (LOGINFO, "audio.play");
 
         if (mPlaying && framePtr) {
           if (mVideoDecode)

@@ -176,6 +176,7 @@
     <ClInclude Include="..\..\shared\fonts\DroidSansMono1.h" />
     <ClInclude Include="..\..\shared\fonts\FreeSansBold.h" />
     <ClInclude Include="..\..\shared\glad\glad.h" />
+    <ClInclude Include="..\..\shared\nanoVg\cAtlasText.h" />
     <ClInclude Include="..\..\shared\nanoVg\cGlWindow.h" />
     <ClInclude Include="..\..\shared\nanoVg\cPerfGraph.h" />
     <ClInclude Include="..\..\shared\nanoVg\cVg.h" />
@@ -195,6 +196,7 @@
     <ClCompile Include="..\..\shared\dvb\cDvb.cpp" />
     <ClCompile Include="..\..\shared\dvb\cTransportStream.cpp" />
     <ClCompile Include="..\..\shared\glad\glad.c" />
+    <ClCompile Include="..\..\shared\nanoVg\cAtlasText.cpp" />
     <ClCompile Include="..\..\shared\nanoVg\cGlWindow.cpp" />
     <ClCompile Include="..\..\shared\nanoVg\cVg.cpp" />
     <ClCompile Include="..\..\shared\utils\cLog.cpp" />

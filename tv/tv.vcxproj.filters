@@ -8,6 +8,7 @@
     <ClCompile Include="..\..\shared\glad\glad.c" />
     <ClCompile Include="..\..\shared\dvb\cDvb.cpp" />
     <ClCompile Include="tv.cpp" />
+    <ClCompile Include="..\..\shared\nanoVg\cAtlasText.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\nanoVg\cGlWindow.h">
@@ -74,6 +75,9 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\widgets\cContainer.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\cAtlasText.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>
