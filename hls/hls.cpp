@@ -24,11 +24,13 @@
 #include "../../shared/utils/utils.h"
 #include "../../shared/utils/cLog.h"
 
-// audio
-#include "../../shared/decoders/cAudioDecode.h"
+// audio container
 #include "../../shared/utils/cSong.h"
 
-// audio out
+// audio decode
+#include "../../shared/decoders/cAudioDecode.h"
+
+// audio device
 #ifdef _WIN32
   #include "../../shared/audio/audioWASAPI.h"
   #include "../../shared/audio/cWinAudio16.h"
@@ -43,7 +45,7 @@
   #include "../../shared/net/cLinuxHttp.h"
 #endif
 
-// video
+// video decode
 #include "../../shared/utils/cVideoDecode.h"
 
 // widgets
@@ -128,50 +130,26 @@ protected:
         //}}}
         //{{{
         case GLFW_KEY_HOME:      // skip beginning
-         mSong.setPlayFrame (mSong.getSelect().empty() ? mSong.getFirstFrame() : mSong.getSelect().getFirstFrame());
-          if (mVideoDecode) {
-            auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
-            if (framePtr)
-              mVideoDecode->setPlayPts (framePtr->getPts());
-            mVideoDecode->clear (framePtr->getPts());
-            }
-         //changed();
-         break;
+          mSong.setPlayFrame (mSong.getSelect().empty() ? mSong.getFirstFrame() : mSong.getSelect().getFirstFrame());
+          videoFollowAudio();
+          break;
         //}}}
         //{{{
         case GLFW_KEY_END:       // skip end
           mSong.setPlayFrame (mSong.getSelect().empty() ? mSong.getLastFrame() : mSong.getSelect().getLastFrame());
-          if (mVideoDecode) {
-            auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
-            if (framePtr)
-              mVideoDecode->setPlayPts (framePtr->getPts());
-            mVideoDecode->clear (framePtr->getPts());
-            }
-          //changed();
+          videoFollowAudio();
           break;
         //}}}
         //{{{
         case GLFW_KEY_LEFT:      // skip back
           mSong.incPlaySec (-(mods == GLFW_MOD_SHIFT ? 300 : mods == GLFW_MOD_CONTROL ? 10 : 1), false);
-          if (mVideoDecode) {
-            auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
-            if (framePtr)
-              mVideoDecode->setPlayPts (framePtr->getPts());
-            mVideoDecode->clear (framePtr->getPts());
-            }
-          //changed();
+          videoFollowAudio();
           break;
         //}}}
         //{{{
         case GLFW_KEY_RIGHT:     // skip forward
           mSong.incPlaySec ((mods == GLFW_MOD_SHIFT ? 300 : mods == GLFW_MOD_CONTROL ? 10 : 1), false);
-          if (mVideoDecode) {
-            auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
-            if (framePtr)
-              mVideoDecode->setPlayPts (framePtr->getPts());
-            mVideoDecode->clear (framePtr->getPts());
-            }
-          //changed();
+          videoFollowAudio();
           break;
         //}}}
         //{{{
@@ -289,6 +267,16 @@ private:
     }
   //}}}
 
+  //{{{
+  void videoFollowAudio() {
+
+    auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
+    if (framePtr) {
+      mVideoDecode->setPlayPts (framePtr->getPts());
+      mVideoDecode->clear (framePtr->getPts());
+      }
+    }
+  //}}}
   //{{{
   void hlsThread (const string& host, const string& channel, int audBitrate, int vidBitrate) {
   // hls http chunk load and decode thread
@@ -450,10 +438,11 @@ private:
                   }
                 }
                 //}}}
-              if (vidPesSize)
+              if (vidPesSize) {
                 //{{{  process last vidPes
                 mVideoDecode->decode (vidPes, vidPesSize, vidPesNum == 0, vidPesPts);
                 vidPesNum++;
+                }
                 //}}}
               //}}}
               http.freeContent();
@@ -567,10 +556,8 @@ private:
           if (gotSamples) {
             float* src = framePtr->getSamples();
             int16_t* dst = samples;
-            for (int i = 0; i <mSong.getSamplesPerFrame(); i++) {
-              *dst++ = int16_t((*src++) * 0x8000);
-              *dst++ = int16_t((*src++) * 0x8000);
-              }
+            for (int i = 0; i <mSong.getSamplesPerFrame() * 2; i++)
+              *dst++ = int16_t(*src++ * 0x8000);
             playSamples = samples;
             }
           }
