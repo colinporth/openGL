@@ -117,17 +117,17 @@ protected:
         case GLFW_KEY_6: break;
 
         //{{{
-        case GLFW_KEY_SPACE :  // pause
+        case GLFW_KEY_SPACE:     // pause
           mPlaying = !mPlaying;
           break;
         //}}}
         //{{{
-        case GLFW_KEY_DELETE : // delete select
+        case GLFW_KEY_DELETE:    // delete select
           mSong.getSelect().clearAll(); changed();
           break;
         //}}}
         //{{{
-        case GLFW_KEY_HOME:    // skip beginning
+        case GLFW_KEY_HOME:      // skip beginning
          mSong.setPlayFrame (mSong.getSelect().empty() ? mSong.getFirstFrame() : mSong.getSelect().getFirstFrame());
           if (mVideoDecode) {
             auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
@@ -139,7 +139,7 @@ protected:
          break;
         //}}}
         //{{{
-        case GLFW_KEY_END:     // skip end
+        case GLFW_KEY_END:       // skip end
           mSong.setPlayFrame (mSong.getSelect().empty() ? mSong.getLastFrame() : mSong.getSelect().getLastFrame());
           if (mVideoDecode) {
             auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
@@ -151,7 +151,7 @@ protected:
           break;
         //}}}
         //{{{
-        case GLFW_KEY_LEFT:    // skip back
+        case GLFW_KEY_LEFT:      // skip back
           mSong.incPlaySec (-(mods == GLFW_MOD_SHIFT ? 300 : mods == GLFW_MOD_CONTROL ? 10 : 1), false);
           if (mVideoDecode) {
             auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
@@ -163,7 +163,7 @@ protected:
           break;
         //}}}
         //{{{
-        case GLFW_KEY_RIGHT:   // skip forward
+        case GLFW_KEY_RIGHT:     // skip forward
           mSong.incPlaySec ((mods == GLFW_MOD_SHIFT ? 300 : mods == GLFW_MOD_CONTROL ? 10 : 1), false);
           if (mVideoDecode) {
             auto framePtr = mSong.getAudioFramePtr (mSong.getPlayFrame());
@@ -175,11 +175,11 @@ protected:
           break;
         //}}}
         //{{{
-        case GLFW_KEY_DOWN:    // nothing
+        case GLFW_KEY_DOWN:      // nothing
           break;
         //}}}
         //{{{
-        case GLFW_KEY_UP:      // nothing
+        case GLFW_KEY_UP:        // nothing
           break;
         //}}}
         //{{{
