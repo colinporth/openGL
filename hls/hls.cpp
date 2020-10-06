@@ -80,8 +80,8 @@ public:
 
     mLogInfo3 = logInfo3;
 
-    //mVideoDecode = new cMfxVideoDecode();
-    mVideoDecode = new cFFmpegVideoDecode();
+    //mVideoDecode = new cMfxVideoDecode (kChannels[channelNum]);
+    mVideoDecode = new cFFmpegVideoDecode (kChannels[channelNum]);
 
     if (headless) {
       thread ([=](){ hlsThread (kHost, kChannels[channelNum], audBitrate, vidBitrate); }).detach();
@@ -310,15 +310,13 @@ private:
 
         http.freeContent();
         //}}}
-
         mSong.init (cAudioDecode::eAac, 2, 48000, mSong.getBitrate() < 128000 ? 2048 : 1024); // samplesPerFrame
-        mSong.setHlsBase (mediaSequence, programDateTimePoint, -37s, (2*60*60) - 30);
+        mSong.setHlsBase (mediaSequence, programDateTimePoint, -37s, (2*60*60) - 25);
         cAudioDecode audioDecode (cAudioDecode::eAac);
 
         thread player;
         while (!mExit && !mSongChanged) {
-          constexpr int kHlsPreload = 2;
-          int chunkNum = mSong.getHlsLoadChunkNum (system_clock::now(), 12s, kHlsPreload);
+          int chunkNum = mSong.getHlsLoadChunkNum (system_clock::now(), 12s, 2);
           if (chunkNum) {
             // get hls chunkNum chunk
             mSong.setHlsLoad (cSong::eHlsLoading, chunkNum);
