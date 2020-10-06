@@ -295,14 +295,15 @@ private:
 
     cLog::setThreadName ("hls ");
 
-    constexpr int kPesBufferSize = 1000000;
-    uint8_t* audPesBuffer = (uint8_t*)malloc (kPesBufferSize);
-    uint8_t* vidPesBuffer = (uint8_t*)malloc (kPesBufferSize);
+    constexpr int kPesSize = 1000000;
+    uint8_t* audPes = (uint8_t*)malloc (kPesSize);
+    uint8_t* vidPes = (uint8_t*)malloc (kPesSize);
 
     mSong.setChannel (channel);
     mSong.setBitrate (audBitrate, audBitrate < 128000 ? 180 : 360); // audBitrate, audioFrames per chunk
 
-    while (true) {
+    while (!mExit && !mSongChanged) {
+      mSongChanged = false;
       const string path = "pool_902/live/uk/" + mSong.getChannel() +
                           "/" + mSong.getChannel() +
                           ".isml/" + mSong.getChannel() +
@@ -326,146 +327,137 @@ private:
         cAudioDecode audioDecode (cAudioDecode::eAac);
 
         thread player;
-        bool playerFirstTime = true;
-        mSongChanged = false;
         while (!mExit && !mSongChanged) {
           constexpr int kHlsPreload = 2;
           int chunkNum = mSong.getHlsLoadChunkNum (system_clock::now(), 12s, kHlsPreload);
           if (chunkNum) {
             // get hls chunkNum chunk
             mSong.setHlsLoad (cSong::eHlsLoading, chunkNum);
-
-            // get chunk with callbacks
             if (http.get (redirectedHost, path + '-' + dec(chunkNum) + ".ts", "",
                           [&] (const string& key, const string& value) noexcept { /* headerCallback lambda */ },
-                          [&] (const uint8_t* data, int length) noexcept { 
+                          [&] (const uint8_t* data, int length) noexcept {
                             // data callback lambda
                             if (mVideoDecode)
                               mVideoDecode->setDecodeFrac (float(http.getContentSize()) / http.getHeaderContentSize());
-                            return true; } 
+                            return true; }
                           ) == 200) {
-              //{{{  got content chunk
-              if (mVideoDecode)
-                mVideoDecode->setDecodeFrac (1.f);
-
+              // got content chunk
               mSong.setHlsLoad (cSong::eHlsIdle, chunkNum);
               int seqFrameNum = mSong.getHlsFrameFromChunkNum (chunkNum);
+              if (mVideoDecode)
+                mVideoDecode->setDecodeFrac (1.f);
+              //{{{  parse content
+              int audPesSize = 0;
+              uint64_t audPesPts = 0;
 
-              int audPesBufferLen = 0;
-              int vidPesBufferLen = 0;
-              uint64_t audPts = 0;
-              uint64_t vidPts = 0;
-              bool firstVideoPts = true;
+              int vidPesNum = 0;
+              int vidPesSize = 0;
+              uint64_t vidPesPts = 0;
 
               // parse ts packets
               uint8_t* ts = http.getContent();
-              uint8_t* tsEnd = ts + http.getContentSize();
-              while ((ts < tsEnd) && (*ts++ == 0x47)) {
+              int tsSize = http.getContentSize();
+              while ((ts < ts + tsSize) && (*ts++ == 0x47)) {
                 auto payStart = ts[0] & 0x40;
                 auto pid = ((ts[0] & 0x1F) << 8) | ts[1];
-                auto headerBytes = (ts[2] & 0x20) ? 4 + ts[3] : 3;
-                ts += headerBytes;
-                auto tsBodyBytes = 187 - headerBytes;
+                auto headerSize = (ts[2] & 0x20) ? 4 + ts[3] : 3;
+                ts += headerSize;
+                auto tsBodySize = 187 - headerSize;
 
                 if (pid == 33) {
                   //{{{  video pid
                   if (payStart && !ts[0] && !ts[1] && (ts[2] == 1) && (ts[3] == 0xe0)) {
-                    // new vid pes
-                    if (vidPesBufferLen) {
+                    // new pes
+                    if (vidPesSize) {
                       // process prev videoPes
-                      mVideoDecode->decode (firstVideoPts, vidPts, vidPesBuffer, vidPesBufferLen);
-                      firstVideoPts = false;
-                      vidPesBufferLen = 0;
+                      mVideoDecode->decode (vidPes, vidPesSize, vidPesNum == 0, vidPesPts);
+                      vidPesSize = 0;
+                      vidPesNum++;
                       }
 
+                    // header
                     if (ts[7] & 0x80)
-                      vidPts = getPts (ts+9);
+                      vidPesPts = getPts (ts+9);
 
-                    // skip pes header
-                    int pesHeaderBytes = 9 + ts[8];
-                    ts += pesHeaderBytes;
-                    tsBodyBytes -= pesHeaderBytes;
+                    headerSize = 9 + ts[8];
+                    ts += headerSize;
+                    tsBodySize -= headerSize;
                     }
 
-                  // copy ts payload into pesBuffer
-                  if (vidPesBufferLen + tsBodyBytes > kPesBufferSize)
-                    cLog::log (LOGERROR, "pesBuffer overflowed %d", vidPesBufferLen + tsBodyBytes);
+                  // copy ts payload into Pes
+                  if (vidPesSize + tsBodySize > kPesSize)
+                    cLog::log (LOGERROR, "Pes overflowed %d", vidPesSize + tsBodySize);
                   else {
-                    memcpy (vidPesBuffer + vidPesBufferLen, ts, tsBodyBytes);
-                    vidPesBufferLen += tsBodyBytes;
+                    memcpy (vidPes + vidPesSize, ts, tsBodySize);
+                    vidPesSize += tsBodySize;
                     }
+                  }
                   //}}}
                 else if (pid == 34) {
                   //{{{  audio pid
                   if (payStart && !ts[0] && !ts[1] && (ts[2] == 1) && (ts[3] == 0xC0)) {
-                    // new aud pes
-                    if (audPesBufferLen) {
+                    // new pes
+                    if (audPesSize) {
                       //  process prev audioPes
-                      uint8_t* bufferPtr = audPesBuffer;
-                      while (audioDecode.parseFrame (bufferPtr, audPesBuffer + audPesBufferLen)) {
-                        // several aacFrames per audio pes
+                      uint8_t* bufferPtr = audPes;
+                      while (audioDecode.parseFrame (bufferPtr, audPes + audPesSize)) {
                         float* samples = audioDecode.decodeFrame (seqFrameNum);
                         if (samples) {
-                          if (playerFirstTime)
-                            mSong.setFixups (audioDecode.getNumChannels(), audioDecode.getSampleRate(), audioDecode.getNumSamples());
-                          mSong.addAudioFrame (seqFrameNum++, samples, true, mSong.getNumFrames(), nullptr, audPts);
-                          audPts += (audioDecode.getNumSamples() * 90) / 48;
+                          mSong.setFixups (audioDecode.getNumChannels(), audioDecode.getSampleRate(), audioDecode.getNumSamples());
+                          mSong.addAudioFrame (seqFrameNum++, samples, true, mSong.getNumFrames(), nullptr, audPesPts);
+                          audPesPts += (audioDecode.getNumSamples() * 90) / 48;
                           changed();
-                          if (playerFirstTime) {
-                            playerFirstTime = false;
+                          if (!player.joinable())
                             player = thread ([=](){ playThread (true); });  // playThread16 playThread32 playThreadWSAPI
-                            }
                           }
                         bufferPtr += audioDecode.getNextFrameOffset();
                         }
-                      audPesBufferLen = 0;
+                      audPesSize = 0;
                       }
 
+                    // header
                     if (ts[7] & 0x80)
-                      audPts = getPts (ts+9);
-
-                    // skip pes header
-                    int pesHeaderBytes = 9 + ts[8];
-                    ts += pesHeaderBytes;
-                    tsBodyBytes -= pesHeaderBytes;
+                      audPesPts = getPts (ts+9);
+                    headerSize = 9 + ts[8];
+                    ts += headerSize;
+                    tsBodySize -= headerSize;
                     }
 
-                  // copy ts payload into pesBuffer
-                  if (audPesBufferLen + tsBodyBytes > kPesBufferSize)
-                    cLog::log (LOGERROR, "audPesBuffer overflowed %d", audPesBufferLen + tsBodyBytes);
+                  // copy ts payload into Pes
+                  if (audPesSize + tsBodySize > kPesSize)
+                    cLog::log (LOGERROR, "audPes overflowed %d", audPesSize + tsBodySize);
                   else {
-                    memcpy (audPesBuffer + audPesBufferLen, ts, tsBodyBytes);
-                    audPesBufferLen += tsBodyBytes;
+                    memcpy (audPes + audPesSize, ts, tsBodySize);
+                    audPesSize += tsBodySize;
                     }
-                  else
                   }
                   //}}}
 
-                ts += tsBodyBytes;
+                ts += tsBodySize;
                 }
 
-              if (audPesBufferLen) {
-                //{{{  process last audioPes
-                uint8_t* bufferPtr = audPesBuffer;
-                while (audioDecode.parseFrame (bufferPtr, audPesBuffer + audPesBufferLen)) {
-                  // several aacFrames per audio pes
+              if (audPesSize) {
+                //{{{  process last audPes
+                uint8_t* bufferPtr = audPes;
+                while (audioDecode.parseFrame (bufferPtr, audPes + audPesSize)) {
                   float* samples = audioDecode.decodeFrame (seqFrameNum);
                   if (samples) {
-                    mSong.addAudioFrame (seqFrameNum++, samples, true, mSong.getNumFrames(), nullptr, audPts);
-                    audPts += (audioDecode.getNumSamples() * 90) / 48;
+                    mSong.addAudioFrame (seqFrameNum++, samples, true, mSong.getNumFrames(), nullptr, audPesPts);
+                    audPesPts += (audioDecode.getNumSamples() * 90) / 48;
                     changed();
                     }
                   bufferPtr += audioDecode.getNextFrameOffset();
                   }
                 }
                 //}}}
-              if (vidPesBufferLen) {
-                //  process last videoPes
-                mVideoDecode->decode (firstVideoPts, vidPts, vidPesBuffer, vidPesBufferLen);
-
+              if (vidPesSize)
+                //{{{  process last vidPes
+                mVideoDecode->decode (vidPes, vidPesSize, vidPesNum == 0, vidPesPts);
+                vidPesNum++;
+                //}}}
+              //}}}
               http.freeContent();
               }
-              //}}}
             else {
               //{{{  failed to load expected available chunk, back off for 250ms
               mSong.setHlsLoad (cSong::eHlsFailed, chunkNum);
@@ -483,8 +475,8 @@ private:
         }
       }
 
-    free (audPesBuffer);
-    free (vidPesBuffer);
+    free (audPes);
+    free (vidPes);
     cLog::log (LOGINFO, "exit");
     }
   //}}}
