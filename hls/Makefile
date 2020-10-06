@@ -16,8 +16,8 @@ SRCS      = hls.cpp \
 BUILD_DIR = ./build
 CLEAN_DIRS = $(BUILD_DIR) $(BUILD_DIR)../../shared
 LIBS      = -ldl -lbfd -lpthread -lGL -lglfw -lasound \
-	    `pkg-config --libs libavformat` \
 	    `pkg-config --libs libavcodec` \
+	    `pkg-config --libs libavformat` \
 	    `pkg-config --libs libavutil` \
 	    `pkg-config --libs libswscale` \
 #
@@ -28,13 +28,12 @@ DEPS      = $(OBJS:.o=.d)
 CFLAGS = -Wall -Wno-unused-result \
 	 -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64 \
 	 -MMD -MP \
-	 `pkg-config --cflags libavformat` \
 	 `pkg-config --cflags libavcodec` \
+	 `pkg-config --cflags libavformat` \
 	 `pkg-config --cflags libswscale` \
-	 -g \
-	 -O2
+	 -g -O2
 #         -msse3 \
-#
+
 LD_VERSION = $(shell ld -v 2>&1 | sed -ne 's/.*\([0-9]\+\.[0-9]\+\).*/\1/p')
 ifeq "$(LD_VERSION)" "2.34"
 	CFLAGS += -D HAS_BINUTILS_234

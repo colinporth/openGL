@@ -175,7 +175,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\audio\cCaptureWASAPI.h" />
-    <ClInclude Include="..\..\shared\audio\cWinAudio16.h" />
     <ClInclude Include="..\..\shared\audio\iAudio.h" />
     <ClInclude Include="..\..\shared\decoders\cAacDecoder.h" />
     <ClInclude Include="..\..\shared\decoders\cMp3Decoder.h" />
@@ -210,7 +209,6 @@
     <ClInclude Include="..\..\shared\widgets\iWindow.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\shared\audio\cWinAudio16.cpp" />
     <ClCompile Include="..\..\shared\decoders\cAacDecoder.cpp" />
     <ClCompile Include="..\..\shared\decoders\cAudioDecode.cpp" />
     <ClCompile Include="..\..\shared\decoders\cMp3Decoder.cpp" />

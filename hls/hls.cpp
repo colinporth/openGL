@@ -128,6 +128,7 @@ protected:
           mSong.getSelect().clearAll(); changed();
           break;
         //}}}
+
         //{{{
         case GLFW_KEY_HOME:      // skip beginning
           mSong.setPlayFrame (mSong.getSelect().empty() ? mSong.getFirstFrame() : mSong.getSelect().getFirstFrame());
@@ -138,6 +139,14 @@ protected:
         case GLFW_KEY_END:       // skip end
           mSong.setPlayFrame (mSong.getSelect().empty() ? mSong.getLastFrame() : mSong.getSelect().getLastFrame());
           videoFollowAudio();
+          break;
+        //}}}
+        //{{{
+        case GLFW_KEY_PAGE_UP:   // nothing
+          break;
+        //}}}
+        //{{{
+        case GLFW_KEY_PAGE_DOWN: // nothing
           break;
         //}}}
         //{{{
@@ -158,14 +167,6 @@ protected:
         //}}}
         //{{{
         case GLFW_KEY_UP:        // nothing
-          break;
-        //}}}
-        //{{{
-        case GLFW_KEY_PAGE_UP:   // nothing
-          break;
-        //}}}
-        //{{{
-        case GLFW_KEY_PAGE_DOWN: // nothing
           break;
         //}}}
 
@@ -620,9 +621,9 @@ int main (int numArgs, char* args[]) {
 
   cLog::init (logInfo3 ? LOGINFO3 : LOGINFO);
   cLog::log (LOGNOTICE, "openGL hls " + kChannels[channelNum] + " " +
-                                        dec (vidBitrate) + " " +
-                                        string(logInfo3 ? "logInfo3 " : "") +
-                                        string(headless ? "headless " : ""));
+                        dec (vidBitrate) + " " +
+                        string(logInfo3 ? "logInfo3 " : "") +
+                        string(headless ? "headless " : ""));
 
   cAppWindow appWindow;
   appWindow.run ("hls", 800, 450, headless, logInfo3, channelNum, kAudBitrate, vidBitrate);

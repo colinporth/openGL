@@ -12,7 +12,6 @@
     <ClCompile Include="..\..\shared\decoders\cAacDecoder.cpp" />
     <ClCompile Include="..\..\shared\decoders\cAudioDecode.cpp" />
     <ClCompile Include="..\..\shared\decoders\cMp3Decoder.cpp" />
-    <ClCompile Include="..\..\shared\audio\cWinAudio16.cpp" />
     <ClCompile Include="hls.cpp" />
     <ClCompile Include="..\..\shared\nanoVg\cAtlasText.cpp" />
   </ItemGroup>
@@ -93,9 +92,6 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\decoders\cMp3Decoder.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\audio\cWinAudio16.h">
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\audio\cCaptureWASAPI.h">
