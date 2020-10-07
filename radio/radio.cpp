@@ -65,7 +65,7 @@ public:
       }
 
     thread ([=]() { cPlatformHttp http; loader (http); } ).detach();
-    thread ([=]() { cAudio16 audio16 (2, 48000); player (audio16, this); } ).detach();
+    thread ([=]() { cAudio16 audio16 (2, 48000); player (audio16); } ).detach();
 
     if (headless) {
       while (true)
