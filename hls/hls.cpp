@@ -57,10 +57,10 @@ public:
 
     mLogInfo3 = logInfo3;
 
-    initPlayer (kChannels[channelNum]);
+    initPlayer (kHost, kChannels[channelNum], audBitrate, vidBitrate);
 
     if (headless) {
-      thread ([=](){ hlsThread (kHost, kChannels[channelNum], audBitrate, vidBitrate); }).detach();
+      thread ([=](){ hlsThread(); }).detach();
       while (true)
         this_thread::sleep_for (200ms);
        }
@@ -70,7 +70,7 @@ public:
       addTopLeft (new cVideoDecodeWidget (mVideoDecode, 0,0));
       addTopLeft (new cSongWidget (mSong, 0,0));
 
-      thread ([=](){ hlsThread (kHost, kChannels[channelNum], audBitrate, vidBitrate); }).detach();
+      thread ([=](){ hlsThread(); }).detach();
 
       glClearColor (0, 0, 0, 1.f);
       cGlWindow::run();
