@@ -38,7 +38,7 @@
   #include "../../shared/audio/cWinAudio16.h"
 #else
   #include "../../shared/net/cLinuxHttp.h"
-  #include "../../shared/audio/cLinuxAudio16.h"
+  #include "../../shared/audio/cLinuxAudio.h"
 #endif
 
 #include "../../shared/widgets/cValueBox.h"
@@ -65,7 +65,7 @@ public:
       }
 
     thread ([=]() { cPlatformHttp http; loader (http); } ).detach();
-    thread ([=]() { cAudio16 audio16 (2, 48000); player (audio16); } ).detach();
+    thread ([=]() { cAudio audio (2, 48000, 50000, true); player (audio); } ).detach();
 
     if (headless) {
       while (true)
