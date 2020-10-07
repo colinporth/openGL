@@ -1,5 +1,7 @@
 TARGET    = app
 SRCS      = hls.cpp \
+	    ../../shared/hls/cHlsPlayer.cpp \
+	    ../../shared/utils/cSong.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/glad/glad.c \
 	    ../../shared/net/cHttp.cpp \
@@ -11,7 +13,6 @@ SRCS      = hls.cpp \
 	    ../../shared/decoders/cMp3Decoder.cpp \
 	    ../../shared/kissFft/kiss_fft.c \
 	    ../../shared/kissFft/kiss_fftr.c \
-	    ../../shared/utils/cSong.cpp \
 
 BUILD_DIR = ./build
 CLEAN_DIRS = $(BUILD_DIR) $(BUILD_DIR)../../shared
