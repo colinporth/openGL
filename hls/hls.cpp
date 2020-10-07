@@ -1,4 +1,4 @@
-// main.cpp - hls audio/video windows/linux
+// main.cpp - nanoVg openGL - hls audio/video windows/linux
 //{{{  includes
 #ifdef _WIN32
   // windows headers, defines
@@ -38,16 +38,14 @@
 using namespace std;
 using namespace chrono;
 //}}}
-//{{{  channels
-constexpr int kAudBitrate = 128000; // 96000  128000
 
+// channels
 const string kHost = "vs-hls-uk-live.akamaized.net";
-
 const vector <string> kChannels = { "bbc_one_hd",          "bbc_two_hd",          "bbc_four_hd", // pa4
                                     "bbc_news_channel_hd", "bbc_one_scotland_hd", "s4cpbs",      // pa4
                                     "bbc_one_south_west",  "bbc_parliament" };                   // pa3
+constexpr int kAudBitrate = 128000; // 96000  128000
 
-//}}}
 
 class cAppWindow : public cGlWindow, public cHlsPlayer {
 public:
