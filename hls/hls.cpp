@@ -33,7 +33,7 @@
 #include "../../shared/widgets/cSongWidget.h"
 #include "../../shared/widgets/cVideoDecodeWidget.h"
 
-#include "cHlsPlayer.h"
+#include "../../shared/hls/cHlsPlayer.h"
 
 using namespace std;
 using namespace chrono;
@@ -59,7 +59,7 @@ public:
 
     mLogInfo3 = logInfo3;
 
-    init (kChannels[channelNum]);
+    initPlayer (kChannels[channelNum]);
 
     if (headless) {
       thread ([=](){ hlsThread (kHost, kChannels[channelNum], audBitrate, vidBitrate); }).detach();
