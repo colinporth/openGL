@@ -12,7 +12,8 @@ SRCS      = radio.cpp \
 
 BUILD_DIR = ./build
 CLEAN_DIRS = $(BUILD_DIR) $(BUILD_DIR)../../shared
-LIBS      = -ldl -lbfd -lpthread -lGL -lglfw -lasound
+LIBS      = -no-pie \
+	    -ldl -lbfd -lpthread -lGL -lglfw -lasound
 #
 #
 OBJS      = $(SRCS:%=$(BUILD_DIR)/%.o)

@@ -10,7 +10,8 @@ SRCS      = tv.cpp \
 
 BUILD_DIR = ./build
 CLEAN_DIRS = $(BUILD_DIR) $(BUILD_DIR)../../shared
-LIBS      = -ldl -lbfd -lpthread -lGL -lglfw
+LIBS      = -no-pie \
+	    -ldl -lbfd -lpthread -lGL -lglfw
 #
 #
 OBJS      = $(SRCS:%=$(BUILD_DIR)/%.o)
