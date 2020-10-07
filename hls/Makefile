@@ -16,7 +16,8 @@ SRCS      = hls.cpp \
 
 BUILD_DIR = ./build
 CLEAN_DIRS = $(BUILD_DIR) $(BUILD_DIR)../../shared
-LIBS      = -ldl -lbfd -lpthread -lGL -lglfw -lasound \
+LIBS      = -no-pie \
+	    -ldl -lbfd -lpthread -lGL -lglfw -lasound \
 	    `pkg-config --libs libavcodec` \
 	    `pkg-config --libs libavformat` \
 	    `pkg-config --libs libavutil` \
