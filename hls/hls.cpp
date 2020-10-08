@@ -46,7 +46,6 @@ const vector <string> kChannels = { "bbc_one_hd",          "bbc_two_hd",        
                                     "bbc_one_south_west",  "bbc_parliament" };                   // pa3
 constexpr int kAudBitrate = 128000; // 96000  128000
 
-
 class cAppWindow : public cGlWindow, public cHlsPlayer {
 public:
   cAppWindow() : cHlsPlayer() {}
