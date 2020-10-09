@@ -56,7 +56,7 @@ public:
 
     mLogInfo3 = logInfo3;
 
-    initPlayer (kHost, kChannels[channelNum], audBitrate, vidBitrate);
+    init (kHost, kChannels[channelNum], audBitrate, vidBitrate);
 
     if (headless) {
       thread ([=](){ hlsThread(); }).detach();
