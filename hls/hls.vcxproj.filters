@@ -104,9 +104,6 @@
     <ClInclude Include="..\..\shared\utils\cVideoDecode.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\widgets\cVideoDecodeWidget.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\nanoVg\cAtlasText.h">
       <Filter>h</Filter>
     </ClInclude>
@@ -120,6 +117,9 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\utils\readerWriterQueue.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cHlsPlayerWidget.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>

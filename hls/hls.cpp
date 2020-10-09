@@ -24,6 +24,7 @@
 
 // video decode
 #include "../../shared/utils/cVideoDecode.h"
+#include "../../shared/hls/cHlsPlayer.h"
 
 // widgets
 #include "../../shared/nanoVg/cGlWindow.h"
@@ -31,9 +32,7 @@
 #include "../../shared/fonts/DroidSansMono1.h"
 #include "../../shared/widgets/cTextBox.h"
 #include "../../shared/widgets/cSongWidget.h"
-#include "../../shared/widgets/cVideoDecodeWidget.h"
-
-#include "../../shared/hls/cHlsPlayer.h"
+#include "../../shared/widgets/cHlsPlayerWidget.h"
 
 using namespace std;
 using namespace chrono;
@@ -66,7 +65,7 @@ public:
 
     else {
       initialise (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
-      addTopLeft (new cVideoDecodeWidget (mVideoDecode, 0,0));
+      addTopLeft (new cHlsPlayerWidget (this, 0,0));
       addTopLeft (new cSongWidget (mSong, 0,0));
 
       thread ([=](){ loaderThread(); }).detach();
