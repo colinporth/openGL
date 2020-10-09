@@ -59,7 +59,7 @@ public:
     init (kHost, kChannels[channelNum], audBitrate, vidBitrate);
 
     if (headless) {
-      thread ([=](){ hlsThread(); }).detach();
+      thread ([=](){ loaderThread(); }).detach();
       while (true)
         this_thread::sleep_for (200ms);
        }
@@ -69,7 +69,7 @@ public:
       addTopLeft (new cVideoDecodeWidget (mVideoDecode, 0,0));
       addTopLeft (new cSongWidget (mSong, 0,0));
 
-      thread ([=](){ hlsThread(); }).detach();
+      thread ([=](){ loaderThread(); }).detach();
 
       glClearColor (0, 0, 0, 1.f);
       cGlWindow::run();
