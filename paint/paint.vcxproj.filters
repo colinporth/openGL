@@ -1,0 +1,257 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\shared\nanoVg\cGlWindow.cpp" />
+    <ClCompile Include="..\..\shared\nanoVg\cVg.cpp" />
+    <ClCompile Include="..\..\shared\utils\cLog.cpp" />
+    <ClCompile Include="..\..\shared\dvb\cTransportStream.cpp" />
+    <ClCompile Include="..\..\shared\glad\glad.c" />
+    <ClCompile Include="..\..\shared\dvb\cDvb.cpp" />
+    <ClCompile Include="..\..\shared\nanoVg\cAtlasText.cpp" />
+    <ClCompile Include="paint.cpp" />
+    <ClCompile Include="libmypaint\brushmodes.c">
+      <Filter>libmypaint</Filter>
+    </ClCompile>
+    <ClCompile Include="libmypaint\fifo.c">
+      <Filter>libmypaint</Filter>
+    </ClCompile>
+    <ClCompile Include="libmypaint\helpers.c">
+      <Filter>libmypaint</Filter>
+    </ClCompile>
+    <ClCompile Include="libmypaint\mypaint-brush-settings.c">
+      <Filter>libmypaint</Filter>
+    </ClCompile>
+    <ClCompile Include="libmypaint\mypaint-brush.c">
+      <Filter>libmypaint</Filter>
+    </ClCompile>
+    <ClCompile Include="libmypaint\mypaint-fixed-tiled-surface.c">
+      <Filter>libmypaint</Filter>
+    </ClCompile>
+    <ClCompile Include="libmypaint\mypaint-mapping.c">
+      <Filter>libmypaint</Filter>
+    </ClCompile>
+    <ClCompile Include="libmypaint\mypaint-matrix.c">
+      <Filter>libmypaint</Filter>
+    </ClCompile>
+    <ClCompile Include="libmypaint\mypaint-rectangle.c">
+      <Filter>libmypaint</Filter>
+    </ClCompile>
+    <ClCompile Include="libmypaint\mypaint-surface.c">
+      <Filter>libmypaint</Filter>
+    </ClCompile>
+    <ClCompile Include="libmypaint\mypaint-symmetry.c">
+      <Filter>libmypaint</Filter>
+    </ClCompile>
+    <ClCompile Include="libmypaint\mypaint-tiled-surface.c">
+      <Filter>libmypaint</Filter>
+    </ClCompile>
+    <ClCompile Include="libmypaint\mypaint.c">
+      <Filter>libmypaint</Filter>
+    </ClCompile>
+    <ClCompile Include="libmypaint\operationqueue.c">
+      <Filter>libmypaint</Filter>
+    </ClCompile>
+    <ClCompile Include="libmypaint\rng-double.c">
+      <Filter>libmypaint</Filter>
+    </ClCompile>
+    <ClCompile Include="libmypaint\tilemap.c">
+      <Filter>libmypaint</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\shared\nanoVg\cGlWindow.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\utils\cLog.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\cPerfGraph.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cWidget.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\utils\date.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\iDraw.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\cVg.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\glad\glad.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\dvb\cDvb.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\dvb\huffmanTables.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\utils\utils.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fonts\FreeSansBold.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fonts\DroidSansMono1.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cTextBox.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\dvb\cSubtitleDecoder.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\dvb\cTransportStream.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\iWindow.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cDvbWidget.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\dvb\cSubtitle.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cRootContainer.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cContainer.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\cAtlasText.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\stb_image.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\stb_truetype.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\cPoint.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\sVgColour.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\brushmodes.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\brushsettings-gen.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\config.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\fifo.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\helpers.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\mypaint-brush-settings-gen.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\mypaint-brush-settings.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\mypaint-brush.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\mypaint-config.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\mypaint-fixed-tiled-surface.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\mypaint-glib-compat.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\mypaint-mapping.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\mypaint-matrix.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\mypaint-rectangle.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\mypaint-surface.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\mypaint-symmetry.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\mypaint-tiled-surface.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\mypaint.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\operationqueue.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\rng-double.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\tiled-surface-private.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\tilemap.h">
+      <Filter>h libmypaint</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\fastapprox\cast.h">
+      <Filter>fastapprox</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\fastapprox\fasterf.h">
+      <Filter>fastapprox</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\fastapprox\fastexp.h">
+      <Filter>fastapprox</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\fastapprox\fastgamma.h">
+      <Filter>fastapprox</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\fastapprox\fasthyperbolic.h">
+      <Filter>fastapprox</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\fastapprox\fastlambertw.h">
+      <Filter>fastapprox</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\fastapprox\fastlog.h">
+      <Filter>fastapprox</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\fastapprox\fastonebigheader.h">
+      <Filter>fastapprox</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\fastapprox\fastpow.h">
+      <Filter>fastapprox</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\fastapprox\fastsigmoid.h">
+      <Filter>fastapprox</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\fastapprox\fasttrig.h">
+      <Filter>fastapprox</Filter>
+    </ClInclude>
+    <ClInclude Include="libmypaint\fastapprox\sse.h">
+      <Filter>fastapprox</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="h">
+      <UniqueIdentifier>{309b5935-6d35-41d3-8da8-2c132cc051bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="h libmypaint">
+      <UniqueIdentifier>{ea4d4bb9-c33c-44d2-80b5-10ee471594a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libmypaint">
+      <UniqueIdentifier>{36138847-56d7-4c9a-9102-bbd6491cd72b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="fastapprox">
+      <UniqueIdentifier>{a0051696-801e-41a0-a772-9607dd08609a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

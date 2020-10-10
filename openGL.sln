@@ -19,6 +19,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "play", "play\play.vcxproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmfx", "..\libmfx\mfx_dispatch\libmfx_vs2015.vcxproj", "{9E7B3527-11AA-46BA-A82F-C58761F9B56F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "paint", "paint\paint.vcxproj", "{B45B960F-FF06-4BD5-BDDB-C3AB311055A4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_THM|x64 = Debug_THM|x64
@@ -108,6 +110,16 @@ Global
 		{9E7B3527-11AA-46BA-A82F-C58761F9B56F}.Release_THM|x64.Build.0 = Release_THM|x64
 		{9E7B3527-11AA-46BA-A82F-C58761F9B56F}.Release|x64.ActiveCfg = Release|x64
 		{9E7B3527-11AA-46BA-A82F-C58761F9B56F}.Release|x64.Build.0 = Release|x64
+		{B45B960F-FF06-4BD5-BDDB-C3AB311055A4}.Debug_THM|x64.ActiveCfg = Debug|x64
+		{B45B960F-FF06-4BD5-BDDB-C3AB311055A4}.Debug_THM|x64.Build.0 = Debug|x64
+		{B45B960F-FF06-4BD5-BDDB-C3AB311055A4}.Debug|x64.ActiveCfg = Debug|x64
+		{B45B960F-FF06-4BD5-BDDB-C3AB311055A4}.Debug|x64.Build.0 = Debug|x64
+		{B45B960F-FF06-4BD5-BDDB-C3AB311055A4}.release avx|x64.ActiveCfg = Release|x64
+		{B45B960F-FF06-4BD5-BDDB-C3AB311055A4}.release avx|x64.Build.0 = Release|x64
+		{B45B960F-FF06-4BD5-BDDB-C3AB311055A4}.Release_THM|x64.ActiveCfg = Release|x64
+		{B45B960F-FF06-4BD5-BDDB-C3AB311055A4}.Release_THM|x64.Build.0 = Release|x64
+		{B45B960F-FF06-4BD5-BDDB-C3AB311055A4}.Release|x64.ActiveCfg = Release|x64
+		{B45B960F-FF06-4BD5-BDDB-C3AB311055A4}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
