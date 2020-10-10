@@ -57,6 +57,7 @@
     <ClCompile Include="libmypaint\tilemap.c">
       <Filter>libmypaint</Filter>
     </ClCompile>
+    <ClCompile Include="minimal.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\nanoVg\cGlWindow.h">
