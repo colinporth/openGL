@@ -122,6 +122,12 @@
     <ClInclude Include="..\..\shared\widgets\cHlsPlayerWidget.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\cPoint.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\sVgColour.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">

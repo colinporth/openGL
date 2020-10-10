@@ -65,7 +65,7 @@ public:
 
     else {
       initialise (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
-      addTopLeft (new cHlsPlayerWidget (this, 0,0));
+      addTopLeft (new cHlsPlayerWidget (this, cPoint(0.f,0.f)));
       addTopLeft (new cSongWidget (mSong, 0,0));
 
       thread ([=](){ loaderThread(); }).detach();
