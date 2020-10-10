@@ -1,5 +1,4 @@
-#ifndef MYPAINTMATRIX_H
-#define MYPAINTMATRIX_H
+#pragma once
 
 /* libmypaint - The MyPaint Brush Library
  * Copyright (C) 2019 The MyPaint Team
@@ -28,5 +27,3 @@ MyPaintTransform mypaint_transform_reflect(const MyPaintTransform transform, con
 MyPaintTransform mypaint_transform_translate(const MyPaintTransform transform, const float x, const float y);
 
 void mypaint_transform_point(const MyPaintTransform* const t, float x, float y, float* x_out, float* y_out);
-
-#endif

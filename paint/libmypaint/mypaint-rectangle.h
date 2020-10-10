@@ -1,6 +1,5 @@
-#ifndef MYPAINTRECTANGLE_H
-#define MYPAINTRECTANGLE_H
-
+#pragma once
+//{{{
 /* libmypaint - The MyPaint Brush Library
  * Copyright (C) 2008 Martin Renold <martinxyz@gmx.ch>
  * Copyright (C) 2012 Jon Nordby <jononor@gmail.com>
@@ -17,6 +16,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+//}}}
 
 #include "mypaint-config.h"
 #include "mypaint-glib-compat.h"
@@ -24,22 +24,20 @@
 G_BEGIN_DECLS
 
 typedef struct {
-    int x;
-    int y;
-    int width;
-    int height;
-} MyPaintRectangle;
+  int x;
+  int y;
+  int width;
+  int height;
+  }MyPaintRectangle;
 
 typedef struct {
   int num_rectangles;
   MyPaintRectangle* rectangles;
-} MyPaintRectangles;
+  } MyPaintRectangles;
 
-void mypaint_rectangle_expand_to_include_point(MyPaintRectangle *r, int x, int y);
-void mypaint_rectangle_expand_to_include_rect(MyPaintRectangle *r, MyPaintRectangle *other);
-MyPaintRectangle *
-mypaint_rectangle_copy(MyPaintRectangle *self);
+void mypaint_rectangle_expand_to_include_point (MyPaintRectangle* r, int x, int y);
+void mypaint_rectangle_expand_to_include_rect (MyPaintRectangle* r, MyPaintRectangle* other);
+
+MyPaintRectangle* mypaint_rectangle_copy (MyPaintRectangle* self);
 
 G_END_DECLS
-
-#endif // MYPAINTRECTANGLE_H

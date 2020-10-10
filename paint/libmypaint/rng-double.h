@@ -1,5 +1,4 @@
-#ifndef RNGDOUBLE_H
-#define RNGDOUBLE_H
+#pragma once
 
 #include "mypaint-config.h"
 
@@ -22,5 +21,3 @@ double rng_double_next(RngDouble* self);
 void rng_double_get_array(RngDouble *self, double aa[], int n);
 
 G_END_DECLS
-
-#endif // RNGDOUBLE_H

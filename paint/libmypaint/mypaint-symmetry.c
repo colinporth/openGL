@@ -1,5 +1,4 @@
-//{{{
-
+//{{{  includes
 #include "mypaint-symmetry.h"
 #include "helpers.h"
 
@@ -10,14 +9,13 @@
 #define DEFAULT_NUM_MATRICES 16
 
 //{{{
-void allocation_failure_warning(int num)
+void allocation_failure_warning (int num)
 {
     fprintf(stderr, "Critical: failed to allocate memory for %d transformation matrices!\n", num);
 }
 //}}}
-
 //{{{
-gboolean allocate_symmetry_matrices(MyPaintSymmetryData* data, int num_matrices)
+gboolean allocate_symmetry_matrices (MyPaintSymmetryData* data, int num_matrices)
 {
     int bytes = num_matrices * sizeof(MyPaintTransform);
     void* allocated = realloc(data->symmetry_matrices, bytes);
@@ -34,7 +32,7 @@ gboolean allocate_symmetry_matrices(MyPaintSymmetryData* data, int num_matrices)
 //}}}
 
 //{{{
-gboolean symmetry_states_equal(const MyPaintSymmetryState* const s1, const MyPaintSymmetryState* const s2)
+gboolean symmetry_states_equal (const MyPaintSymmetryState* const s1, const MyPaintSymmetryState* const s2)
 {
     return s1->type == s2->type && s1->center_x == s2->center_x && s1->center_y == s2->center_y &&
            s1->angle == s2->angle && s1->num_lines == s2->num_lines;
@@ -42,7 +40,7 @@ gboolean symmetry_states_equal(const MyPaintSymmetryState* const s1, const MyPai
 //}}}
 
 //{{{
-int num_matrices_required(const MyPaintSymmetryState* state)
+int num_matrices_required (const MyPaintSymmetryState* state)
 {
     switch (state->type) {
     case MYPAINT_SYMMETRY_TYPE_VERTICAL:
@@ -70,10 +68,9 @@ MyPaintSymmetryState symmetry_state_default()
     return base;
 }
 //}}}
-
 //{{{
 /* If the symmetry state has changed since last, recalculate matrices */
-void mypaint_update_symmetry_state(MyPaintSymmetryData* const self)
+void mypaint_update_symmetry_state (MyPaintSymmetryData* const self)
 {
     if (!self->pending_changes || symmetry_states_equal(&self->state_current, &self->state_pending)) return;
     // Need to recalculate matrices
@@ -146,9 +143,8 @@ MyPaintSymmetryData mypaint_default_symmetry_data()
     return symm_data;
 }
 //}}}
-
 //{{{
-void mypaint_symmetry_data_destroy(MyPaintSymmetryData* data)
+void mypaint_symmetry_data_destroy (MyPaintSymmetryData* data)
 {
     if (data->symmetry_matrices != NULL) {
         free(data->symmetry_matrices);
@@ -157,17 +153,16 @@ void mypaint_symmetry_data_destroy(MyPaintSymmetryData* data)
 //}}}
 
 //{{{
-void mypaint_symmetry_set_pending(
-    MyPaintSymmetryData* data, gboolean active, float center_x, float center_y, float symmetry_angle,
-    MyPaintSymmetryType symmetry_type, int rot_symmetry_lines)
-{
-    data->active = active;
-    data->state_pending.center_x = center_x;
-    data->state_pending.center_y = center_y;
-    data->state_pending.type = symmetry_type;
-    data->state_pending.num_lines = MAX(2, rot_symmetry_lines);
-    data->state_pending.angle = symmetry_angle;
+void mypaint_symmetry_set_pending (MyPaintSymmetryData* data, gboolean active, 
+                                   float center_x, float center_y, float symmetry_angle,
+                                   MyPaintSymmetryType symmetry_type, int rot_symmetry_lines) {
+  data->active = active;
+  data->state_pending.center_x = center_x;
+  data->state_pending.center_y = center_y;
+  data->state_pending.type = symmetry_type;
+  data->state_pending.num_lines = MAX(2, rot_symmetry_lines);
+  data->state_pending.angle = symmetry_angle;
 
-    data->pending_changes = TRUE;
-}
+  data->pending_changes = TRUE;
+  }
 //}}}

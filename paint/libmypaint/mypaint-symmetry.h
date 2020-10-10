@@ -1,5 +1,4 @@
-#ifndef MYPAINTSYMMETRY_H
-#define MYPAINTSYMMETRY_H
+#pragma once
 /* libmypaint - The MyPaint Brush Library
  * Copyright (C) 2017-2019 The MyPaint Team
  *
@@ -80,5 +79,3 @@ void mypaint_symmetry_data_destroy(MyPaintSymmetryData *);
 void mypaint_symmetry_set_pending(
     MyPaintSymmetryData* data, gboolean active, float center_x, float center_y,
     float symmetry_angle, MyPaintSymmetryType symmetry_type, int rot_symmetry_lines);
-
-#endif

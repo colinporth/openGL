@@ -1,6 +1,3 @@
-#ifndef MYPAINT_H
-#define MYPAINT_H
+#pragma once
 
 void mypaint_init(void);
-
-#endif // MYPAINT_H

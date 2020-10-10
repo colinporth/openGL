@@ -24,7 +24,7 @@
 #include <string.h>
 
 //{{{
-void* memdup(const void *src, size_t len)
+void* memdup (const void *src, size_t len)
 {
         void *p = malloc(len);
         if (p)
@@ -34,14 +34,14 @@ void* memdup(const void *src, size_t len)
 //}}}
 
 //{{{
-MyPaintRectangle* mypaint_rectangle_copy(MyPaintRectangle *self)
+MyPaintRectangle* mypaint_rectangle_copy (MyPaintRectangle *self)
 {
     return (MyPaintRectangle *)memdup(self, sizeof(MyPaintRectangle));
 }
 //}}}
 
 //{{{
-void mypaint_rectangle_expand_to_include_point(MyPaintRectangle *r, int x, int y)
+void mypaint_rectangle_expand_to_include_point (MyPaintRectangle *r, int x, int y)
 {
     if (r->width == 0) {
         r->width = 1; r->height = 1;
@@ -56,7 +56,7 @@ void mypaint_rectangle_expand_to_include_point(MyPaintRectangle *r, int x, int y
 }
 //}}}
 //{{{
-void mypaint_rectangle_expand_to_include_rect(MyPaintRectangle *r, MyPaintRectangle *other)
+void mypaint_rectangle_expand_to_include_rect (MyPaintRectangle *r, MyPaintRectangle *other)
 {
     mypaint_rectangle_expand_to_include_point(r, other->x, other->y);
     mypaint_rectangle_expand_to_include_point(r, other->x + other->width - 1, other->y + other->height - 1);

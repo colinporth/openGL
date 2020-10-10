@@ -1,6 +1,5 @@
-#ifndef MYPAINTBRUSH_H
-#define MYPAINTBRUSH_H
-
+#pragma once
+//{{{
 /* libmypaint - The MyPaint Brush Library
  * Copyright (C) 2008 Martin Renold <martinxyz@gmx.ch>
  * Copyright (C) 2012 Jon Nordby <jononor@gmail.com>
@@ -17,7 +16,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
+//}}}
 #include "mypaint-config.h"
 #include "mypaint-surface.h"
 #include "mypaint-brush-settings.h"
@@ -26,90 +25,49 @@ G_BEGIN_DECLS
 
 typedef struct MyPaintBrush MyPaintBrush;
 
-MyPaintBrush *
-mypaint_brush_new(void);
+MyPaintBrush* mypaint_brush_new (void);
+MyPaintBrush* mypaint_brush_new_with_buckets (int num_smudge_buckets);
 
-MyPaintBrush *
-mypaint_brush_new_with_buckets(int num_smudge_buckets);
+void mypaint_brush_unref (MyPaintBrush* self);
+void mypaint_brush_ref (MyPaintBrush* self);
+void mypaint_brush_reset (MyPaintBrush* self);
 
-void
-mypaint_brush_unref(MyPaintBrush *self);
-void
-mypaint_brush_ref(MyPaintBrush *self);
+void mypaint_brush_new_stroke (MyPaintBrush* self);
+int mypaint_brush_stroke_to (MyPaintBrush* self, MyPaintSurface* surface, float x, float y,
+                             float pressure, float xtilt, float ytilt, double dtime, float viewzoom,
+                             float viewrotation, float barrel_rotation, gboolean linear);
 
-void
-mypaint_brush_reset(MyPaintBrush *self);
+void mypaint_brush_set_base_value (MyPaintBrush* self, MyPaintBrushSetting id, float value);
+float mypaint_brush_get_base_value (MyPaintBrush* self, MyPaintBrushSetting id);
 
-void
-mypaint_brush_new_stroke(MyPaintBrush *self);
+gboolean mypaint_brush_is_constant (MyPaintBrush* self, MyPaintBrushSetting id);
+int mypaint_brush_get_inputs_used_n (MyPaintBrush* self, MyPaintBrushSetting id);
 
-int
-mypaint_brush_stroke_to(MyPaintBrush *self, MyPaintSurface *surface, float x, float y,
-                        float pressure, float xtilt, float ytilt, double dtime, float viewzoom,
-                        float viewrotation, float barrel_rotation, gboolean linear);
+void mypaint_brush_set_mapping_n (MyPaintBrush* self, MyPaintBrushSetting id, MyPaintBrushInput input, int n);
+int mypaint_brush_get_mapping_n (MyPaintBrush* self, MyPaintBrushSetting id, MyPaintBrushInput input);
 
-void
-mypaint_brush_set_base_value(MyPaintBrush *self, MyPaintBrushSetting id, float value);
+void mypaint_brush_set_mapping_point (MyPaintBrush* self, MyPaintBrushSetting id, MyPaintBrushInput input, int index, float x, float y);
+void mypaint_brush_get_mapping_point (MyPaintBrush* self, MyPaintBrushSetting id, MyPaintBrushInput input, int index, float* x, float* y);
 
-float
-mypaint_brush_get_base_value(MyPaintBrush *self, MyPaintBrushSetting id);
+float mypaint_brush_get_state (MyPaintBrush* self, MyPaintBrushState i);
+void mypaint_brush_set_state (MyPaintBrush* self, MyPaintBrushState i, float value);
 
-gboolean
-mypaint_brush_is_constant(MyPaintBrush *self, MyPaintBrushSetting id);
+gboolean mypaint_brush_set_smudge_bucket_state (MyPaintBrush* self, int bucket_index,
+                                                float r, float g, float b, float a,
+                                                float prev_r, float prev_g, float prev_b, float prev_a,
+                                                float prev_color_recentness);
 
-int
-mypaint_brush_get_inputs_used_n(MyPaintBrush *self, MyPaintBrushSetting id);
+gboolean mypaint_brush_get_smudge_bucket_state (const MyPaintBrush* self, int bucket_index,
+                                                float* r, float* g, float* b, float* a,
+                                                float* prev_r, float* prev_g, float* prev_b, float* prev_a,
+                                                float* prev_color_recentness);
 
-void
-mypaint_brush_set_mapping_n(MyPaintBrush *self, MyPaintBrushSetting id, MyPaintBrushInput input, int n);
+int mypaint_brush_get_min_smudge_bucket_used (const MyPaintBrush* self);
+int mypaint_brush_get_max_smudge_bucket_used (const MyPaintBrush* self);
 
-int
-mypaint_brush_get_mapping_n(MyPaintBrush *self, MyPaintBrushSetting id, MyPaintBrushInput input);
-
-void
-mypaint_brush_set_mapping_point(MyPaintBrush *self, MyPaintBrushSetting id, MyPaintBrushInput input, int index, float x, float y);
-
-void
-mypaint_brush_get_mapping_point(MyPaintBrush *self, MyPaintBrushSetting id, MyPaintBrushInput input, int index, float *x, float *y);
-
-float
-mypaint_brush_get_state(MyPaintBrush *self, MyPaintBrushState i);
-
-void
-mypaint_brush_set_state(MyPaintBrush *self, MyPaintBrushState i, float value);
-
-gboolean
-mypaint_brush_set_smudge_bucket_state(
-    MyPaintBrush* self, int bucket_index,
-    float r, float g, float b, float a,
-    float prev_r, float prev_g, float prev_b, float prev_a,
-    float prev_color_recentness);
-
-gboolean
-mypaint_brush_get_smudge_bucket_state(
-    const MyPaintBrush* self, int bucket_index,
-    float* r, float* g, float* b, float* a,
-    float* prev_r, float* prev_g, float* prev_b, float* prev_a,
-    float* prev_color_recentness);
-
-int mypaint_brush_get_min_smudge_bucket_used(const MyPaintBrush* self);
-
-int mypaint_brush_get_max_smudge_bucket_used(const MyPaintBrush* self);
-
-double
-mypaint_brush_get_total_stroke_painting_time(MyPaintBrush *self);
-
-void
-mypaint_brush_set_print_inputs(MyPaintBrush *self, gboolean enabled);
-
-void
-mypaint_brush_from_defaults(MyPaintBrush *self);
-
-
-gboolean
-mypaint_brush_from_string(MyPaintBrush *self, const char *string);
-
+double mypaint_brush_get_total_stroke_painting_time (MyPaintBrush* self);
+void mypaint_brush_set_print_inputs (MyPaintBrush* self, gboolean enabled);
+void mypaint_brush_from_defaults (MyPaintBrush* self);
+gboolean mypaint_brush_from_string (MyPaintBrush* self, const char* string);
 
 G_END_DECLS
-
-#endif // MYPAINTBRUSH_H

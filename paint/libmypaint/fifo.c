@@ -16,8 +16,7 @@
  *
  */
 //}}}
-
-//{{{
+//{{{  includes
 #include "config.h"
 
 #include <stdlib.h>
@@ -25,105 +24,88 @@
 //}}}
 
 //{{{
-struct fifo_item
-{
-    struct fifo_item *next;  /* queue is a single-linked list */
-    void *payload;
-};
+struct fifo_item {
+  struct fifo_item *next;  /* queue is a single-linked list */
+  void *payload;
+  };
 //}}}
 //{{{
-struct fifo
-{
-    struct fifo_item *first;  /* first pushed item */
-    struct fifo_item *last;   /* last pushed item */
-    int item_count;
-};
+struct fifo {
+  struct fifo_item* first;  /* first pushed item */
+  struct fifo_item* last;   /* last pushed item */
+  int item_count;
+  };
 //}}}
 
 //{{{
-/*
- * fifo_new:
- *
- * Allocate and initialize fifo structure. Add an empty item to the fifo.
- */
-struct fifo* fifo_new(void)
-{
-    struct fifo *ret = (struct fifo *) malloc(sizeof(struct fifo));
-    ret->first = NULL;
-    ret->last = NULL;
-    ret->item_count = 0;
-    return ret;
-}
+// fifo_new:
+// Allocate and initialize fifo structure. Add an empty item to the fifo.
+struct fifo* fifo_new(void) {
+
+  struct fifo *ret = (struct fifo *) malloc(sizeof(struct fifo));
+  ret->first = NULL;
+  ret->last = NULL;
+  ret->item_count = 0;
+  return ret;
+  }
 //}}}
 //{{{
-/*
- * fifo_free:
- *
- * Delete all items and free fifo structure.
- */
-void fifo_free(struct fifo* queue, FifoUserFreeFunction user_free)
-{
-    struct fifo_item *item;
+// fifo_free:
+// Delete all items and free fifo structure.
+void fifo_free(struct fifo* queue, FifoUserFreeFunction user_free) {
 
-    while ((item = queue->first) != NULL)
-    {
-        queue->first = item->next;
-        user_free(item);
-    }
-    free(queue);
-}
-//}}}
-
-//{{{
-/*
- * fifo_push:
- *
- * Add item to queue.
- */
-void fifo_push(struct fifo* queue, void* data)
-{
-    struct fifo_item *item = (struct fifo_item*) malloc(sizeof(struct fifo_item));
-    item->next = NULL;
-    item->payload = data;
-    if (!queue->last)
-        queue->first = item;
-    else
-        queue->last->next = item;
-    queue->last = item;
-}
-//}}}
-//{{{
-/*
- * fifo_pop:
- *
- * Extract item from queue. Returns NULL on empty queue.
- */
-void* fifo_pop(struct fifo* queue)
-{
-    struct fifo_item *item;
-    void *data;
-
-    item = queue->first;
-    if (!item)
-        return NULL;
-
+  struct fifo_item *item;
+  while ((item = queue->first) != NULL) {
     queue->first = item->next;
-    if (!queue->first)
-        queue->last = NULL;
+    user_free(item);
+    }
+  free(queue);
+  }
+//}}}
 
-    data = item->payload;
-    free(item);
-    queue->item_count--;
-    return data;
-}
+//{{{
+// fifo_push:
+// Add item to queue.
+void fifo_push (struct fifo* queue, void* data) {
+
+  struct fifo_item *item = (struct fifo_item*) malloc(sizeof(struct fifo_item));
+  item->next = NULL;
+  item->payload = data;
+  if (!queue->last)
+    queue->first = item;
+  else
+    queue->last->next = item;
+  queue->last = item;
+  }
+//}}}
+//{{{
+// fifo_pop:
+// Extract item from queue. Returns NULL on empty queue.
+void* fifo_pop(struct fifo* queue) {
+
+  struct fifo_item *item;
+  void *data;
+  item = queue->first;
+  if (!item)
+   return NULL;
+
+  queue->first = item->next;
+  if (!queue->first)
+    queue->last = NULL;
+
+  data = item->payload;
+  free(item);
+  queue->item_count--;
+  return data;
+  }
 //}}}
 //{{{
 void* fifo_peek_first(struct fifo *queue) {
-    return (!queue->first) ? NULL : queue->first->payload;
-}
+  return (!queue->first) ? NULL : queue->first->payload;
+  }
 //}}}
 //{{{
 void* fifo_peek_last(struct fifo *queue) {
-    return (!queue->last) ? NULL : queue->last->payload;
-}
+  return (!queue->last) ? NULL : queue->last->payload;
+  }
 //}}}

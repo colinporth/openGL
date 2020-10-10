@@ -1,5 +1,4 @@
-#ifndef MYPAINTGLIBCOMPAT_H
-#define MYPAINTGLIBCOMPAT_H
+#pragma once
 
 #include "mypaint-config.h"
 
@@ -7,15 +6,15 @@
 
 /* From $INCLUDEPATH/glib-2.0/glib/gmacros.h */
 #ifdef  __cplusplus
-# define G_BEGIN_DECLS  extern "C" {
-# define G_END_DECLS    }
+  # define G_BEGIN_DECLS  extern "C" {
+  # define G_END_DECLS    }
 #else
-# define G_BEGIN_DECLS
-# define G_END_DECLS
+  # define G_BEGIN_DECLS
+  # define G_END_DECLS
 #endif
 
-#define	FALSE	(0)
-#define	TRUE	(!FALSE)
+#define FALSE (0)
+#define TRUE  (!FALSE)
 
 typedef void * gpointer;
 
@@ -28,5 +27,3 @@ typedef gint gboolean;
 typedef unsigned short guint16;
 
 #endif // __G_LIB_H__
-
-#endif // MYPAINTGLIBCOMPAT_H

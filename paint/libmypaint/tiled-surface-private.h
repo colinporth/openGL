@@ -1,4 +1,4 @@
-
+#pragma once
 
 void render_dab_mask (uint16_t * mask,
                         float x, float y,

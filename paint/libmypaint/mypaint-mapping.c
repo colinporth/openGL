@@ -15,8 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 //}}}
-
-//{{{
+//{{{  includes
 #ifndef MAPPING_C
 #define MAPPING_C
 
@@ -36,7 +35,6 @@
 
 // user-defined mappings
 // (the curves you can edit in the brush settings)
-
 //{{{
 typedef struct {
   // a set of control points (stepwise linear)
@@ -56,7 +54,6 @@ struct MyPaintMapping {
 
 };
 //}}}
-
 
 //{{{
 MyPaintMapping * mypaint_mapping_new(int inputs_)
@@ -89,7 +86,6 @@ float mypaint_mapping_get_base_value(MyPaintMapping *self)
     return self->base_value;
 }
 //}}}
-
 //{{{
 void mypaint_mapping_set_base_value(MyPaintMapping *self, float value)
 {
@@ -113,8 +109,6 @@ void mypaint_mapping_set_n (MyPaintMapping * self, int input, int n)
     p->n = n;
 }
 //}}}
-
-
 //{{{
 int mypaint_mapping_get_n (MyPaintMapping * self, int input)
 {
@@ -140,7 +134,6 @@ void mypaint_mapping_set_point (MyPaintMapping * self, int input, int index, flo
     p->yvalues[index] = y;
 }
 //}}}
-
 //{{{
 void mypaint_mapping_get_point (MyPaintMapping * self, int input, int index, float *x, float *y)
 {
@@ -160,7 +153,6 @@ gboolean mypaint_mapping_is_constant(MyPaintMapping * self)
     return self->inputs_used == 0;
 }
 //}}}
-
 //{{{
 int mypaint_mapping_get_inputs_used_n(MyPaintMapping *self)
 {
@@ -213,7 +205,6 @@ float mypaint_mapping_calculate (MyPaintMapping * self, float * data)
     return result;
 }
 //}}}
-
 //{{{
 // used in mypaint itself for the global pressure mapping
 float mypaint_mapping_calculate_single_input (MyPaintMapping * self, float input)

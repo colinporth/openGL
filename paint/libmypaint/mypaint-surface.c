@@ -16,18 +16,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 //}}}
-//{{{
+//{{{  includes
 #include "config.h"
 
 #include <assert.h>
-
 #include "mypaint-surface.h"
-
 #include "helpers.h"
 //}}}
 
 //{{{
-int mypaint_surface_draw_dab(MyPaintSurface *self,
+int mypaint_surface_draw_dab (MyPaintSurface *self,
                        float x, float y,
                        float radius,
                        float color_r, float color_g, float color_b,
@@ -49,7 +47,7 @@ int mypaint_surface_draw_dab(MyPaintSurface *self,
 //}}}
 
 //{{{
-void mypaint_surface_get_color(MyPaintSurface *self,
+void mypaint_surface_get_color (MyPaintSurface *self,
                         float x, float y,
                         float radius,
                         float * color_r, float * color_g, float * color_b, float * color_a,
@@ -68,7 +66,7 @@ void mypaint_surface_get_color(MyPaintSurface *self,
  * Initialize the surface. The reference count will be set to 1.
  * Note: Only intended to be called from subclasses of #MyPaintSurface
  **/
-void mypaint_surface_init(MyPaintSurface *self)
+void mypaint_surface_init (MyPaintSurface *self)
 {
     self->refcount = 1;
 }
@@ -80,7 +78,7 @@ void mypaint_surface_init(MyPaintSurface *self)
  *
  * Increase the reference count.
  **/
-void mypaint_surface_ref(MyPaintSurface *self)
+void mypaint_surface_ref (MyPaintSurface *self)
 {
     self->refcount++;
 }
@@ -91,7 +89,7 @@ void mypaint_surface_ref(MyPaintSurface *self)
  *
  * Decrease the reference count.
  **/
-void mypaint_surface_unref(MyPaintSurface *self)
+void mypaint_surface_unref (MyPaintSurface *self)
 {
     self->refcount--;
     if (self->refcount == 0) {
@@ -109,18 +107,17 @@ float mypaint_surface_get_alpha (MyPaintSurface *self, float x, float y, float r
     return color_a;
 }
 //}}}
-
 //{{{
-void mypaint_surface_save_png(MyPaintSurface *self, const char *path, int x, int y, int width, int height)
+void mypaint_surface_save_png (MyPaintSurface *self, const char *path, int x, int y, int width, int height)
 {
     if (self->save_png) {
-        self->save_png(self, path, x, y, width, height);
+      self->save_png(self, path, x, y, width, height);
     }
 }
 //}}}
 
 //{{{
-void mypaint_surface_begin_atomic(MyPaintSurface *self)
+void mypaint_surface_begin_atomic (MyPaintSurface *self)
 {
     if (self->begin_atomic)
         self->begin_atomic(self);
@@ -135,7 +132,7 @@ void mypaint_surface_begin_atomic(MyPaintSurface *self)
  *
  * Returns: s
  */
-void mypaint_surface_end_atomic(MyPaintSurface *self, MyPaintRectangles *roi)
+void mypaint_surface_end_atomic (MyPaintSurface *self, MyPaintRectangles *roi)
 {
     assert(self->end_atomic);
     self->end_atomic(self, roi);

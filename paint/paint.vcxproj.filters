@@ -139,120 +139,117 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\brushmodes.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\brushsettings-gen.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\config.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\fifo.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\helpers.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\mypaint-brush-settings-gen.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\mypaint-brush-settings.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\mypaint-brush.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\mypaint-config.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\mypaint-fixed-tiled-surface.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\mypaint-glib-compat.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\mypaint-mapping.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\mypaint-matrix.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\mypaint-rectangle.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\mypaint-surface.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\mypaint-symmetry.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\mypaint-tiled-surface.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\mypaint.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\operationqueue.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\rng-double.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\tiled-surface-private.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\tilemap.h">
-      <Filter>h libmypaint</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\fastapprox\cast.h">
-      <Filter>fastapprox</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\fastapprox\fasterf.h">
-      <Filter>fastapprox</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\fastapprox\fastexp.h">
-      <Filter>fastapprox</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\fastapprox\fastgamma.h">
-      <Filter>fastapprox</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\fastapprox\fasthyperbolic.h">
-      <Filter>fastapprox</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\fastapprox\fastlambertw.h">
-      <Filter>fastapprox</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\fastapprox\fastlog.h">
-      <Filter>fastapprox</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\fastapprox\fastonebigheader.h">
-      <Filter>fastapprox</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\fastapprox\fastpow.h">
-      <Filter>fastapprox</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\fastapprox\fastsigmoid.h">
-      <Filter>fastapprox</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\fastapprox\fasttrig.h">
-      <Filter>fastapprox</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="libmypaint\fastapprox\sse.h">
-      <Filter>fastapprox</Filter>
+      <Filter>libmypaint\h</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">
       <UniqueIdentifier>{309b5935-6d35-41d3-8da8-2c132cc051bc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="h libmypaint">
-      <UniqueIdentifier>{ea4d4bb9-c33c-44d2-80b5-10ee471594a7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="libmypaint">
       <UniqueIdentifier>{36138847-56d7-4c9a-9102-bbd6491cd72b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="fastapprox">
-      <UniqueIdentifier>{a0051696-801e-41a0-a772-9607dd08609a}</UniqueIdentifier>
+    <Filter Include="libmypaint\h">
+      <UniqueIdentifier>{ea4d4bb9-c33c-44d2-80b5-10ee471594a7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

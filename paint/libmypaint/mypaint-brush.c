@@ -15,7 +15,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 //}}}
-
 //{{{
 #include "config.h"
 
@@ -26,8 +25,8 @@
 #include <assert.h>
 
 #if MYPAINT_CONFIG_USE_GLIB
-#include <glib.h>
-#include "glib/mypaint-brush.h"
+  #include <glib.h>
+  #include "glib/mypaint-brush.h"
 #endif
 
 #include "mypaint-brush.h"
@@ -40,16 +39,17 @@
 #include <json-c/json.h>
 
 #ifdef _MSC_VER
-#if _MSC_VER < 1700     // Visual Studio 2012 and later has isfinite and roundf
-  #include <float.h>
-  static inline int    isfinite(double x) { return _finite(x); }
-  static inline float  roundf  (float  x) { return x >= 0.0f ? floorf(x + 0.5f) : ceilf(x - 0.5f); }
-#endif
+  #if _MSC_VER < 1700     // Visual Studio 2012 and later has isfinite and roundf
+    #include <float.h>
+    static inline int    isfinite(double x) { return _finite(x); }
+    static inline float  roundf  (float  x) { return x >= 0.0f ? floorf(x + 0.5f) : ceilf(x - 0.5f); }
+  #endif
 #endif
 //}}}
 
 // Conversion from degrees to radians
 #define RADIANS(x) ((x) * M_PI / 180.0)
+
 // Conversion from radians to degrees
 #define DEGREES(x) (((x) / (2 * M_PI)) * 360.0)
 
@@ -69,6 +69,7 @@ enum {
 //}}}
 
 //{{{
+//{{{
 /* The Brush class stores two things:
    b) settings: constant during a stroke (eg. size, spacing, dynamics, color selected by the user)
    a) states: modified during a stroke (eg. speed, smudge colors, time/distance to next dab, position filter states)
@@ -82,13 +83,7 @@ enum {
    the states are ignored. When a brush is selected, its settings are
    copied into the global one, leaving the state intact.
  */
-
-
-/**
-  * MyPaintBrush:
-  *
-  * The MyPaint brush engine class.
-  */
+//}}}
 struct MyPaintBrush {
 
     gboolean print_inputs; // debug menu
@@ -132,7 +127,6 @@ struct MyPaintBrush {
     int refcount;
 };
 //}}}
-
 /* Macros for accessing states and setting values
    Although macros are never nice, simple file-local macros are warranted
    here since it massively improves code readability.
@@ -605,7 +599,7 @@ typedef struct {
 } Offsets;
 //}}}
 //{{{
-Offsets directional_offsets(const MyPaintBrush* const self, const float base_radius, const int brush_flip)
+Offsets directional_offsets (const MyPaintBrush* const self, const float base_radius, const int brush_flip)
 {
     const float offset_mult = expf(SETTING(self, OFFSET_MULTIPLIER));
     // Sanity check - it is easy to reach infinite multipliers w. logarithmic parameters
@@ -686,7 +680,7 @@ Offsets directional_offsets(const MyPaintBrush* const self, const float base_rad
 //}}}
 //{{{
 // Debugging: print brush inputs/states (not all of them)
-void print_inputs(MyPaintBrush *self, float* inputs)
+void print_inputs (MyPaintBrush *self, float* inputs)
 {
     printf(
         "press=% 4.3f, speed1=% 4.4f\tspeed2=% 4.4f",
@@ -928,7 +922,7 @@ void update_states_and_setting_values (MyPaintBrush *self, float step_ddab, floa
 //}}}
 
 //{{{
-float *fetch_smudge_bucket(MyPaintBrush *self) {
+float *fetch_smudge_bucket (MyPaintBrush *self) {
   if (!self->smudge_buckets || !self->num_buckets) {
     return &STATE(self, SMUDGE_RA);
   }
@@ -943,90 +937,90 @@ float *fetch_smudge_bucket(MyPaintBrush *self) {
 }
 //}}}
 //{{{
-gboolean update_smudge_color(
-    const MyPaintBrush* self, MyPaintSurface* surface, float* const smudge_bucket, const float smudge_length, int px,
-    int py, const float radius, const float legacy_smudge, const float paint_factor)
-{
-
-    // Value between 0.01 and 1.0 that determines how often the canvas should be resampled
-    float update_factor = MAX(0.01, smudge_length);
+gboolean update_smudge_color (const MyPaintBrush* self, MyPaintSurface* surface, 
+                              float* const smudge_bucket, const float smudge_length, 
+                              int px, int py, const float radius, 
+                              const float legacy_smudge, const float paint_factor) {
 
 
-    // Calling get_color() is almost as expensive as rendering a
-    // dab. Because of this we use the previous value if it is not
-    // expected to hurt quality too much. We call it at most every
-    // second dab.
-    float r, g, b, a;
-    const float smudge_length_log = SETTING(self, SMUDGE_LENGTH_LOG);
+  // Value between 0.01 and 1.0 that determines how often the canvas should be resampled
+  float update_factor = MAX(0.01, smudge_length);
 
-    const float recentness = smudge_bucket[PREV_COL_RECENTNESS] * update_factor;
-    smudge_bucket[PREV_COL_RECENTNESS] = recentness;
+  // Calling get_color() is almost as expensive as rendering a
+  // dab. Because of this we use the previous value if it is not
+  // expected to hurt quality too much. We call it at most every
+  // second dab.
+  float r, g, b, a;
+  const float smudge_length_log = SETTING(self, SMUDGE_LENGTH_LOG);
 
-    const float margin = 0.0000000000000001;
-    if (recentness < MIN(1.0, powf(0.5 * update_factor, smudge_length_log) + margin)) {
-        if (recentness == 0.0) {
-            // first initialization of smudge color (initiate with color sampled from canvas)
-            update_factor = 0.0;
-        }
-        smudge_bucket[PREV_COL_RECENTNESS] = 1.0;
+  const float recentness = smudge_bucket[PREV_COL_RECENTNESS] * update_factor;
+  smudge_bucket[PREV_COL_RECENTNESS] = recentness;
 
-        const float radius_log = SETTING(self, SMUDGE_RADIUS_LOG);
-        const float smudge_radius = CLAMP(radius * expf(radius_log), ACTUAL_RADIUS_MIN, ACTUAL_RADIUS_MAX);
+  const float margin = 0.0000000000000001;
+  if (recentness < MIN(1.0, powf(0.5 * update_factor, smudge_length_log) + margin)) {
+      if (recentness == 0.0) {
+          // first initialization of smudge color (initiate with color sampled from canvas)
+          update_factor = 0.0;
+      }
+      smudge_bucket[PREV_COL_RECENTNESS] = 1.0;
 
-        // Sample colors on the canvas, using a negative value for the paint factor
-        // means that the old sampling method is used, instead of weighted spectral.
-        mypaint_surface_get_color(
-            surface, px, py, smudge_radius, &r, &g, &b, &a, legacy_smudge ? -1.0 : paint_factor);
+      const float radius_log = SETTING(self, SMUDGE_RADIUS_LOG);
+      const float smudge_radius = CLAMP(radius * expf(radius_log), ACTUAL_RADIUS_MIN, ACTUAL_RADIUS_MAX);
 
-        // don't draw unless the picked-up alpha is above a certain level
-        // this is sort of like lock_alpha but for smudge
-        // negative values reverse this idea
-        const float smudge_op_lim = SETTING(self, SMUDGE_TRANSPARENCY);
-        if ((smudge_op_lim > 0.0 && a < smudge_op_lim) || (smudge_op_lim < 0.0 && a > -smudge_op_lim)) {
-            return TRUE; // signals the caller to return early
-        }
-        smudge_bucket[PREV_COL_R] = r;
-        smudge_bucket[PREV_COL_G] = g;
-        smudge_bucket[PREV_COL_B] = b;
-        smudge_bucket[PREV_COL_A] = a;
-    } else {
-        r = smudge_bucket[PREV_COL_R];
-        g = smudge_bucket[PREV_COL_G];
-        b = smudge_bucket[PREV_COL_B];
-        a = smudge_bucket[PREV_COL_A];
-    }
+      // Sample colors on the canvas, using a negative value for the paint factor
+      // means that the old sampling method is used, instead of weighted spectral.
+      mypaint_surface_get_color(
+          surface, px, py, smudge_radius, &r, &g, &b, &a, legacy_smudge ? -1.0 : paint_factor);
 
-    if (legacy_smudge) {
-        const float fac_old = update_factor;
-        const float fac_new = (1.0 - update_factor) * a;
-        smudge_bucket[SMUDGE_R] = fac_old * smudge_bucket[SMUDGE_R] + fac_new * r;
-        smudge_bucket[SMUDGE_G] = fac_old * smudge_bucket[SMUDGE_G] + fac_new * g;
-        smudge_bucket[SMUDGE_B] = fac_old * smudge_bucket[SMUDGE_B] + fac_new * b;
-        smudge_bucket[SMUDGE_A] = CLAMP((fac_old * smudge_bucket[SMUDGE_A] + fac_new), 0.0, 1.0);
-    } else if (a > WGM_EPSILON * 10) {
-        float prev_smudge_color[4] = {smudge_bucket[SMUDGE_R], smudge_bucket[SMUDGE_G], smudge_bucket[SMUDGE_B],
-                                      smudge_bucket[SMUDGE_A]};
-        float sampled_color[4] = {r, g, b, a};
+      // don't draw unless the picked-up alpha is above a certain level
+      // this is sort of like lock_alpha but for smudge
+      // negative values reverse this idea
+      const float smudge_op_lim = SETTING(self, SMUDGE_TRANSPARENCY);
+      if ((smudge_op_lim > 0.0 && a < smudge_op_lim) || (smudge_op_lim < 0.0 && a > -smudge_op_lim)) {
+          return TRUE; // signals the caller to return early
+      }
+      smudge_bucket[PREV_COL_R] = r;
+      smudge_bucket[PREV_COL_G] = g;
+      smudge_bucket[PREV_COL_B] = b;
+      smudge_bucket[PREV_COL_A] = a;
+  } else {
+      r = smudge_bucket[PREV_COL_R];
+      g = smudge_bucket[PREV_COL_G];
+      b = smudge_bucket[PREV_COL_B];
+      a = smudge_bucket[PREV_COL_A];
+  }
 
-        float* smudge_new = mix_colors(prev_smudge_color, sampled_color, update_factor, paint_factor);
-        smudge_bucket[SMUDGE_R] = smudge_new[SMUDGE_R];
-        smudge_bucket[SMUDGE_G] = smudge_new[SMUDGE_G];
-        smudge_bucket[SMUDGE_B] = smudge_new[SMUDGE_B];
-        smudge_bucket[SMUDGE_A] = smudge_new[SMUDGE_A];
-    } else {
-        // To avoid color noise from spectral mixing with a low alpha,
-        // we'll just decrease the alpha of the existing smudge color.
-        smudge_bucket[SMUDGE_A] = (smudge_bucket[SMUDGE_A] + a) / 2;
-    }
-    return FALSE; // signals the caller to not return early (the default)
-}
+  if (legacy_smudge) {
+      const float fac_old = update_factor;
+      const float fac_new = (1.0 - update_factor) * a;
+      smudge_bucket[SMUDGE_R] = fac_old * smudge_bucket[SMUDGE_R] + fac_new * r;
+      smudge_bucket[SMUDGE_G] = fac_old * smudge_bucket[SMUDGE_G] + fac_new * g;
+      smudge_bucket[SMUDGE_B] = fac_old * smudge_bucket[SMUDGE_B] + fac_new * b;
+      smudge_bucket[SMUDGE_A] = CLAMP((fac_old * smudge_bucket[SMUDGE_A] + fac_new), 0.0, 1.0);
+  } else if (a > WGM_EPSILON * 10) {
+      float prev_smudge_color[4] = {smudge_bucket[SMUDGE_R], smudge_bucket[SMUDGE_G], smudge_bucket[SMUDGE_B],
+                                    smudge_bucket[SMUDGE_A]};
+      float sampled_color[4] = {r, g, b, a};
+
+      float* smudge_new = mix_colors(prev_smudge_color, sampled_color, update_factor, paint_factor);
+      smudge_bucket[SMUDGE_R] = smudge_new[SMUDGE_R];
+      smudge_bucket[SMUDGE_G] = smudge_new[SMUDGE_G];
+      smudge_bucket[SMUDGE_B] = smudge_new[SMUDGE_B];
+      smudge_bucket[SMUDGE_A] = smudge_new[SMUDGE_A];
+  } else {
+      // To avoid color noise from spectral mixing with a low alpha,
+      // we'll just decrease the alpha of the existing smudge color.
+      smudge_bucket[SMUDGE_A] = (smudge_bucket[SMUDGE_A] + a) / 2;
+  }
+
+  return FALSE; // signals the caller to not return early (the default)
+  }
 //}}}
 
 //{{{
-float apply_smudge(
-    const float* const smudge_bucket, const float smudge_value, const gboolean legacy_smudge,
-    const float paint_factor, float* color_r, float* color_g, float* color_b)
-{
+float apply_smudge (const float* const smudge_bucket, const float smudge_value, const gboolean legacy_smudge,
+                    const float paint_factor, float* color_r, float* color_g, float* color_b) {
+
     float smudge_factor = MIN(1.0, smudge_value);
 
     // If the smudge color somewhat transparent, then the resulting
@@ -1321,14 +1315,11 @@ float count_dabs_to (MyPaintBrush *self, float x, float y, float dt)
  * @dtime: Time since last motion event, in seconds.
  * @viewzoom: Canvas zoom; 1.0 = 100% zoom. Zoom value v *must* be in range:
  * 0.0 < v < FLOAT_MAX (reasonable max is probably always below 100).
- *
  * Should be called once for each motion event.
- *
- *
  * Returns: non-0 if the stroke is finished or empty, else 0.
  */
 int mypaint_brush_stroke_to (MyPaintBrush *self, MyPaintSurface *surface,
-                              float x, float y, float pressure,
+                             float x, float y, float pressure,
                              float xtilt, float ytilt, double dtime, float viewzoom, float viewrotation, float barrel_rotation, gboolean linear)
 {
   const float max_dtime = 5;

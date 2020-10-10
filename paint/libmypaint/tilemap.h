@@ -1,3 +1,4 @@
+#pragma once
 /* libmypaint - The MyPaint Brush Library
  * Copyright (C) 2012 Jon Nordby <jononor@gmail.com>
  *
@@ -13,9 +14,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#ifndef TILEMAP_H
-#define TILEMAP_H
 
 #if MYPAINT_CONFIG_USE_GLIB
 #include <glib.h>
@@ -58,5 +56,3 @@ void
 tile_map_copy_to(TileMap *self, TileMap *other);
 
 G_END_DECLS
-
-#endif // TILEMAP_H

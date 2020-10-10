@@ -1,5 +1,4 @@
-#ifndef MYPAINTBRUSHSETTINGS_H
-#define MYPAINTBRUSHSETTINGS_H
+#pragma once
 
 /* libmypaint - The MyPaint Brush Library
  * Copyright (C) 2012 Jon Nordby <jononor@gmail.com>
@@ -67,5 +66,3 @@ MyPaintBrushInput
 mypaint_brush_input_from_cname(const char *cname);
 
 G_END_DECLS
-
-#endif // MYPAINTBRUSHSETTINGS_H
