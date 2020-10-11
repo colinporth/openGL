@@ -25,116 +25,90 @@
 //}}}
 
 //{{{
-int mypaint_surface_draw_dab (MyPaintSurface *self,
-                       float x, float y,
-                       float radius,
-                       float color_r, float color_g, float color_b,
-                       float opaque, float hardness, float softness,
-                       float alpha_eraser,
-                       float aspect_ratio, float angle,
-                       float lock_alpha,
-                       float colorize,
-                       float posterize,
-                       float posterize_num,
-                       float paint
-                       )
-{
-    assert(self->draw_dab);
-    return self->draw_dab(self, x, y, radius, color_r, color_g, color_b,
-                   opaque, hardness, softness, alpha_eraser, aspect_ratio, angle,
-                   lock_alpha, colorize, posterize, posterize_num, paint);
-}
+// mypaint_surface_init: (skip)
+// Initialize the surface. The reference count will be set to 1.
+// Note: Only intended to be called from subclasses of #MyPaintSurface
+void mypaint_surface_init (MyPaintSurface* self) {
+  self->refcount = 1;
+  }
 //}}}
 
 //{{{
-void mypaint_surface_get_color (MyPaintSurface *self,
-                        float x, float y,
-                        float radius,
+// mypaint_surface_ref: (skip)
+// Increase the reference count.
+void mypaint_surface_ref (MyPaintSurface* self) {
+  self->refcount++;
+  }
+//}}}
+//{{{
+// mypaint_surface_unref: (skip)
+// Decrease the reference count.
+void mypaint_surface_unref (MyPaintSurface* self) {
+
+  self->refcount--;
+  if (self->refcount == 0) {
+    assert(self->destroy);
+    self->destroy(self);
+    }
+  }
+//}}}
+
+//{{{
+int mypaint_surface_draw_dab (MyPaintSurface* self,
+                              float x, float y, float radius,
+                              float color_r, float color_g, float color_b,
+                              float opaque, float hardness, float softness,
+                              float alpha_eraser, float aspect_ratio, float angle, float lock_alpha, 
+                              float colorize, float posterize, float posterize_num, float paint) {
+
+  assert(self->draw_dab);
+  return self->draw_dab (self, x, y, radius, color_r, color_g, color_b,
+                         opaque, hardness, softness, alpha_eraser, aspect_ratio, angle,
+                         lock_alpha, colorize, posterize, posterize_num, paint);
+  }
+//}}}
+
+//{{{
+void mypaint_surface_get_color (MyPaintSurface* self,
+                        float x, float y, float radius,
                         float * color_r, float * color_g, float * color_b, float * color_a,
-                        float paint
-                        )
-{
-    assert(self->get_color);
-    self->get_color(self, x, y, radius, color_r, color_g, color_b, color_a, paint);
-}
+                        float paint ) {
+  assert(self->get_color);
+  self->get_color(self, x, y, radius, color_r, color_g, color_b, color_a, paint);
+  }
 //}}}
 
 //{{{
-/**
- * mypaint_surface_init: (skip)
- *
- * Initialize the surface. The reference count will be set to 1.
- * Note: Only intended to be called from subclasses of #MyPaintSurface
- **/
-void mypaint_surface_init (MyPaintSurface *self)
-{
-    self->refcount = 1;
-}
-//}}}
+float mypaint_surface_get_alpha (MyPaintSurface* self, float x, float y, float radius) {
 
-//{{{
-/**
- * mypaint_surface_ref: (skip)
- *
- * Increase the reference count.
- **/
-void mypaint_surface_ref (MyPaintSurface *self)
-{
-    self->refcount++;
-}
+  float color_r, color_g, color_b, color_a;
+  mypaint_surface_get_color (self, x, y, radius, &color_r, &color_g, &color_b, &color_a, 1.0);
+  return color_a;
+  }
 //}}}
 //{{{
-/**
- * mypaint_surface_unref: (skip)
- *
- * Decrease the reference count.
- **/
-void mypaint_surface_unref (MyPaintSurface *self)
-{
-    self->refcount--;
-    if (self->refcount == 0) {
-        assert(self->destroy);
-        self->destroy(self);
+void mypaint_surface_save_png (MyPaintSurface* self, const char* path, int x, int y, int width, int height) {
+
+  if (self->save_png) {
+    self->save_png(self, path, x, y, width, height);
     }
-}
+  }
 //}}}
 
 //{{{
-float mypaint_surface_get_alpha (MyPaintSurface *self, float x, float y, float radius)
-{
-    float color_r, color_g, color_b, color_a;
-    mypaint_surface_get_color (self, x, y, radius, &color_r, &color_g, &color_b, &color_a, 1.0);
-    return color_a;
-}
+void mypaint_surface_begin_atomic (MyPaintSurface* self) {
+  if (self->begin_atomic)
+    self->begin_atomic(self);
+  }
 //}}}
 //{{{
-void mypaint_surface_save_png (MyPaintSurface *self, const char *path, int x, int y, int width, int height)
-{
-    if (self->save_png) {
-      self->save_png(self, path, x, y, width, height);
-    }
-}
-//}}}
-
-//{{{
-void mypaint_surface_begin_atomic (MyPaintSurface *self)
-{
-    if (self->begin_atomic)
-        self->begin_atomic(self);
-}
-//}}}
-//{{{
-/**
- * mypaint_surface_end_atomic:
- * @roi: (out) (allow-none) (transfer none): Invalidated rectangles will be stored here.
- * The value of roi->num_rectangles must be at least 1, and roi->rectangles must point to
- * sufficient accessible memory to contain n = roi->num_rectangles of MyPaintRectangle structs.
- *
- * Returns: s
- */
-void mypaint_surface_end_atomic (MyPaintSurface *self, MyPaintRectangles *roi)
-{
-    assert(self->end_atomic);
-    self->end_atomic(self, roi);
-}
+// mypaint_surface_end_atomic:
+// @roi: (out) (allow-none) (transfer none): Invalidated rectangles will be stored here.
+// The value of roi->num_rectangles must be at least 1, and roi->rectangles must point to
+// sufficient accessible memory to contain n = roi->num_rectangles of MyPaintRectangle structs.
+// Returns: s
+void mypaint_surface_end_atomic (MyPaintSurface* self, MyPaintRectangles* roi) {
+  assert(self->end_atomic);
+  self->end_atomic(self, roi);
+  }
 //}}}

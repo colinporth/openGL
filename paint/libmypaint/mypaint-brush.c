@@ -49,10 +49,7 @@
 
 // Conversion from degrees to radians
 #define RADIANS(x) ((x) * M_PI / 180.0)
-
-// Conversion from radians to degrees
 #define DEGREES(x) (((x) / (2 * M_PI)) * 360.0)
-
 #define ACTUAL_RADIUS_MIN 0.2
 #define ACTUAL_RADIUS_MAX 1000 // safety guard against radius like 1e20 and against rendering overload with unexpected brush dynamics
 
@@ -65,7 +62,7 @@ enum {
   PREV_COL_R, PREV_COL_G, PREV_COL_B, PREV_COL_A,
   PREV_COL_RECENTNESS,
   SMUDGE_BUCKET_SIZE
-};
+  };
 //}}}
 
 //{{{
@@ -85,47 +82,46 @@ enum {
  */
 //}}}
 struct MyPaintBrush {
+  gboolean print_inputs; // debug menu
+  // for stroke splitting (undo/redo)
+  double stroke_total_painting_time;
+  double stroke_current_idling_time;
 
-    gboolean print_inputs; // debug menu
-    // for stroke splitting (undo/redo)
-    double stroke_total_painting_time;
-    double stroke_current_idling_time;
+  // the states (get_state, set_state, reset) that change during a stroke
+  float states[MYPAINT_BRUSH_STATES_COUNT];
+  // smudge bucket array: part of the state, but stored separately.
+  // Usually used for brushes with multiple offset dabs, where each
+  // dab is assigned its own bucket containing a smudge state.
+  float *smudge_buckets;
+  int num_buckets;
+  int min_bucket_used;
+  int max_bucket_used;
 
-    // the states (get_state, set_state, reset) that change during a stroke
-    float states[MYPAINT_BRUSH_STATES_COUNT];
-    // smudge bucket array: part of the state, but stored separately.
-    // Usually used for brushes with multiple offset dabs, where each
-    // dab is assigned its own bucket containing a smudge state.
-    float *smudge_buckets;
-    int num_buckets;
-    int min_bucket_used;
-    int max_bucket_used;
+  double random_input;
+  float skip;
+  float skip_last_x;
+  float skip_last_y;
+  float skipped_dtime;
+  RngDouble * rng;
 
-    double random_input;
-    float skip;
-    float skip_last_x;
-    float skip_last_y;
-    float skipped_dtime;
-    RngDouble * rng;
+  // Those mappings describe how to calculate the current value for each setting.
+  // Most of settings will be constant (eg. only their base_value is used).
+  MyPaintMapping * settings[MYPAINT_BRUSH_SETTINGS_COUNT];
 
-    // Those mappings describe how to calculate the current value for each setting.
-    // Most of settings will be constant (eg. only their base_value is used).
-    MyPaintMapping * settings[MYPAINT_BRUSH_SETTINGS_COUNT];
+  // the current value of all settings (calculated using the current state)
+  float settings_value[MYPAINT_BRUSH_SETTINGS_COUNT];
 
-    // the current value of all settings (calculated using the current state)
-    float settings_value[MYPAINT_BRUSH_SETTINGS_COUNT];
+  // see also brushsettings.py
 
-    // see also brushsettings.py
+  // cached calculation results
+  float speed_mapping_gamma[2];
+  float speed_mapping_m[2];
+  float speed_mapping_q[2];
 
-    // cached calculation results
-    float speed_mapping_gamma[2];
-    float speed_mapping_m[2];
-    float speed_mapping_q[2];
-
-    gboolean reset_requested;
-    json_object *brush_json;
-    int refcount;
-};
+  gboolean reset_requested;
+  json_object *brush_json;
+  int refcount;
+  };
 //}}}
 /* Macros for accessing states and setting values
    Although macros are never nice, simple file-local macros are warranted
@@ -937,9 +933,9 @@ float *fetch_smudge_bucket (MyPaintBrush *self) {
 }
 //}}}
 //{{{
-gboolean update_smudge_color (const MyPaintBrush* self, MyPaintSurface* surface, 
-                              float* const smudge_bucket, const float smudge_length, 
-                              int px, int py, const float radius, 
+gboolean update_smudge_color (const MyPaintBrush* self, MyPaintSurface* surface,
+                              float* const smudge_bucket, const float smudge_length,
+                              int px, int py, const float radius,
                               const float legacy_smudge, const float paint_factor) {
 
 

@@ -1,3 +1,4 @@
+//{{{
 /*=====================================================================*
  *                   Copyright (C) 2011 Paul Mineiro                   *
  * All rights reserved.                                                *
@@ -37,15 +38,14 @@
  *                                                                     *
  * Contact: Paul Mineiro <paul@mineiro.com>                            *
  *=====================================================================*/
-
-#ifndef __FAST_LOG_H_
-#define __FAST_LOG_H_
+//}}}
+#pragma once
 
 #include <stdint.h>
 #include "sse.h"
 
-static inline float 
-fastlog2 (float x)
+//{{{
+static inline float fastlog2 (float x)
 {
   union { float f; uint32_t i; } vx = { x };
   union { uint32_t i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
@@ -53,27 +53,28 @@ fastlog2 (float x)
   y *= 1.1920928955078125e-7f;
 
   return y - 124.22551499f
-           - 1.498030302f * mx.f 
+           - 1.498030302f * mx.f
            - 1.72587999f / (0.3520887068f + mx.f);
 }
 
-static inline float
-fastlog (float x)
+//}}}
+//{{{
+static inline float fastlog (float x)
 {
   return 0.69314718f * fastlog2 (x);
 }
-
-static inline float 
-fasterlog2 (float x)
+//}}}
+//{{{
+static inline float fasterlog2 (float x)
 {
   union { float f; uint32_t i; } vx = { x };
   float y = vx.i;
   y *= 1.1920928955078125e-7f;
   return y - 126.94269504f;
 }
-
-static inline float
-fasterlog (float x)
+//}}}
+//{{{
+static inline float fasterlog (float x)
 {
 //  return 0.69314718f * fasterlog2 (x);
 
@@ -82,63 +83,61 @@ fasterlog (float x)
   y *= 8.2629582881927490e-8f;
   return y - 87.989971088f;
 }
+//}}}
 
 #ifdef __SSE2__
+  //{{{
+  static inline v4sf vfastlog2 (v4sf x)
+  {
+    union { v4sf f; v4si i; } vx = { x };
+    union { v4si i; v4sf f; } mx; mx.i = (vx.i & v4sil (0x007FFFFF)) | v4sil (0x3f000000);
+    v4sf y = v4si_to_v4sf (vx.i);
+    y *= v4sfl (1.1920928955078125e-7f);
 
-static inline v4sf
-vfastlog2 (v4sf x)
-{
-  union { v4sf f; v4si i; } vx = { x };
-  union { v4si i; v4sf f; } mx; mx.i = (vx.i & v4sil (0x007FFFFF)) | v4sil (0x3f000000);
-  v4sf y = v4si_to_v4sf (vx.i);
-  y *= v4sfl (1.1920928955078125e-7f);
+    const v4sf c_124_22551499 = v4sfl (124.22551499f);
+    const v4sf c_1_498030302 = v4sfl (1.498030302f);
+    const v4sf c_1_725877999 = v4sfl (1.72587999f);
+    const v4sf c_0_3520087068 = v4sfl (0.3520887068f);
 
-  const v4sf c_124_22551499 = v4sfl (124.22551499f);
-  const v4sf c_1_498030302 = v4sfl (1.498030302f);
-  const v4sf c_1_725877999 = v4sfl (1.72587999f);
-  const v4sf c_0_3520087068 = v4sfl (0.3520887068f);
+    return y - c_124_22551499
+             - c_1_498030302 * mx.f
+             - c_1_725877999 / (c_0_3520087068 + mx.f);
+  }
+  //}}}
+  //{{{
+  static inline v4sf vfastlog (v4sf x)
+  {
+    const v4sf c_0_69314718 = v4sfl (0.69314718f);
 
-  return y - c_124_22551499
-           - c_1_498030302 * mx.f 
-           - c_1_725877999 / (c_0_3520087068 + mx.f);
-}
+    return c_0_69314718 * vfastlog2 (x);
+  }
+  //}}}
+  //{{{
+  static inline v4sf vfasterlog2 (v4sf x)
+  {
+    union { v4sf f; v4si i; } vx = { x };
+    v4sf y = v4si_to_v4sf (vx.i);
+    y *= v4sfl (1.1920928955078125e-7f);
 
-static inline v4sf
-vfastlog (v4sf x)
-{
-  const v4sf c_0_69314718 = v4sfl (0.69314718f);
+    const v4sf c_126_94269504 = v4sfl (126.94269504f);
 
-  return c_0_69314718 * vfastlog2 (x);
-}
+    return y - c_126_94269504;
+  }
+  //}}}
+  //{{{
+  static inline v4sf vfasterlog (v4sf x)
+  {
+  //  const v4sf c_0_69314718 = v4sfl (0.69314718f);
+  //
+  //  return c_0_69314718 * vfasterlog2 (x);
 
-static inline v4sf 
-vfasterlog2 (v4sf x)
-{
-  union { v4sf f; v4si i; } vx = { x };
-  v4sf y = v4si_to_v4sf (vx.i);
-  y *= v4sfl (1.1920928955078125e-7f);
+    union { v4sf f; v4si i; } vx = { x };
+    v4sf y = v4si_to_v4sf (vx.i);
+    y *= v4sfl (8.2629582881927490e-8f);
 
-  const v4sf c_126_94269504 = v4sfl (126.94269504f);
+    const v4sf c_87_989971088 = v4sfl (87.989971088f);
 
-  return y - c_126_94269504;
-}
-
-static inline v4sf
-vfasterlog (v4sf x)
-{
-//  const v4sf c_0_69314718 = v4sfl (0.69314718f);
-//
-//  return c_0_69314718 * vfasterlog2 (x);
-
-  union { v4sf f; v4si i; } vx = { x };
-  v4sf y = v4si_to_v4sf (vx.i);
-  y *= v4sfl (8.2629582881927490e-8f);
-
-  const v4sf c_87_989971088 = v4sfl (87.989971088f);
-
-  return y - c_87_989971088;
-}
-
+    return y - c_87_989971088;
+  }
+  //}}}
 #endif // __SSE2__
-
-#endif // __FAST_LOG_H_

@@ -1,3 +1,4 @@
+//{{{
 /*=====================================================================*
  *                   Copyright (C) 2011 Paul Mineiro                   *
  * All rights reserved.                                                *
@@ -37,9 +38,8 @@
  *                                                                     *
  * Contact: Paul Mineiro <paul@mineiro.com>                            *
  *=====================================================================*/
-
-#ifndef __FAST_TRIG_H_
-#define __FAST_TRIG_H_
+//}}}
+#pragma once
 
 #include <stdint.h>
 #include "sse.h"
@@ -53,13 +53,13 @@
 // inaccurate for |x| >> 1000
 //
 // WARNING: fastsinfull, fastcosfull, and fasttanfull can be slower than
-// libc calls on older machines (!) and on newer machines are only 
+// libc calls on older machines (!) and on newer machines are only
 // slighly faster.  however:
 //   * vectorized versions are competitive
 //   * faster full versions are competitive
 
-static inline float
-fastsin (float x)
+//{{{
+static inline float fastsin (float x)
 {
   static const float fouroverpi = 1.2732395447351627f;
   static const float fouroverpisq = 0.40528473456935109f;
@@ -81,9 +81,9 @@ fastsin (float x)
 
   return q * qpprox + qpproxsq * (p.f + qpproxsq * (r.f + qpproxsq * s.f));
 }
-
-static inline float
-fastersin (float x)
+//}}}
+//{{{
+static inline float fastersin (float x)
 {
   static const float fouroverpi = 1.2732395447351627f;
   static const float fouroverpisq = 0.40528473456935109f;
@@ -100,9 +100,9 @@ fastersin (float x)
 
   return qpprox * (q + p.f * qpprox);
 }
-
-static inline float
-fastsinfull (float x)
+//}}}
+//{{{
+static inline float fastsinfull (float x)
 {
   static const float twopi = 6.2831853071795865f;
   static const float invtwopi = 0.15915494309189534f;
@@ -111,9 +111,9 @@ fastsinfull (float x)
   float half = (x < 0) ? -0.5f : 0.5f;
   return fastsin ((half + k) * twopi - x);
 }
-
-static inline float
-fastersinfull (float x)
+//}}}
+//{{{
+static inline float fastersinfull (float x)
 {
   static const float twopi = 6.2831853071795865f;
   static const float invtwopi = 0.15915494309189534f;
@@ -122,18 +122,18 @@ fastersinfull (float x)
   float half = (x < 0) ? -0.5f : 0.5f;
   return fastersin ((half + k) * twopi - x);
 }
-
-static inline float
-fastcos (float x)
+//}}}
+//{{{
+static inline float fastcos (float x)
 {
   static const float halfpi = 1.5707963267948966f;
   static const float halfpiminustwopi = -4.7123889803846899f;
   float offset = (x > halfpi) ? halfpiminustwopi : halfpi;
   return fastsin (x + offset);
 }
-
-static inline float
-fastercos (float x)
+//}}}
+//{{{
+static inline float fastercos (float x)
 {
   static const float twooverpi = 0.63661977236758134f;
   static const float p = 0.54641335845679634f;
@@ -145,36 +145,36 @@ fastercos (float x)
 
   return qpprox + p * qpprox * (1.0f - qpprox * qpprox);
 }
-
-static inline float
-fastcosfull (float x)
+//}}}
+//{{{
+static inline float fastcosfull (float x)
 {
   static const float halfpi = 1.5707963267948966f;
   return fastsinfull (x + halfpi);
 }
-
-static inline float
-fastercosfull (float x)
+//}}}
+//{{{
+static inline float fastercosfull (float x)
 {
   static const float halfpi = 1.5707963267948966f;
   return fastersinfull (x + halfpi);
 }
-
-static inline float
-fasttan (float x)
+//}}}
+//{{{
+static inline float fasttan (float x)
 {
   static const float halfpi = 1.5707963267948966f;
   return fastsin (x) / fastsin (x + halfpi);
 }
-
-static inline float
-fastertan (float x)
+//}}}
+//{{{
+static inline float fastertan (float x)
 {
   return fastersin (x) / fastercos (x);
 }
-
-static inline float
-fasttanfull (float x)
+//}}}
+//{{{
+static inline float fasttanfull (float x)
 {
   static const float twopi = 6.2831853071795865f;
   static const float invtwopi = 0.15915494309189534f;
@@ -185,9 +185,9 @@ fasttanfull (float x)
 
   return fastsin (xnew) / fastcos (xnew);
 }
-
-static inline float
-fastertanfull (float x)
+//}}}
+//{{{
+static inline float fastertanfull (float x)
 {
   static const float twopi = 6.2831853071795865f;
   static const float invtwopi = 0.15915494309189534f;
@@ -198,163 +198,161 @@ fastertanfull (float x)
 
   return fastersin (xnew) / fastercos (xnew);
 }
+//}}}
 
 #ifdef __SSE2__
+  //{{{
+  static inline v4sf vfastsin (const v4sf x)
+  {
+    const v4sf fouroverpi = v4sfl (1.2732395447351627f);
+    const v4sf fouroverpisq = v4sfl (0.40528473456935109f);
+    const v4sf q = v4sfl (0.78444488374548933f);
+    const v4sf p = v4sfl (0.20363937680730309f);
+    const v4sf r = v4sfl (0.015124940802184233f);
+    const v4sf s = v4sfl (-0.0032225901625579573f);
 
-static inline v4sf
-vfastsin (const v4sf x)
-{
-  const v4sf fouroverpi = v4sfl (1.2732395447351627f);
-  const v4sf fouroverpisq = v4sfl (0.40528473456935109f);
-  const v4sf q = v4sfl (0.78444488374548933f);
-  const v4sf p = v4sfl (0.20363937680730309f);
-  const v4sf r = v4sfl (0.015124940802184233f);
-  const v4sf s = v4sfl (-0.0032225901625579573f);
+    union { v4sf f; v4si i; } vx = { x };
+    v4si sign = vx.i & v4sil (0x80000000);
+    vx.i &= v4sil (0x7FFFFFFF);
 
-  union { v4sf f; v4si i; } vx = { x };
-  v4si sign = vx.i & v4sil (0x80000000);
-  vx.i &= v4sil (0x7FFFFFFF);
+    v4sf qpprox = fouroverpi * x - fouroverpisq * x * vx.f;
+    v4sf qpproxsq = qpprox * qpprox;
+    union { v4sf f; v4si i; } vy; vy.f = qpproxsq * (p + qpproxsq * (r + qpproxsq * s));
+    vy.i ^= sign;
 
-  v4sf qpprox = fouroverpi * x - fouroverpisq * x * vx.f;
-  v4sf qpproxsq = qpprox * qpprox;
-  union { v4sf f; v4si i; } vy; vy.f = qpproxsq * (p + qpproxsq * (r + qpproxsq * s));
-  vy.i ^= sign;
+    return q * qpprox + vy.f;
+  }
+  //}}}
+  //{{{
+  static inline v4sf vfastersin (const v4sf x)
+  {
+    const v4sf fouroverpi = v4sfl (1.2732395447351627f);
+    const v4sf fouroverpisq = v4sfl (0.40528473456935109f);
+    const v4sf q = v4sfl (0.77633023248007499f);
+    const v4sf plit = v4sfl (0.22308510060189463f);
+    union { v4sf f; v4si i; } p = { plit };
 
-  return q * qpprox + vy.f;
-}
+    union { v4sf f; v4si i; } vx = { x };
+    v4si sign = vx.i & v4sil (0x80000000);
+    vx.i &= v4sil (0x7FFFFFFF);
 
-static inline v4sf
-vfastersin (const v4sf x)
-{
-  const v4sf fouroverpi = v4sfl (1.2732395447351627f);
-  const v4sf fouroverpisq = v4sfl (0.40528473456935109f);
-  const v4sf q = v4sfl (0.77633023248007499f);
-  const v4sf plit = v4sfl (0.22308510060189463f);
-  union { v4sf f; v4si i; } p = { plit };
+    v4sf qpprox = fouroverpi * x - fouroverpisq * x * vx.f;
 
-  union { v4sf f; v4si i; } vx = { x };
-  v4si sign = vx.i & v4sil (0x80000000);
-  vx.i &= v4sil (0x7FFFFFFF);
+    p.i |= sign;
 
-  v4sf qpprox = fouroverpi * x - fouroverpisq * x * vx.f;
+    return qpprox * (q + p.f * qpprox);
+  }
+  //}}}
+  //{{{
+  static inline v4sf vfastsinfull (const v4sf x)
+  {
+    const v4sf twopi = v4sfl (6.2831853071795865f);
+    const v4sf invtwopi = v4sfl (0.15915494309189534f);
 
-  p.i |= sign;
+    v4si k = v4sf_to_v4si (x * invtwopi);
 
-  return qpprox * (q + p.f * qpprox);
-}
+    v4sf ltzero = _mm_cmplt_ps (x, v4sfl (0.0f));
+    v4sf half = _mm_or_ps (_mm_and_ps (ltzero, v4sfl (-0.5f)),
+                           _mm_andnot_ps (ltzero, v4sfl (0.5f)));
 
-static inline v4sf
-vfastsinfull (const v4sf x)
-{
-  const v4sf twopi = v4sfl (6.2831853071795865f);
-  const v4sf invtwopi = v4sfl (0.15915494309189534f);
+    return vfastsin ((half + v4si_to_v4sf (k)) * twopi - x);
+  }
+  //}}}
+  //{{{
+  static inline v4sf vfastersinfull (const v4sf x)
+  {
+    const v4sf twopi = v4sfl (6.2831853071795865f);
+    const v4sf invtwopi = v4sfl (0.15915494309189534f);
 
-  v4si k = v4sf_to_v4si (x * invtwopi);
+    v4si k = v4sf_to_v4si (x * invtwopi);
 
-  v4sf ltzero = _mm_cmplt_ps (x, v4sfl (0.0f));
-  v4sf half = _mm_or_ps (_mm_and_ps (ltzero, v4sfl (-0.5f)),
-                         _mm_andnot_ps (ltzero, v4sfl (0.5f)));
+    v4sf ltzero = _mm_cmplt_ps (x, v4sfl (0.0f));
+    v4sf half = _mm_or_ps (_mm_and_ps (ltzero, v4sfl (-0.5f)),
+                           _mm_andnot_ps (ltzero, v4sfl (0.5f)));
 
-  return vfastsin ((half + v4si_to_v4sf (k)) * twopi - x);
-}
+    return vfastersin ((half + v4si_to_v4sf (k)) * twopi - x);
+  }
+  //}}}
+  //{{{
+  static inline v4sf vfastcos (const v4sf x)
+  {
+    const v4sf halfpi = v4sfl (1.5707963267948966f);
+    const v4sf halfpiminustwopi = v4sfl (-4.7123889803846899f);
+    v4sf lthalfpi = _mm_cmpnlt_ps (x, halfpi);
+    v4sf offset = _mm_or_ps (_mm_and_ps (lthalfpi, halfpiminustwopi),
+                             _mm_andnot_ps (lthalfpi, halfpi));
+    return vfastsin (x + offset);
+  }
+  //}}}
+  //{{{
+  static inline v4sf vfastercos (v4sf x)
+  {
+    const v4sf twooverpi = v4sfl (0.63661977236758134f);
+    const v4sf p = v4sfl (0.54641335845679634);
 
-static inline v4sf
-vfastersinfull (const v4sf x)
-{
-  const v4sf twopi = v4sfl (6.2831853071795865f);
-  const v4sf invtwopi = v4sfl (0.15915494309189534f);
+    v4sf vx = v4sf_fabs (x);
+    v4sf qpprox = v4sfl (1.0f) - twooverpi * vx;
 
-  v4si k = v4sf_to_v4si (x * invtwopi);
+    return qpprox + p * qpprox * (v4sfl (1.0f) - qpprox * qpprox);
+  }
+  //}}}
+  //{{{
+  static inline v4sf vfastcosfull (const v4sf x)
+  {
+    const v4sf halfpi = v4sfl (1.5707963267948966f);
+    return vfastsinfull (x + halfpi);
+  }
+  //}}}
+  //{{{
+  static inline v4sf vfastercosfull (const v4sf x)
+  {
+    const v4sf halfpi = v4sfl (1.5707963267948966f);
+    return vfastersinfull (x + halfpi);
+  }
+  //}}}
+  //{{{
+  static inline v4sf vfasttan (const v4sf x)
+  {
+    const v4sf halfpi = v4sfl (1.5707963267948966f);
+    return vfastsin (x) / vfastsin (x + halfpi);
+  }
+  //}}}
+  //{{{
+  static inline v4sf vfastertan (const v4sf x)
+  {
+    return vfastersin (x) / vfastercos (x);
+  }
+  //}}}
+  //{{{
+  static inline v4sf vfasttanfull (const v4sf x)
+  {
+    const v4sf twopi = v4sfl (6.2831853071795865f);
+    const v4sf invtwopi = v4sfl (0.15915494309189534f);
 
-  v4sf ltzero = _mm_cmplt_ps (x, v4sfl (0.0f));
-  v4sf half = _mm_or_ps (_mm_and_ps (ltzero, v4sfl (-0.5f)),
-                         _mm_andnot_ps (ltzero, v4sfl (0.5f)));
+    v4si k = v4sf_to_v4si (x * invtwopi);
 
-  return vfastersin ((half + v4si_to_v4sf (k)) * twopi - x);
-}
+    v4sf ltzero = _mm_cmplt_ps (x, v4sfl (0.0f));
+    v4sf half = _mm_or_ps (_mm_and_ps (ltzero, v4sfl (-0.5f)),
+                           _mm_andnot_ps (ltzero, v4sfl (0.5f)));
+    v4sf xnew = x - (half + v4si_to_v4sf (k)) * twopi;
 
-static inline v4sf
-vfastcos (const v4sf x)
-{
-  const v4sf halfpi = v4sfl (1.5707963267948966f);
-  const v4sf halfpiminustwopi = v4sfl (-4.7123889803846899f);
-  v4sf lthalfpi = _mm_cmpnlt_ps (x, halfpi);
-  v4sf offset = _mm_or_ps (_mm_and_ps (lthalfpi, halfpiminustwopi),
-                           _mm_andnot_ps (lthalfpi, halfpi));
-  return vfastsin (x + offset);
-}
+    return vfastsin (xnew) / vfastcos (xnew);
+  }
+  //}}}
+  //{{{
+  static inline v4sf vfastertanfull (const v4sf x)
+  {
+    const v4sf twopi = v4sfl (6.2831853071795865f);
+    const v4sf invtwopi = v4sfl (0.15915494309189534f);
 
-static inline v4sf
-vfastercos (v4sf x)
-{
-  const v4sf twooverpi = v4sfl (0.63661977236758134f);
-  const v4sf p = v4sfl (0.54641335845679634);
+    v4si k = v4sf_to_v4si (x * invtwopi);
 
-  v4sf vx = v4sf_fabs (x);
-  v4sf qpprox = v4sfl (1.0f) - twooverpi * vx;
+    v4sf ltzero = _mm_cmplt_ps (x, v4sfl (0.0f));
+    v4sf half = _mm_or_ps (_mm_and_ps (ltzero, v4sfl (-0.5f)),
+                           _mm_andnot_ps (ltzero, v4sfl (0.5f)));
+    v4sf xnew = x - (half + v4si_to_v4sf (k)) * twopi;
 
-  return qpprox + p * qpprox * (v4sfl (1.0f) - qpprox * qpprox);
-}
-
-static inline v4sf
-vfastcosfull (const v4sf x)
-{
-  const v4sf halfpi = v4sfl (1.5707963267948966f);
-  return vfastsinfull (x + halfpi);
-}
-
-static inline v4sf
-vfastercosfull (const v4sf x)
-{
-  const v4sf halfpi = v4sfl (1.5707963267948966f);
-  return vfastersinfull (x + halfpi);
-}
-
-static inline v4sf
-vfasttan (const v4sf x)
-{
-  const v4sf halfpi = v4sfl (1.5707963267948966f);
-  return vfastsin (x) / vfastsin (x + halfpi);
-}
-
-static inline v4sf
-vfastertan (const v4sf x)
-{
-  return vfastersin (x) / vfastercos (x);
-}
-
-static inline v4sf
-vfasttanfull (const v4sf x)
-{
-  const v4sf twopi = v4sfl (6.2831853071795865f);
-  const v4sf invtwopi = v4sfl (0.15915494309189534f);
-
-  v4si k = v4sf_to_v4si (x * invtwopi);
-
-  v4sf ltzero = _mm_cmplt_ps (x, v4sfl (0.0f));
-  v4sf half = _mm_or_ps (_mm_and_ps (ltzero, v4sfl (-0.5f)),
-                         _mm_andnot_ps (ltzero, v4sfl (0.5f)));
-  v4sf xnew = x - (half + v4si_to_v4sf (k)) * twopi;
-
-  return vfastsin (xnew) / vfastcos (xnew);
-}
-
-static inline v4sf
-vfastertanfull (const v4sf x)
-{
-  const v4sf twopi = v4sfl (6.2831853071795865f);
-  const v4sf invtwopi = v4sfl (0.15915494309189534f);
-
-  v4si k = v4sf_to_v4si (x * invtwopi);
-
-  v4sf ltzero = _mm_cmplt_ps (x, v4sfl (0.0f));
-  v4sf half = _mm_or_ps (_mm_and_ps (ltzero, v4sfl (-0.5f)),
-                         _mm_andnot_ps (ltzero, v4sfl (0.5f)));
-  v4sf xnew = x - (half + v4si_to_v4sf (k)) * twopi;
-
-  return vfastersin (xnew) / vfastercos (xnew);
-}
-
+    return vfastersin (xnew) / vfastercos (xnew);
+  }
+  //}}}
 #endif //__SSE2__
-
-#endif // __FAST_TRIG_H_

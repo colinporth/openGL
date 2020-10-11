@@ -127,8 +127,8 @@ protected:
 
         case GLFW_KEY_I: toggleSolid(); break;
         case GLFW_KEY_A: toggleEdges(); break;
-        case GLFW_KEY_Q: fringeWidth (getFringeWidth() - 0.25f); break;
-        case GLFW_KEY_W: fringeWidth (getFringeWidth() + 0.25f); break;
+        case GLFW_KEY_Q: setFringeWidth (getFringeWidth() - 0.25f); break;
+        case GLFW_KEY_W: setFringeWidth (getFringeWidth() + 0.25f); break;
 
         case GLFW_KEY_L:
           mMoreLogInfo = !mMoreLogInfo;

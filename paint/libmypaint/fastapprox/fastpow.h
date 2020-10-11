@@ -1,3 +1,5 @@
+//{{{
+
 
 /*=====================================================================*
  *                   Copyright (C) 2011 Paul Mineiro                   *
@@ -38,6 +40,7 @@
  *                                                                     *
  * Contact: Paul Mineiro <paul@mineiro.com>                            *
  *=====================================================================*/
+//}}}
 
 #ifndef __FAST_POW_H_
 #define __FAST_POW_H_
@@ -47,32 +50,24 @@
 #include "fastexp.h"
 #include "fastlog.h"
 
-static inline float
-fastpow (float x,
-         float p)
+static inline float fastpow (float x, float p)
 {
   return fastpow2 (p * fastlog2 (x));
 }
 
-static inline float
-fasterpow (float x,
-           float p)
+static inline float fasterpow (float x, float p)
 {
   return fasterpow2 (p * fasterlog2 (x));
 }
 
 #ifdef __SSE2__
 
-static inline v4sf
-vfastpow (const v4sf x,
-          const v4sf p)
+static inline v4sf vfastpow (const v4sf x, const v4sf p)
 {
   return vfastpow2 (p * vfastlog2 (x));
 }
 
-static inline v4sf
-vfasterpow (const v4sf x,
-            const v4sf p)
+static inline v4sf vfasterpow (const v4sf x, const v4sf p)
 {
   return vfasterpow2 (p * vfasterlog2 (x));
 }

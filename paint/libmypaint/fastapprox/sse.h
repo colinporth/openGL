@@ -1,3 +1,4 @@
+//{{{
 /*=====================================================================*
  *                   Copyright (C) 2011 Paul Mineiro                   *
  * All rights reserved.                                                *
@@ -37,9 +38,8 @@
  *                                                                     *
  * Contact: Paul Mineiro <paul@mineiro.com>                            *
  *=====================================================================*/
-
-#ifndef __SSE_H_
-#define __SSE_H_
+//}}}
+#pragma once
 
 #ifdef __SSE2__
 
@@ -69,30 +69,30 @@ typedef __m128i v4si;
   #define v4sfl(x) (const v4sf { (x), (x), (x), (x) })
   #define v4sil(x) (const v4si _MM_SETR_EPI32(x, x, x, x))
 
-  __forceinline const v4sf operator+(const v4sf& a, const v4sf& b) { return _mm_add_ps(a,b); }
-  __forceinline const v4sf operator-(const v4sf& a, const v4sf& b) { return _mm_sub_ps(a,b); }
-  __forceinline const v4sf operator/(const v4sf& a, const v4sf& b) { return _mm_div_ps(a,b); }
-  __forceinline const v4sf operator*(const v4sf& a, const v4sf& b) { return _mm_mul_ps(a,b); }
+  __forceinline const v4sf operator+ (const v4sf& a, const v4sf& b) { return _mm_add_ps(a,b); }
+  __forceinline const v4sf operator- (const v4sf& a, const v4sf& b) { return _mm_sub_ps(a,b); }
+  __forceinline const v4sf operator/ (const v4sf& a, const v4sf& b) { return _mm_div_ps(a,b); }
+  __forceinline const v4sf operator* (const v4sf& a, const v4sf& b) { return _mm_mul_ps(a,b); }
 
-  __forceinline const v4sf operator+(const v4sf& a) { return a; }
-  __forceinline const v4sf operator-(const v4sf& a) { return _mm_xor_ps(a, _mm_castsi128_ps(_mm_set1_epi32(0x80000000))); }
+  __forceinline const v4sf operator+ (const v4sf& a) { return a; }
+  __forceinline const v4sf operator- (const v4sf& a) { return _mm_xor_ps(a, _mm_castsi128_ps(_mm_set1_epi32(0x80000000))); }
 
-  __forceinline const v4sf operator&(const v4sf& a, const v4sf& b) { return _mm_and_ps(a,b); }
-  __forceinline const v4sf operator|(const v4sf& a, const v4sf& b) { return _mm_or_ps(a,b); }
-  __forceinline const v4sf operator^(const v4sf& a, const v4sf& b) { return _mm_xor_ps(a,b); }
+  __forceinline const v4sf operator& (const v4sf& a, const v4sf& b) { return _mm_and_ps(a,b); }
+  __forceinline const v4sf operator| (const v4sf& a, const v4sf& b) { return _mm_or_ps(a,b); }
+  __forceinline const v4sf operator^ (const v4sf& a, const v4sf& b) { return _mm_xor_ps(a,b); }
 
-  __forceinline const v4si operator&(const v4si& a, const v4si& b) { return _mm_and_si128(a,b); }
-  __forceinline const v4si operator|(const v4si& a, const v4si& b) { return _mm_or_si128(a,b); }
-  __forceinline const v4si operator^(const v4si& a, const v4si& b) { return _mm_xor_si128(a,b); }
+  __forceinline const v4si operator& (const v4si& a, const v4si& b) { return _mm_and_si128(a,b); }
+  __forceinline const v4si operator| (const v4si& a, const v4si& b) { return _mm_or_si128(a,b); }
+  __forceinline const v4si operator^ (const v4si& a, const v4si& b) { return _mm_xor_si128(a,b); }
 
-  __forceinline const v4sf operator+=(v4sf& a, const v4sf& b) { return a = a + b; }
-  __forceinline const v4sf operator-=(v4sf& a, const v4sf& b) { return a = a - b; }
-  __forceinline const v4sf operator*=(v4sf& a, const v4sf& b) { return a = a * b; }
-  __forceinline const v4sf operator/=(v4sf& a, const v4sf& b) { return a = a / b; }
+  __forceinline const v4sf operator+= (v4sf& a, const v4sf& b) { return a = a + b; }
+  __forceinline const v4sf operator-= (v4sf& a, const v4sf& b) { return a = a - b; }
+  __forceinline const v4sf operator*= (v4sf& a, const v4sf& b) { return a = a * b; }
+  __forceinline const v4sf operator/= (v4sf& a, const v4sf& b) { return a = a / b; }
 
-  __forceinline const v4si operator|=(v4si& a, const v4si& b) { return a = a | b; }
-  __forceinline const v4si operator&=(v4si& a, const v4si& b) { return a = a & b; }
-  __forceinline const v4si operator^=(v4si& a, const v4si& b) { return a = a ^ b; }
+  __forceinline const v4si operator|= (v4si& a, const v4si& b) { return a = a | b; }
+  __forceinline const v4si operator&= (v4si& a, const v4si& b) { return a = a & b; }
+  __forceinline const v4si operator^= (v4si& a, const v4si& b) { return a = a ^ b; }
 #else
   #define v4sfl(x) ((const v4sf) { (x), (x), (x), (x) })
   #define v2dil(x) ((const v4si) { (x), (x) })
@@ -130,5 +130,3 @@ typedef union { v4sf f; v4si i; } v4sfv4sipun;
 #endif // __cplusplus
 
 #endif // __SSE2__
-
-#endif // __SSE_H_

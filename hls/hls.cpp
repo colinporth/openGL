@@ -185,12 +185,12 @@ protected:
         //}}}
         //{{{
         case GLFW_KEY_Q: // less edge
-          fringeWidth (getFringeWidth() - 0.25f);
+          setFringeWidth (getFringeWidth() - 0.25f);
           break;
         //}}}
         //{{{
         case GLFW_KEY_W: // more edge
-          fringeWidth (getFringeWidth() + 0.25f);
+          setFringeWidth (getFringeWidth() + 0.25f);
           break;
         //}}}
 

@@ -1,3 +1,4 @@
+//{{{
 /*=====================================================================*
  *                   Copyright (C) 2012 Paul Mineiro                   *
  * All rights reserved.                                                *
@@ -37,13 +38,11 @@
  *                                                                     *
  * Contact: Paul Mineiro <paul@mineiro.com>                            *
  *=====================================================================*/
-
-#ifndef __CAST_H_
+//}}}
+#pragma once
 
 #ifdef __cplusplus
 #define cast_uint32_t static_cast<uint32_t>
 #else
 #define cast_uint32_t (uint32_t)
 #endif
-
-#endif // __CAST_H_

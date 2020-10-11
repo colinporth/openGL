@@ -1,3 +1,4 @@
+//{{{
 /*=====================================================================*
  *                   Copyright (C) 2011 Paul Mineiro                   *
  * All rights reserved.                                                *
@@ -37,6 +38,7 @@
  *                                                                     *
  * Contact: Paul Mineiro <paul@mineiro.com>                            *
  *=====================================================================*/
+//}}}
 
 #ifndef __FAST_SIGMOID_H_
 #define __FAST_SIGMOID_H_
@@ -45,30 +47,26 @@
 #include "sse.h"
 #include "fastexp.h"
 
-static inline float
-fastsigmoid (float x)
+static inline float fastsigmoid (float x)
 {
   return 1.0f / (1.0f + fastexp (-x));
 }
 
-static inline float
-fastersigmoid (float x)
+static inline float fastersigmoid (float x)
 {
   return 1.0f / (1.0f + fasterexp (-x));
 }
 
 #ifdef __SSE2__
 
-static inline v4sf
-vfastsigmoid (const v4sf x)
+static inline v4sf vfastsigmoid (const v4sf x)
 {
   const v4sf c_1 = v4sfl (1.0f);
 
   return c_1 / (c_1 + vfastexp (-x));
 }
 
-static inline v4sf
-vfastersigmoid (const v4sf x)
+static inline v4sf vfastersigmoid (const v4sf x)
 {
   const v4sf c_1 = v4sfl (1.0f);
 

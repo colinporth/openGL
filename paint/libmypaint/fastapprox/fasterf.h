@@ -1,3 +1,4 @@
+//{{{
 /*=====================================================================*
  *                   Copyright (C) 2011 Paul Mineiro                   *
  * All rights reserved.                                                *
@@ -37,9 +38,8 @@
  *                                                                     *
  * Contact: Paul Mineiro <paul@mineiro.com>                            *
  *=====================================================================*/
-
-#ifndef __FAST_ERF_H_
-#define __FAST_ERF_H_
+//}}}
+#pragma once
 
 #include <math.h>
 #include <stdint.h>
@@ -47,12 +47,12 @@
 #include "fastexp.h"
 #include "fastlog.h"
 
+//{{{
 // fasterfc: not actually faster than erfcf(3) on newer machines!
 // ... although vectorized version is interesting
 //     and fastererfc is very fast
 
-static inline float
-fasterfc (float x)
+static inline float fasterfc (float x)
 {
   static const float k = 3.3509633149424609f;
   static const float a = 0.07219054755431126f;
@@ -67,33 +67,33 @@ fasterfc (float x)
 
   return 2.0f / (1.0f + fastpow2 (k * x)) - a * x * (b * xquad - 1.0f) * fasterpow2 (vc.f);
 }
-
-static inline float
-fastererfc (float x)
+//}}}
+//{{{
+static inline float fastererfc (float x)
 {
   static const float k = 3.3509633149424609f;
 
   return 2.0f / (1.0f + fasterpow2 (k * x));
 }
-
-// fasterf: not actually faster than erff(3) on newer machines! 
+//}}}
+//{{{
+// fasterf: not actually faster than erff(3) on newer machines!
 // ... although vectorized version is interesting
 //     and fastererf is very fast
 
-static inline float
-fasterf (float x)
+static inline float fasterf (float x)
 {
   return 1.0f - fasterfc (x);
 }
-
-static inline float
-fastererf (float x)
+//}}}
+//{{{
+static inline float fastererf (float x)
 {
   return 1.0f - fastererfc (x);
 }
-
-static inline float
-fastinverseerf (float x)
+//}}}
+//{{{
+static inline float fastinverseerf (float x)
 {
   static const float invk = 0.30004578719350504f;
   static const float a = 0.020287853348211326f;
@@ -103,80 +103,76 @@ fastinverseerf (float x)
 
   float xsq = x * x;
 
-  return invk * fastlog2 ((1.0f + x) / (1.0f - x)) 
+  return invk * fastlog2 ((1.0f + x) / (1.0f - x))
        + x * (a - b * xsq) / (c - d * xsq);
 }
-
-static inline float
-fasterinverseerf (float x)
+//}}}
+//{{{
+static inline float fasterinverseerf (float x)
 {
   static const float invk = 0.30004578719350504f;
 
   return invk * fasterlog2 ((1.0f + x) / (1.0f - x));
 }
+//}}}
 
 #ifdef __SSE2__
+  //{{{
+  static inline v4sf vfasterfc (v4sf x) {
+    const v4sf k = v4sfl (3.3509633149424609f);
+    const v4sf a = v4sfl (0.07219054755431126f);
+    const v4sf b = v4sfl (15.418191568719577f);
+    const v4sf c = v4sfl (5.609846028328545f);
 
-static inline v4sf
-vfasterfc (v4sf x)
-{
-  const v4sf k = v4sfl (3.3509633149424609f);
-  const v4sf a = v4sfl (0.07219054755431126f);
-  const v4sf b = v4sfl (15.418191568719577f);
-  const v4sf c = v4sfl (5.609846028328545f);
+    union { v4sf f; v4si i; } vc; vc.f = c * x;
+    vc.i |= v4sil (0x80000000);
 
-  union { v4sf f; v4si i; } vc; vc.f = c * x;
-  vc.i |= v4sil (0x80000000);
+    v4sf xsq = x * x;
+    v4sf xquad = xsq * xsq;
 
-  v4sf xsq = x * x;
-  v4sf xquad = xsq * xsq;
+    return v4sfl (2.0f) / (v4sfl (1.0f) + vfastpow2 (k * x)) - a * x * (b * xquad - v4sfl (1.0f)) * vfasterpow2 (vc.f);
+  }
+  //}}}
+  //{{{
+  static inline v4sf vfastererfc (const v4sf x)
+  {
+    const v4sf k = v4sfl (3.3509633149424609f);
 
-  return v4sfl (2.0f) / (v4sfl (1.0f) + vfastpow2 (k * x)) - a * x * (b * xquad - v4sfl (1.0f)) * vfasterpow2 (vc.f);
-}
+    return v4sfl (2.0f) / (v4sfl (1.0f) + vfasterpow2 (k * x));
+  }
+  //}}}
+  //{{{
+  static inline v4sf vfasterf (v4sf x) {
+    return v4sfl (1.0f) - vfasterfc (x);
+  }
+  //}}}
+  //{{{
+  static inline v4sf vfastererf (const v4sf x)
+  {
+    return v4sfl (1.0f) - vfastererfc (x);
+  }
+  //}}}
+  //{{{
+  static inline v4sf vfastinverseerf (v4sf x)
+  {
+    const v4sf invk = v4sfl (0.30004578719350504f);
+    const v4sf a = v4sfl (0.020287853348211326f);
+    const v4sf b = v4sfl (0.07236892874789555f);
+    const v4sf c = v4sfl (0.9913030456864257f);
+    const v4sf d = v4sfl (0.8059775923760193f);
 
-static inline v4sf
-vfastererfc (const v4sf x)
-{
-  const v4sf k = v4sfl (3.3509633149424609f);
+    v4sf xsq = x * x;
 
-  return v4sfl (2.0f) / (v4sfl (1.0f) + vfasterpow2 (k * x));
-}
+    return invk * vfastlog2 ((v4sfl (1.0f) + x) / (v4sfl (1.0f) - x))
+         + x * (a - b * xsq) / (c - d * xsq);
+  }
+  //}}}
+  //{{{
+  static inline v4sf vfasterinverseerf (v4sf x)
+  {
+    const v4sf invk = v4sfl (0.30004578719350504f);
 
-static inline v4sf
-vfasterf (v4sf x)
-{
-  return v4sfl (1.0f) - vfasterfc (x);
-}
-
-static inline v4sf
-vfastererf (const v4sf x)
-{
-  return v4sfl (1.0f) - vfastererfc (x);
-}
-
-static inline v4sf
-vfastinverseerf (v4sf x)
-{
-  const v4sf invk = v4sfl (0.30004578719350504f);
-  const v4sf a = v4sfl (0.020287853348211326f);
-  const v4sf b = v4sfl (0.07236892874789555f);
-  const v4sf c = v4sfl (0.9913030456864257f);
-  const v4sf d = v4sfl (0.8059775923760193f);
-
-  v4sf xsq = x * x;
-
-  return invk * vfastlog2 ((v4sfl (1.0f) + x) / (v4sfl (1.0f) - x)) 
-       + x * (a - b * xsq) / (c - d * xsq);
-}
-
-static inline v4sf
-vfasterinverseerf (v4sf x)
-{
-  const v4sf invk = v4sfl (0.30004578719350504f);
-
-  return invk * vfasterlog2 ((v4sfl (1.0f) + x) / (v4sfl (1.0f) - x));
-}
-
+    return invk * vfasterlog2 ((v4sfl (1.0f) + x) / (v4sfl (1.0f) - x));
+  }
+  //}}}
 #endif //__SSE2__
-
-#endif // __FAST_ERF_H_

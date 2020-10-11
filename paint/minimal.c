@@ -1,7 +1,7 @@
-//#include "libmypaint.c"
+#include "stdio.h"
+#include "stdlib.h"
 #include "libmypaint/mypaint-fixed-tiled-surface.h"
 #include "libmypaint/mypaint-brush.h"
-#include "stdio.h"
 
 //{{{
 // Naive conversion code from the internal MyPaint format and 8 bit RGB
@@ -103,19 +103,18 @@ static void write_ppm_chunk (uint16_t* chunk, int chunk_length, void* user_data)
 // Output the surface to a PPM file
 void write_ppm (MyPaintFixedTiledSurface* fixed_surface, char* filepath) {
     WritePPMUserData data;
-    data.fp = fopen(filepath, "w");
+    data.fp = fopen (filepath, "w");
     if (!data.fp) {
-        fprintf(stderr, "ERROR: Could not open output file \"%s\"\n", filepath);
-        return;
-    }
+      fprintf(stderr, "ERROR: Could not open output file \"%s\"\n", filepath);
+      return;
+      }
 
-    const int width = mypaint_fixed_tiled_surface_get_width(fixed_surface);
-    const int height = mypaint_fixed_tiled_surface_get_height(fixed_surface);
+    const int width = mypaint_fixed_tiled_surface_get_width (fixed_surface);
+    const int height = mypaint_fixed_tiled_surface_get_height (fixed_surface);
     fprintf(data.fp, "P3\n#Handwritten\n%d %d\n255\n", width, height);
 
-    iterate_over_line_chunks((MyPaintTiledSurface *)fixed_surface,
-                             height, width,
-                             write_ppm_chunk, &data);
+    iterate_over_line_chunks ((MyPaintTiledSurface*)fixed_surface,
+                              height, width, write_ppm_chunk, &data);
 
     fclose(data.fp);
 }
