@@ -134,11 +134,45 @@ struct MyPaintBrush {
 #define BASEVAL(self, setting_name) (mypaint_mapping_get_base_value((self)->settings[MYPAINT_BRUSH_SETTING_##setting_name]))
 #define INPUT(input_name) (inputs[MYPAINT_BRUSH_INPUT_##input_name])
 
-void settings_base_values_have_changed (MyPaintBrush *self);
-
-#include "glib/mypaint-brush.c"
 //{{{
-void brush_reset(MyPaintBrush *self)
+void settings_base_values_have_changed (MyPaintBrush* self)
+{
+  // precalculate stuff that does not change dynamically
+
+  // Precalculate how the physical speed will be mapped to the speed input value.
+  // The formula for this mapping is:
+  //
+  // y = log(gamma+x)*m + q;
+  //
+  // x: the physical speed (pixels per basic dab radius)
+  // y: the speed input that will be reported
+  // gamma: parameter set by the user (small means a logarithmic mapping, big linear)
+  // m, q: parameters to scale and translate the curve
+  //
+  // The code below calculates m and q given gamma and two hardcoded constraints.
+  //
+  for (int i = 0; i < 2; i++) {
+    const float gamma = expf(i == 0 ? BASEVAL(self, SPEED1_GAMMA) : BASEVAL(self, SPEED2_GAMMA));
+
+    const float fix1_x = 45.0;
+    const float fix1_y = 0.5;
+    const float fix2_x = 45.0;
+    const float fix2_dy = 0.015;
+
+    const float c1 = log(fix1_x + gamma);
+    const float m = fix2_dy * (fix2_x + gamma);
+    const float q = fix1_y - m * c1;
+
+    self->speed_mapping_gamma[i] = gamma;
+    self->speed_mapping_m[i] = m;
+    self->speed_mapping_q[i] = q;
+  }
+}
+//}}}
+
+//#include "glib/mypaint-brush.c"
+//{{{
+void brush_reset(MyPaintBrush* self)
 {
     self->skip = 0;
     self->skip_last_x = 0;
@@ -169,7 +203,7 @@ void brush_reset(MyPaintBrush *self)
   * Create a new MyPaint brush engine instance.
   * Initial reference count is 1. Release references using mypaint_brush_unref()
   */
-MyPaintBrush *
+MyPaintBrush*
 mypaint_brush_new(void)
 {
   return mypaint_brush_new_with_buckets(0);
@@ -183,16 +217,16 @@ mypaint_brush_new(void)
   * MyPaint 2.0 supports up to 255 buckets per brush.
   * Initial reference count is 1. Release references using mypaint_brush_unref()
   */
-MyPaintBrush * mypaint_brush_new_with_buckets(int num_smudge_buckets)
+MyPaintBrush*  mypaint_brush_new_with_buckets (int num_smudge_buckets)
 {
-    MyPaintBrush *self = (MyPaintBrush *)malloc(sizeof(MyPaintBrush));
+    MyPaintBrush* self = (MyPaintBrush*)malloc(sizeof(MyPaintBrush));
 
     if (!self) {
       return NULL;
     }
 
     if (num_smudge_buckets > 0) {
-      float *bucket_array = malloc(num_smudge_buckets * SMUDGE_BUCKET_SIZE * sizeof(float));
+      float* bucket_array = malloc(num_smudge_buckets * SMUDGE_BUCKET_SIZE * sizeof(float));
       if (!bucket_array) {
         free(self);
         return NULL;
@@ -229,7 +263,7 @@ MyPaintBrush * mypaint_brush_new_with_buckets(int num_smudge_buckets)
 //}}}
 
 //{{{
-void brush_free(MyPaintBrush *self)
+void brush_free (MyPaintBrush* self)
 {
     for (int i = 0; i < MYPAINT_BRUSH_SETTINGS_COUNT; i++) {
         mypaint_mapping_free(self->settings[i]);
@@ -251,7 +285,7 @@ void brush_free(MyPaintBrush *self)
   *
   * Decrease the reference count. Will be freed when it hits 0.
   */
-void mypaint_brush_unref(MyPaintBrush *self)
+void mypaint_brush_unref (MyPaintBrush* self)
 {
     self->refcount--;
     if (self->refcount == 0) {
@@ -265,7 +299,7 @@ void mypaint_brush_unref(MyPaintBrush *self)
   *
   * Increase the reference count.
   */
-void mypaint_brush_ref(MyPaintBrush *self)
+void mypaint_brush_ref (MyPaintBrush* self)
 {
     self->refcount++;
 }
@@ -276,7 +310,7 @@ void mypaint_brush_ref(MyPaintBrush *self)
   *
   * Return the total amount of painting time for the current stroke.
   */
-double mypaint_brush_get_total_stroke_painting_time(MyPaintBrush *self)
+double mypaint_brush_get_total_stroke_painting_time (MyPaintBrush* self)
 {
     return self->stroke_total_painting_time;
 }
@@ -288,7 +322,7 @@ double mypaint_brush_get_total_stroke_painting_time(MyPaintBrush *self)
   *
   * Enable/Disable printing of brush engine inputs on stderr. Intended for debugging only.
   */
-void mypaint_brush_set_print_inputs(MyPaintBrush *self, gboolean enabled)
+void mypaint_brush_set_print_inputs (MyPaintBrush* self, gboolean enabled)
 {
     self->print_inputs = enabled;
 }
@@ -301,7 +335,7 @@ void mypaint_brush_set_print_inputs(MyPaintBrush *self, gboolean enabled)
   * Used when the next mypaint_brush_stroke_to() call is not related to the current state.
   * Note that the reset request is queued and changes in state will only happen on next stroke_to()
   */
-void mypaint_brush_reset(MyPaintBrush *self)
+void mypaint_brush_reset (MyPaintBrush* self)
 {
     self->reset_requested = TRUE;
 }
@@ -312,7 +346,7 @@ void mypaint_brush_reset(MyPaintBrush *self)
   *
   * Start a new stroke.
   */
-void mypaint_brush_new_stroke(MyPaintBrush *self)
+void mypaint_brush_new_stroke (MyPaintBrush* self)
 {
     self->stroke_current_idling_time = 0;
     self->stroke_total_painting_time = 0;
@@ -325,7 +359,7 @@ void mypaint_brush_new_stroke(MyPaintBrush *self)
   *
   * Set the base value of a brush setting.
   */
-void mypaint_brush_set_base_value(MyPaintBrush *self, MyPaintBrushSetting id, float value)
+void mypaint_brush_set_base_value (MyPaintBrush* self, MyPaintBrushSetting id, float value)
 {
     assert (id < MYPAINT_BRUSH_SETTINGS_COUNT);
     mypaint_mapping_set_base_value(self->settings[id], value);
@@ -339,7 +373,7 @@ void mypaint_brush_set_base_value(MyPaintBrush *self, MyPaintBrushSetting id, fl
   *
   * Get the base value of a brush setting.
   */
-float mypaint_brush_get_base_value(MyPaintBrush *self, MyPaintBrushSetting id)
+float mypaint_brush_get_base_value (MyPaintBrush* self, MyPaintBrushSetting id)
 {
     assert (id < MYPAINT_BRUSH_SETTINGS_COUNT);
     return mypaint_mapping_get_base_value(self->settings[id]);
@@ -352,7 +386,7 @@ float mypaint_brush_get_base_value(MyPaintBrush *self, MyPaintBrushSetting id)
   *
   * Set the number of points used for the dynamics mapping between a #MyPaintBrushInput and #MyPaintBrushSetting.
   */
-void mypaint_brush_set_mapping_n(MyPaintBrush *self, MyPaintBrushSetting id, MyPaintBrushInput input, int n)
+void mypaint_brush_set_mapping_n (MyPaintBrush* self, MyPaintBrushSetting id, MyPaintBrushInput input, int n)
 {
     assert (id < MYPAINT_BRUSH_SETTINGS_COUNT);
     mypaint_mapping_set_n(self->settings[id], input, n);
@@ -365,7 +399,7 @@ void mypaint_brush_set_mapping_n(MyPaintBrush *self, MyPaintBrushSetting id, MyP
   *
   * Get the number of points used for the dynamics mapping between a #MyPaintBrushInput and #MyPaintBrushSetting.
   */
-int mypaint_brush_get_mapping_n(MyPaintBrush *self, MyPaintBrushSetting id, MyPaintBrushInput input)
+int mypaint_brush_get_mapping_n (MyPaintBrush* self, MyPaintBrushSetting id, MyPaintBrushInput input)
 {
     return mypaint_mapping_get_n(self->settings[id], input);
 }
@@ -376,7 +410,7 @@ int mypaint_brush_get_mapping_n(MyPaintBrush *self, MyPaintBrushSetting id, MyPa
   *
   * Returns TRUE if the brush has no dynamics for the given #MyPaintBrushSetting
   */
-gboolean mypaint_brush_is_constant(MyPaintBrush *self, MyPaintBrushSetting id)
+gboolean mypaint_brush_is_constant (MyPaintBrush* self, MyPaintBrushSetting id)
 {
     assert (id < MYPAINT_BRUSH_SETTINGS_COUNT);
     return mypaint_mapping_is_constant(self->settings[id]);
@@ -388,7 +422,7 @@ gboolean mypaint_brush_is_constant(MyPaintBrush *self, MyPaintBrushSetting id)
   *
   * Returns how many inputs are used for the dynamics of a #MyPaintBrushSetting
   */
-int mypaint_brush_get_inputs_used_n(MyPaintBrush *self, MyPaintBrushSetting id)
+int mypaint_brush_get_inputs_used_n (MyPaintBrush* self, MyPaintBrushSetting id)
 {
     assert (id < MYPAINT_BRUSH_SETTINGS_COUNT);
     return mypaint_mapping_get_inputs_used_n(self->settings[id]);
@@ -401,7 +435,7 @@ int mypaint_brush_get_inputs_used_n(MyPaintBrush *self, MyPaintBrushSetting id)
   * Set a X,Y point of a dynamics mapping.
   * The index must be within the number of points set using mypaint_brush_set_mapping_n()
   */
-void mypaint_brush_set_mapping_point(MyPaintBrush *self, MyPaintBrushSetting id, MyPaintBrushInput input, int index, float x, float y)
+void mypaint_brush_set_mapping_point (MyPaintBrush* self, MyPaintBrushSetting id, MyPaintBrushInput input, int index, float x, float y)
 {
     assert (id < MYPAINT_BRUSH_SETTINGS_COUNT);
     mypaint_mapping_set_point(self->settings[id], input, index, x, y);
@@ -415,7 +449,7 @@ void mypaint_brush_set_mapping_point(MyPaintBrush *self, MyPaintBrushSetting id,
  *
  * Get a X,Y point of a dynamics mapping.
  **/
-void mypaint_brush_get_mapping_point(MyPaintBrush *self, MyPaintBrushSetting id, MyPaintBrushInput input, int index, float *x, float *y)
+void mypaint_brush_get_mapping_point (MyPaintBrush* self, MyPaintBrushSetting id, MyPaintBrushInput input, int index, float* x, float* y)
 {
     assert (id < MYPAINT_BRUSH_SETTINGS_COUNT);
     mypaint_mapping_get_point(self->settings[id], input, index, x, y);
@@ -428,7 +462,7 @@ void mypaint_brush_get_mapping_point(MyPaintBrush *self, MyPaintBrushSetting id,
  * Get an internal brush engine state.
  * Normally used for debugging, but can be used to implement record & replay functionality.
  **/
-float mypaint_brush_get_state(MyPaintBrush *self, MyPaintBrushState i)
+float mypaint_brush_get_state (MyPaintBrush* self, MyPaintBrushState i)
 {
     assert (i < MYPAINT_BRUSH_STATES_COUNT);
     return self->states[i];
@@ -441,7 +475,7 @@ float mypaint_brush_get_state(MyPaintBrush *self, MyPaintBrushState i)
  * Set an internal brush engine state.
  * Normally used for debugging, but can be used to implement record & replay functionality.
  **/
-void mypaint_brush_set_state(MyPaintBrush *self, MyPaintBrushState i, float value)
+void mypaint_brush_set_state (MyPaintBrush* self, MyPaintBrushState i, float value)
 {
     assert (i < MYPAINT_BRUSH_STATES_COUNT);
     self->states[i] = value;
@@ -458,8 +492,7 @@ void mypaint_brush_set_state(MyPaintBrush *self, MyPaintBrushState i, float valu
  * capacity of the brush.
  *
  **/
-gboolean mypaint_brush_set_smudge_bucket_state(
-    MyPaintBrush* self, int bucket_index,
+gboolean mypaint_brush_set_smudge_bucket_state (MyPaintBrush* self, int bucket_index,
     float r, float g, float b, float a,
     float prev_r, float prev_g, float prev_b, float prev_a,
     float prev_color_recentness)
@@ -490,8 +523,7 @@ gboolean mypaint_brush_set_smudge_bucket_state(
  * capacity of the brush.
  *
  **/
-gboolean mypaint_brush_get_smudge_bucket_state(
-    const MyPaintBrush* self, int bucket_index,
+gboolean mypaint_brush_get_smudge_bucket_state (const MyPaintBrush* self, int bucket_index,
     float* r, float* g, float* b, float* a,
     float* prev_r, float* prev_g, float* prev_b, float* prev_a,
     float* prev_color_recentness)
@@ -520,7 +552,7 @@ gboolean mypaint_brush_get_smudge_bucket_state(
  * If no smudge bucket has been written to, -1 is returned.
  *
  */
-int mypaint_brush_get_min_smudge_bucket_used(const MyPaintBrush* self)
+int mypaint_brush_get_min_smudge_bucket_used (const MyPaintBrush* self)
 {
   return self->min_bucket_used;
 }
@@ -533,7 +565,7 @@ int mypaint_brush_get_min_smudge_bucket_used(const MyPaintBrush* self)
  * If no smudge bucket has been written to, -1 is returned.
  *
  */
-int mypaint_brush_get_max_smudge_bucket_used(const MyPaintBrush* self)
+int mypaint_brush_get_max_smudge_bucket_used (const MyPaintBrush* self)
 {
   return self->max_bucket_used;
 }
@@ -550,41 +582,6 @@ float exp_decay (float T_const, float t)
 
   const float arg = -t / T_const;
   return expf(arg);
-}
-//}}}
-//{{{
-void settings_base_values_have_changed (MyPaintBrush *self)
-{
-  // precalculate stuff that does not change dynamically
-
-  // Precalculate how the physical speed will be mapped to the speed input value.
-  // The formula for this mapping is:
-  //
-  // y = log(gamma+x)*m + q;
-  //
-  // x: the physical speed (pixels per basic dab radius)
-  // y: the speed input that will be reported
-  // gamma: parameter set by the user (small means a logarithmic mapping, big linear)
-  // m, q: parameters to scale and translate the curve
-  //
-  // The code below calculates m and q given gamma and two hardcoded constraints.
-  //
-  for (int i = 0; i < 2; i++) {
-    const float gamma = expf(i == 0 ? BASEVAL(self, SPEED1_GAMMA) : BASEVAL(self, SPEED2_GAMMA));
-
-    const float fix1_x = 45.0;
-    const float fix1_y = 0.5;
-    const float fix2_x = 45.0;
-    const float fix2_dy = 0.015;
-
-    const float c1 = log(fix1_x + gamma);
-    const float m = fix2_dy * (fix2_x + gamma);
-    const float q = fix1_y - m * c1;
-
-    self->speed_mapping_gamma[i] = gamma;
-    self->speed_mapping_m[i] = m;
-    self->speed_mapping_q[i] = q;
-  }
 }
 //}}}
 
@@ -676,7 +673,7 @@ Offsets directional_offsets (const MyPaintBrush* const self, const float base_ra
 //}}}
 //{{{
 // Debugging: print brush inputs/states (not all of them)
-void print_inputs (MyPaintBrush *self, float* inputs)
+void print_inputs (MyPaintBrush* self, float* inputs)
 {
     printf(
         "press=% 4.3f, speed1=% 4.4f\tspeed2=% 4.4f",
@@ -718,7 +715,7 @@ void print_inputs (MyPaintBrush *self, float* inputs)
 // mappings in critical places or extremely few events per second.
 //
 // note: parameters are is dx/ddab, ..., dtime/ddab (dab is the number, 5.0 = 5th dab)
-void update_states_and_setting_values (MyPaintBrush *self, float step_ddab, float step_dx, float step_dy, float step_dpressure, float step_declination, float step_ascension, float step_dtime, float step_viewzoom, float step_viewrotation, float step_declinationx, float step_declinationy, float step_barrel_rotation)
+void update_states_and_setting_values (MyPaintBrush* self, float step_ddab, float step_dx, float step_dy, float step_dpressure, float step_declination, float step_ascension, float step_dtime, float step_viewzoom, float step_viewrotation, float step_declinationx, float step_declinationy, float step_barrel_rotation)
 {
   if (step_dtime < 0.0) {
     printf("Time is running backwards!\n");
@@ -918,7 +915,7 @@ void update_states_and_setting_values (MyPaintBrush *self, float step_ddab, floa
 //}}}
 
 //{{{
-float *fetch_smudge_bucket (MyPaintBrush *self) {
+float *fetch_smudge_bucket (MyPaintBrush* self) {
   if (!self->smudge_buckets || !self->num_buckets) {
     return &STATE(self, SMUDGE_RA);
   }
@@ -1056,7 +1053,7 @@ float apply_smudge (const float* const smudge_bucket, const float smudge_value, 
   //
   // This is only gets called right after update_states_and_setting_values().
   // Returns TRUE if the surface was modified.
-gboolean prepare_and_draw_dab (MyPaintBrush *self, MyPaintSurface * surface, gboolean linear)
+gboolean prepare_and_draw_dab (MyPaintBrush* self, MyPaintSurface*  surface, gboolean linear)
   {
     const float opaque_fac = SETTING(self, OPAQUE_MULTIPLY);
     // ensure we don't get a positive result with two negative opaque values
@@ -1268,7 +1265,7 @@ gboolean prepare_and_draw_dab (MyPaintBrush *self, MyPaintSurface * surface, gbo
 //}}}
 //{{{
 // How many dabs will be drawn between the current and the next (x, y, +dt) position?
-float count_dabs_to (MyPaintBrush *self, float x, float y, float dt)
+float count_dabs_to (MyPaintBrush* self, float x, float y, float dt)
 {
   const float base_radius_log = BASEVAL(self, RADIUS_LOGARITHMIC);
   const float base_radius = CLAMP(expf(base_radius_log), ACTUAL_RADIUS_MIN, ACTUAL_RADIUS_MAX);
@@ -1314,7 +1311,7 @@ float count_dabs_to (MyPaintBrush *self, float x, float y, float dt)
  * Should be called once for each motion event.
  * Returns: non-0 if the stroke is finished or empty, else 0.
  */
-int mypaint_brush_stroke_to (MyPaintBrush *self, MyPaintSurface *surface,
+int mypaint_brush_stroke_to (MyPaintBrush* self, MyPaintSurface* surface,
                              float x, float y, float pressure,
                              float xtilt, float ytilt, double dtime, float viewzoom, float viewrotation, float barrel_rotation, gboolean linear)
 {
@@ -1565,12 +1562,12 @@ int mypaint_brush_stroke_to (MyPaintBrush *self, MyPaintSurface *surface,
 //}}}
 //{{{
 // Compat wrapper, for supporting libjson
-static gboolean obj_get(json_object *self, const gchar *key, json_object **obj_out) {
+static gboolean obj_get (json_object* self, const gchar* key, json_object** obj_out) {
 #if JSON_C_MINOR_VERSION >= 10
     return json_object_object_get_ex(self, key, obj_out)
         && (obj_out ? (*obj_out != NULL) : TRUE);
 #else
-    json_object *o = json_object_object_get(self, key);
+    json_object* o = json_object_object_get(self, key);
     if (obj_out) {
         *obj_out = o;
     }
@@ -1579,9 +1576,7 @@ static gboolean obj_get(json_object *self, const gchar *key, json_object **obj_o
 }
 //}}}
 //{{{
-static gboolean update_brush_setting_from_json_object(MyPaintBrush *self,
-                                      char *setting_name,
-                                      json_object *setting_obj)
+static gboolean update_brush_setting_from_json_object (MyPaintBrush* self, char* setting_name, json_object* setting_obj)
 {
     MyPaintBrushSetting setting_id = mypaint_brush_setting_from_cname(setting_name);
 
@@ -1597,7 +1592,7 @@ static gboolean update_brush_setting_from_json_object(MyPaintBrush *self,
     }
 
     // Base value
-    json_object *base_value_obj = NULL;
+    json_object* base_value_obj = NULL;
     if (! obj_get(setting_obj, "base_value", &base_value_obj)) {
         fprintf(stderr, "Warning: No 'base_value' field for setting: %s\n", setting_name);
         return FALSE;
@@ -1606,7 +1601,7 @@ static gboolean update_brush_setting_from_json_object(MyPaintBrush *self,
     mypaint_brush_set_base_value(self, setting_id, base_value);
 
     // Inputs
-    json_object *inputs = NULL;
+    json_object* inputs = NULL;
     if (! obj_get(setting_obj, "inputs", &inputs)) {
         fprintf(stderr, "Warning: No 'inputs' field for setting: %s\n", setting_name);
         return FALSE;
@@ -1630,11 +1625,11 @@ static gboolean update_brush_setting_from_json_object(MyPaintBrush *self,
         mypaint_brush_set_mapping_n(self, setting_id, input_id, number_of_mapping_points);
 
         for (int i=0; i<number_of_mapping_points; i++) {
-            json_object *mapping_point = json_object_array_get_idx(input_obj, i);
+            json_object* mapping_point = json_object_array_get_idx(input_obj, i);
 
-            json_object *x_obj = json_object_array_get_idx(mapping_point, 0);
+            json_object* x_obj = json_object_array_get_idx(mapping_point, 0);
             const float x = json_object_get_double(x_obj);
-            json_object *y_obj = json_object_array_get_idx(mapping_point, 1);
+            json_object* y_obj = json_object_array_get_idx(mapping_point, 1);
             const float y = json_object_get_double(y_obj);
 
             mypaint_brush_set_mapping_point(self, setting_id, input_id, i, x, y);
@@ -1645,10 +1640,10 @@ static gboolean update_brush_setting_from_json_object(MyPaintBrush *self,
 }
 //}}}
 //{{{
-static gboolean update_brush_from_json_object(MyPaintBrush *self)
+static gboolean update_brush_from_json_object (MyPaintBrush* self)
 {
     // Check version
-    json_object *version_object = NULL;
+    json_object* version_object = NULL;
     if (! obj_get(self->brush_json, "version", &version_object)) {
         fprintf(stderr, "Error: No 'version' field for brush\n");
         return FALSE;
@@ -1660,7 +1655,7 @@ static gboolean update_brush_from_json_object(MyPaintBrush *self)
     }
 
     // Set settings
-    json_object *settings = NULL;
+    json_object* settings = NULL;
     if (! obj_get(self->brush_json, "settings", &settings)) {
         fprintf(stderr, "Error: No 'settings' field for brush\n");
         return FALSE;
@@ -1674,9 +1669,9 @@ static gboolean update_brush_from_json_object(MyPaintBrush *self)
 }
 //}}}
 //{{{
-gboolean mypaint_brush_from_string(MyPaintBrush *self, const char *string)
+gboolean mypaint_brush_from_string (MyPaintBrush* self, const char* string)
 {
-    json_object *brush_json = NULL;
+    json_object* brush_json = NULL;
 
     if (self->brush_json) {
         // Free
@@ -1698,7 +1693,7 @@ gboolean mypaint_brush_from_string(MyPaintBrush *self, const char *string)
 }
 //}}}
 //{{{
-void mypaint_brush_from_defaults(MyPaintBrush *self) {
+void mypaint_brush_from_defaults (MyPaintBrush* self) {
     for (int s = 0; s < MYPAINT_BRUSH_SETTINGS_COUNT; s++) {
         for (int i = 0; i < MYPAINT_BRUSH_INPUTS_COUNT; i++) {
             mypaint_brush_set_mapping_n(self, s, i, 0);
