@@ -135,9 +135,6 @@
     <ClInclude Include="..\..\shared\nanoVg\cPoint.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\sVgColour.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="libmypaint\brushmodes.h">
       <Filter>libmypaint\h</Filter>
     </ClInclude>
@@ -239,6 +236,9 @@
     </ClInclude>
     <ClInclude Include="libmypaint\fastapprox\sse.h">
       <Filter>libmypaint\h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\sColourF.h">
+      <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

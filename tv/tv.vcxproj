@@ -187,9 +187,9 @@
     <ClInclude Include="..\..\shared\nanoVg\cPerfGraph.h" />
     <ClInclude Include="..\..\shared\nanoVg\cPoint.h" />
     <ClInclude Include="..\..\shared\nanoVg\cVg.h" />
+    <ClInclude Include="..\..\shared\nanoVg\sColourF.h" />
     <ClInclude Include="..\..\shared\nanoVg\stb_image.h" />
     <ClInclude Include="..\..\shared\nanoVg\stb_truetype.h" />
-    <ClInclude Include="..\..\shared\nanoVg\sVgColour.h" />
     <ClInclude Include="..\..\shared\utils\cLog.h" />
     <ClInclude Include="..\..\shared\utils\date.h" />
     <ClInclude Include="..\..\shared\utils\utils.h" />

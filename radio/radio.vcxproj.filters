@@ -113,7 +113,7 @@
     <ClInclude Include="..\..\shared\nanoVg\cPoint.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\sVgColour.h">
+    <ClInclude Include="..\..\shared\nanoVg\sColourF.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>
