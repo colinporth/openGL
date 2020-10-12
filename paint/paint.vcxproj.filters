@@ -132,9 +132,6 @@
     <ClInclude Include="..\..\shared\nanoVg\stb_truetype.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\cPoint.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="libmypaint\brushmodes.h">
       <Filter>libmypaint\h</Filter>
     </ClInclude>
@@ -238,6 +235,9 @@
       <Filter>libmypaint\h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\nanoVg\sColourF.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\nanoVg\cPointF.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>

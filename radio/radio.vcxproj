@@ -187,7 +187,7 @@
     <ClInclude Include="..\..\shared\nanoVg\cAtlasText.h" />
     <ClInclude Include="..\..\shared\nanoVg\cGlWindow.h" />
     <ClInclude Include="..\..\shared\nanoVg\cPerfGraph.h" />
-    <ClInclude Include="..\..\shared\nanoVg\cPoint.h" />
+    <ClInclude Include="..\..\shared\nanoVg\cPointF.h" />
     <ClInclude Include="..\..\shared\nanoVg\cVg.h" />
     <ClInclude Include="..\..\shared\nanoVg\sColourF.h" />
     <ClInclude Include="..\..\shared\nanoVg\stb_image.h" />

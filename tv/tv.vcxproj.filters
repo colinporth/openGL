@@ -83,10 +83,10 @@
     <ClInclude Include="..\..\shared\nanoVg\stb_truetype.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\cPoint.h">
+    <ClInclude Include="..\..\shared\nanoVg\sColourF.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\sColourF.h">
+    <ClInclude Include="..\..\shared\nanoVg\cPointF.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>
