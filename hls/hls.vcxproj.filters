@@ -128,6 +128,9 @@
     <ClInclude Include="..\..\shared\nanoVg\cPointF.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\utils\cPesParser.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">

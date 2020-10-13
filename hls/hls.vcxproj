@@ -204,6 +204,7 @@
     <ClInclude Include="..\..\shared\net\cUrl.h" />
     <ClInclude Include="..\..\shared\net\cWinSockHttp.h" />
     <ClInclude Include="..\..\shared\utils\cLog.h" />
+    <ClInclude Include="..\..\shared\utils\cPesParser.h" />
     <ClInclude Include="..\..\shared\utils\cSong.h" />
     <ClInclude Include="..\..\shared\utils\cVideoDecode.h" />
     <ClInclude Include="..\..\shared\utils\date.h" />
