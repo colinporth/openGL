@@ -233,6 +233,7 @@
     <ClCompile Include="..\..\shared\utils\cLoaderPlayer.cpp" />
     <ClCompile Include="..\..\shared\utils\cLog.cpp" />
     <ClCompile Include="..\..\shared\utils\cSong.cpp" />
+    <ClCompile Include="..\..\shared\utils\cVideoDecode.cpp" />
     <ClCompile Include="hls.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

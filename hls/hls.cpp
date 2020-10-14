@@ -62,10 +62,10 @@ public:
 
     mLogInfo3 = logInfo3;
 
-    cLoaderPlayer::initialise (radio, 
+    cLoaderPlayer::initialise (radio,
                                radio ? kRadioHost : kTvHost, radio ? "pool_904/live/uk/" : "pool_902/live/uk/",
                                channelName, audBitrate, vidBitrate,
-                               !radio, !radio, !radio, true);
+                               true, !radio, !radio, true);
     if (headless) {
       thread ([=](){ hlsLoaderThread(); }).detach();
       while (true)
@@ -259,12 +259,16 @@ int main (int numArgs, char* args[]) {
     else if (argStrings[i] == "v2") vidBitrate = 1604032;
     else if (argStrings[i] == "v3") vidBitrate = 2812032;
     else if (argStrings[i] == "v4") vidBitrate = 5070016;
+    else if (argStrings[i] == "a1") vidBitrate = 48000;
+    else if (argStrings[i] == "a2") vidBitrate = 96000;
+    else if (argStrings[i] == "a3") vidBitrate = 128000;
+    else if (argStrings[i] == "a4") vidBitrate = 320000;
     }
     //}}}
 
   string channelName = radio ? kRadioChannels[channelNum] : kTvChannels[channelNum];
   cLog::init (logInfo3 ? LOGINFO3 : LOGINFO);
-  cLog::log (LOGNOTICE, "openGL hls " + channelName  + " " + dec (audBitrate) + " " + channelName +
+  cLog::log (LOGNOTICE, "openGL hls " + channelName  + " " + dec (audBitrate) +
                         dec (vidBitrate) + " " +
                         string(logInfo3 ? "logInfo3 " : "") +
                         string(headless ? "headless " : ""));

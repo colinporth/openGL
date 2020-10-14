@@ -1,6 +1,7 @@
 TARGET    = app
 SRCS      = hls.cpp \
 	    ../../shared/utils/cLoaderPlayer.cpp \
+	    ../../shared/utils/cVideoDecode.cpp \
 	    ../../shared/utils/cSong.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/glad/glad.c \

@@ -15,6 +15,7 @@
     <ClCompile Include="hls.cpp" />
     <ClCompile Include="..\..\shared\nanoVg\cAtlasText.cpp" />
     <ClCompile Include="..\..\shared\utils\cLoaderPlayer.cpp" />
+    <ClCompile Include="..\..\shared\utils\cVideoDecode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\nanoVg\cGlWindow.h">
