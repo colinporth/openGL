@@ -38,11 +38,17 @@ using namespace std;
 using namespace chrono;
 //}}}
 
-// channels
-const string kHost = "vs-hls-uk-live.akamaized.net";
-const vector <string> kChannels = { "bbc_one_hd",          "bbc_two_hd",          "bbc_four_hd", // pa4
+//{{{  channels
+const string kTvHost = "vs-hls-uk-live.akamaized.net";
+const vector <string> kTvChannels = { "bbc_one_hd",          "bbc_two_hd",          "bbc_four_hd", // pa4
                                     "bbc_news_channel_hd", "bbc_one_scotland_hd", "s4cpbs",      // pa4
                                     "bbc_one_south_west",  "bbc_parliament" };                   // pa3
+
+const string kRadioHost = "as-hls-uk-live.bbcfmt.s.llnwi.net";
+const vector <string> kRadioChannels = { "bbc_radio_one",    "bbc_radio_two",       "bbc_radio_three",
+                                         "bbc_radio_fourfm", "bbc_radio_five_live", "bbc_6music" };
+//}}}
+
 constexpr int kAudBitrate = 128000; // 96000  128000
 
 class cAppWindow : public cGlWindow, public cLoaderPlayer {
@@ -51,11 +57,13 @@ public:
   //{{{
   void run (const string& title, int width, int height,
             bool headless, bool logInfo3,
-            int channelNum, int audBitrate, int vidBitrate)  {
+            bool radio, const string& channelName,
+            int audBitrate, int vidBitrate)  {
 
     mLogInfo3 = logInfo3;
 
-    cLoaderPlayer::initialise (kHost, kChannels[channelNum], audBitrate, vidBitrate, true, true, true, true);
+    cLoaderPlayer::initialise (radio, radio ? kRadioHost : kTvHost, channelName, audBitrate, vidBitrate,
+                               !radio, !radio, !radio, true);
 
     if (headless) {
       thread ([=](){ loaderThread(); }).detach();
@@ -223,12 +231,20 @@ int main (int numArgs, char* args[]) {
 
   bool headless = false;
   bool logInfo3 = false;
+  int radio = false;
   int channelNum = 3;
   int vidBitrate = 827008;
+  int audBitrate = 128000;
   for (size_t i = 0; i < argStrings.size(); i++) {
     //{{{  parse params
     if (argStrings[i] == "h") headless = true;
     else if (argStrings[i] == "l") logInfo3 = true;
+    else if (argStrings[i] == "r1") { channelNum = 0; radio = true; vidBitrate = 0; }
+    else if (argStrings[i] == "r2") { channelNum = 1; radio = true; vidBitrate = 0; }
+    else if (argStrings[i] == "r3") { channelNum = 2; radio = true; vidBitrate = 0; }
+    else if (argStrings[i] == "r4") { channelNum = 3; radio = true; vidBitrate = 0; }
+    else if (argStrings[i] == "r5") { channelNum = 4; radio = true; vidBitrate = 0; }
+    else if (argStrings[i] == "r6") { channelNum = 5; radio = true; vidBitrate = 0; }
     else if (argStrings[i] == "bbc1") channelNum = 0;
     else if (argStrings[i] == "bbc2") channelNum = 1;
     else if (argStrings[i] == "bbc4") channelNum = 2;
@@ -245,14 +261,15 @@ int main (int numArgs, char* args[]) {
     }
     //}}}
 
+  string channelName = radio ? kRadioChannels[channelNum] : kTvChannels[channelNum];
   cLog::init (logInfo3 ? LOGINFO3 : LOGINFO);
-  cLog::log (LOGNOTICE, "openGL hls " + kChannels[channelNum] + " " +
+  cLog::log (LOGNOTICE, "openGL hls " + channelName  + " " + dec (audBitrate) + " " + channelName +
                         dec (vidBitrate) + " " +
                         string(logInfo3 ? "logInfo3 " : "") +
                         string(headless ? "headless " : ""));
 
   cAppWindow appWindow;
-  appWindow.run ("hls", 800, 450, headless, logInfo3, channelNum, kAudBitrate, vidBitrate);
+  appWindow.run ("hls", 800, 450, headless, logInfo3, radio, channelName, audBitrate, vidBitrate);
 
   return 0;
   }
