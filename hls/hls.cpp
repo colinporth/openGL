@@ -1,7 +1,6 @@
 // main.cpp - nanoVg openGL - hls audio/video windows/linux
 //{{{  includes
 #ifdef _WIN32
-  // windows headers, defines
   #define _CRT_SECURE_NO_WARNINGS
   #define WIN32_LEAN_AND_MEAN
   #define NOMINMAX
@@ -24,6 +23,8 @@
 
 // video decode
 #include "../../shared/utils/cVideoDecode.h"
+
+// audio,video loader,player
 #include "../../shared/utils/cLoaderPlayer.h"
 
 // widgets
@@ -37,7 +38,6 @@
 using namespace std;
 using namespace chrono;
 //}}}
-
 //{{{  channels
 const string kTvHost = "vs-hls-uk-live.akamaized.net";
 const vector <string> kTvChannels = { "bbc_one_hd",          "bbc_two_hd",          "bbc_four_hd", // pa4
@@ -62,11 +62,12 @@ public:
 
     mLogInfo3 = logInfo3;
 
-    cLoaderPlayer::initialise (radio, radio ? kRadioHost : kTvHost, channelName, audBitrate, vidBitrate,
+    cLoaderPlayer::initialise (radio, 
+                               radio ? kRadioHost : kTvHost, radio ? "pool_904/live/uk/" : "pool_902/live/uk/",
+                               channelName, audBitrate, vidBitrate,
                                !radio, !radio, !radio, true);
-
     if (headless) {
-      thread ([=](){ loaderThread(); }).detach();
+      thread ([=](){ hlsLoaderThread(); }).detach();
       while (true)
         this_thread::sleep_for (200ms);
        }
@@ -75,7 +76,7 @@ public:
       addTopLeft (new cLoaderPlayerWidget (this, cPointF()));
       addTopLeft (new cSongWidget (mSong, 0,0));
 
-      thread ([=](){ loaderThread(); }).detach();
+      thread ([=](){ hlsLoaderThread(); }).detach();
 
       glClearColor (0, 0, 0, 1.f);
       cGlWindow::run();
