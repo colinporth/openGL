@@ -101,7 +101,7 @@ public:
       const string kRootName = "/home/pi/tv";
     #endif
 
-    auto mDvb = new cDvb (multiplex.mFrequency, kRootName, multiplex.mSelectedChannels, multiplex.mSaveNames);
+    auto mDvb = new cDvb (multiplex.mFrequency, kRootName, multiplex.mSelectedChannels, multiplex.mSaveNames, false);
 
    if (!headless) {
       initialise (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));

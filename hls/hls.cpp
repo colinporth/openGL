@@ -49,8 +49,6 @@ const vector <string> kRadioChannels = { "bbc_radio_one",    "bbc_radio_two",   
                                          "bbc_radio_fourfm", "bbc_radio_five_live", "bbc_6music" };
 //}}}
 
-constexpr int kAudBitrate = 128000; // 96000  128000
-
 class cAppWindow : public cGlWindow, public cLoaderPlayer {
 public:
   cAppWindow() : cLoaderPlayer() {}
@@ -60,7 +58,7 @@ public:
 
     mLogInfo3 = logInfo3;
 
-    cLoaderPlayer::initialise (radio, 
+    cLoaderPlayer::initialise (radio,
       radio ? kRadioHost : kTvHost, radio ? "pool_904/live/uk/" : "pool_902/live/uk/", channelName,
       audBitrate, vidBitrate, eLoader (eMfx | eQueueAudio | eQueueVideo));
 
@@ -232,8 +230,8 @@ int main (int numArgs, char* args[]) {
   bool logInfo3 = false;
   int radio = false;
   int channelNum = 3;
-  int vidBitrate = 827008;
   int audBitrate = 128000;
+  int vidBitrate = 827008;
   for (size_t i = 0; i < argStrings.size(); i++) {
     //{{{  parse params
     if (argStrings[i] == "h") headless = true;
@@ -244,6 +242,7 @@ int main (int numArgs, char* args[]) {
     else if (argStrings[i] == "r4") { channelNum = 3; radio = true; vidBitrate = 0; }
     else if (argStrings[i] == "r5") { channelNum = 4; radio = true; vidBitrate = 0; }
     else if (argStrings[i] == "r6") { channelNum = 5; radio = true; vidBitrate = 0; }
+
     else if (argStrings[i] == "bbc1") channelNum = 0;
     else if (argStrings[i] == "bbc2") channelNum = 1;
     else if (argStrings[i] == "bbc4") channelNum = 2;
@@ -252,11 +251,13 @@ int main (int numArgs, char* args[]) {
     else if (argStrings[i] == "s4c") channelNum = 5;
     else if (argStrings[i] == "sw") channelNum = 6;
     else if (argStrings[i] == "parl") channelNum = 7;
+
     else if (argStrings[i] == "v0") vidBitrate = 0;
     else if (argStrings[i] == "v1") vidBitrate = 827008;
     else if (argStrings[i] == "v2") vidBitrate = 1604032;
     else if (argStrings[i] == "v3") vidBitrate = 2812032;
     else if (argStrings[i] == "v4") vidBitrate = 5070016;
+
     else if (argStrings[i] == "a1") vidBitrate = 48000;
     else if (argStrings[i] == "a2") vidBitrate = 96000;
     else if (argStrings[i] == "a3") vidBitrate = 128000;

@@ -90,7 +90,7 @@ public:
   cAppWindow() {}
   //{{{
   void run (const string& title, int width, int height,
-            bool headless, bool moreLogInfo, bool all,
+            bool headless, bool moreLogInfo, bool all, bool decodeSubtitle,
             sMultiplex multiplex, const string& fileName) {
 
     mMoreLogInfo = moreLogInfo;
@@ -101,7 +101,8 @@ public:
       const string kRootName = "/home/pi/tv";
     #endif
 
-    auto mDvb = new cDvb (multiplex.mFrequency, kRootName, multiplex.mSelectedChannels, multiplex.mSaveNames);
+    auto mDvb = new cDvb (multiplex.mFrequency, kRootName, multiplex.mSelectedChannels, multiplex.mSaveNames, 
+                          !headless && decodeSubtitle);
 
    if (!headless) {
       initialise (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
@@ -203,6 +204,7 @@ int main (int numArgs, char* args[]) {
 
   // really dumb option parser
   bool all = false;
+  bool decodeSubtitle = false;
   bool headless = false;
   bool moreLogInfo = false;
   sMultiplex multiplex = kHdMultiplex;
@@ -225,6 +227,7 @@ int main (int numArgs, char* args[]) {
     if (argStrings[i] == "all") all = true;
     else if (argStrings[i] == "h") headless = true;
     else if (argStrings[i] == "l") moreLogInfo = true;
+    else if (argStrings[i] == "s") decodeSubtitle = true;
     else if (argStrings[i] == "f") {
       //{{{  multiplex frequency all channels
       multiplex = kAllMultiplex;
@@ -244,7 +247,7 @@ int main (int numArgs, char* args[]) {
     cLog::setLogLevel (LOGINFO3);
 
   cAppWindow appWindow;
-  appWindow.run ("tv", 790, YSIZE, headless, moreLogInfo, all, multiplex, fileName);
+  appWindow.run ("tv", 790, YSIZE, headless, moreLogInfo, all, decodeSubtitle, multiplex, fileName);
 
   return 0;
   }
