@@ -14,7 +14,7 @@
     <ClCompile Include="..\..\shared\decoders\cMp3Decoder.cpp" />
     <ClCompile Include="hls.cpp" />
     <ClCompile Include="..\..\shared\nanoVg\cAtlasText.cpp" />
-    <ClCompile Include="..\..\shared\hls\cHlsPlayer.cpp" />
+    <ClCompile Include="..\..\shared\utils\cLoaderPlayer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\nanoVg\cGlWindow.h">
@@ -113,13 +113,7 @@
     <ClInclude Include="..\..\shared\nanoVg\stb_truetype.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\hls\cHlsPlayer.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\utils\readerWriterQueue.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\widgets\cHlsPlayerWidget.h">
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\nanoVg\sColourF.h">
@@ -129,6 +123,12 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\utils\cPesParser.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cLoaderPlayerWidget.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\utils\cLoaderPlayer.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>

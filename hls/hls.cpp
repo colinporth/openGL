@@ -24,7 +24,7 @@
 
 // video decode
 #include "../../shared/utils/cVideoDecode.h"
-#include "../../shared/hls/cHlsPlayer.h"
+#include "../../shared/utils/cLoaderPlayer.h"
 
 // widgets
 #include "../../shared/nanoVg/cGlWindow.h"
@@ -32,7 +32,7 @@
 #include "../../shared/fonts/DroidSansMono1.h"
 #include "../../shared/widgets/cTextBox.h"
 #include "../../shared/widgets/cSongWidget.h"
-#include "../../shared/widgets/cHlsPlayerWidget.h"
+#include "../../shared/widgets/cLoaderPlayerWidget.h"
 
 using namespace std;
 using namespace chrono;
@@ -45,9 +45,9 @@ const vector <string> kChannels = { "bbc_one_hd",          "bbc_two_hd",        
                                     "bbc_one_south_west",  "bbc_parliament" };                   // pa3
 constexpr int kAudBitrate = 128000; // 96000  128000
 
-class cAppWindow : public cGlWindow, public cHlsPlayer {
+class cAppWindow : public cGlWindow, public cLoaderPlayer {
 public:
-  cAppWindow() : cHlsPlayer() {}
+  cAppWindow() : cLoaderPlayer() {}
   //{{{
   void run (const string& title, int width, int height,
             bool headless, bool logInfo3,
@@ -55,17 +55,16 @@ public:
 
     mLogInfo3 = logInfo3;
 
-    init (kHost, kChannels[channelNum], audBitrate, vidBitrate, true);
+    cLoaderPlayer::initialise (kHost, kChannels[channelNum], audBitrate, vidBitrate, true, true, true, true);
 
     if (headless) {
       thread ([=](){ loaderThread(); }).detach();
       while (true)
         this_thread::sleep_for (200ms);
        }
-
     else {
-      initialise (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
-      addTopLeft (new cHlsPlayerWidget (this, cPointF()));
+      cGlWindow::initialise (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
+      addTopLeft (new cLoaderPlayerWidget (this, cPointF()));
       addTopLeft (new cSongWidget (mSong, 0,0));
 
       thread ([=](){ loaderThread(); }).detach();
@@ -238,6 +237,7 @@ int main (int numArgs, char* args[]) {
     else if (argStrings[i] == "s4c") channelNum = 5;
     else if (argStrings[i] == "sw") channelNum = 6;
     else if (argStrings[i] == "parl") channelNum = 7;
+    else if (argStrings[i] == "v0") vidBitrate = 0;
     else if (argStrings[i] == "v1") vidBitrate = 827008;
     else if (argStrings[i] == "v2") vidBitrate = 1604032;
     else if (argStrings[i] == "v3") vidBitrate = 2812032;

@@ -188,7 +188,6 @@
     <ClInclude Include="..\..\shared\fonts\DroidSansMono1.h" />
     <ClInclude Include="..\..\shared\fonts\FreeSansBold.h" />
     <ClInclude Include="..\..\shared\glad\glad.h" />
-    <ClInclude Include="..\..\shared\hls\cHlsPlayer.h" />
     <ClInclude Include="..\..\shared\kissFft\kiss_fft.h" />
     <ClInclude Include="..\..\shared\kissFft\kiss_fftr.h" />
     <ClInclude Include="..\..\shared\kissFft\kiss_fft_guts.h" />
@@ -203,6 +202,7 @@
     <ClInclude Include="..\..\shared\net\cHttp.h" />
     <ClInclude Include="..\..\shared\net\cUrl.h" />
     <ClInclude Include="..\..\shared\net\cWinSockHttp.h" />
+    <ClInclude Include="..\..\shared\utils\cLoaderPlayer.h" />
     <ClInclude Include="..\..\shared\utils\cLog.h" />
     <ClInclude Include="..\..\shared\utils\cPesParser.h" />
     <ClInclude Include="..\..\shared\utils\cSong.h" />
@@ -211,7 +211,7 @@
     <ClInclude Include="..\..\shared\utils\readerWriterQueue.h" />
     <ClInclude Include="..\..\shared\utils\utils.h" />
     <ClInclude Include="..\..\shared\widgets\cContainer.h" />
-    <ClInclude Include="..\..\shared\widgets\cHlsPlayerWidget.h" />
+    <ClInclude Include="..\..\shared\widgets\cLoaderPlayerWidget.h" />
     <ClInclude Include="..\..\shared\widgets\cRootContainer.h" />
     <ClInclude Include="..\..\shared\widgets\cSongWidget.h" />
     <ClInclude Include="..\..\shared\widgets\cTextBox.h" />
@@ -224,13 +224,13 @@
     <ClCompile Include="..\..\shared\decoders\cAudioDecode.cpp" />
     <ClCompile Include="..\..\shared\decoders\cMp3Decoder.cpp" />
     <ClCompile Include="..\..\shared\glad\glad.c" />
-    <ClCompile Include="..\..\shared\hls\cHlsPlayer.cpp" />
     <ClCompile Include="..\..\shared\kissFft\kiss_fft.c" />
     <ClCompile Include="..\..\shared\kissFft\kiss_fftr.c" />
     <ClCompile Include="..\..\shared\nanoVg\cAtlasText.cpp" />
     <ClCompile Include="..\..\shared\nanoVg\cGlWindow.cpp" />
     <ClCompile Include="..\..\shared\nanoVg\cVg.cpp" />
     <ClCompile Include="..\..\shared\net\cHttp.cpp" />
+    <ClCompile Include="..\..\shared\utils\cLoaderPlayer.cpp" />
     <ClCompile Include="..\..\shared\utils\cLog.cpp" />
     <ClCompile Include="..\..\shared\utils\cSong.cpp" />
     <ClCompile Include="hls.cpp" />
