@@ -55,17 +55,15 @@ class cAppWindow : public cGlWindow, public cLoaderPlayer {
 public:
   cAppWindow() : cLoaderPlayer() {}
   //{{{
-  void run (const string& title, int width, int height,
-            bool headless, bool logInfo3,
-            bool radio, const string& channelName,
-            int audBitrate, int vidBitrate)  {
+  void run (const string& title, int width, int height, bool headless, bool logInfo3,
+            bool radio, const string& channelName, int audBitrate, int vidBitrate)  {
 
     mLogInfo3 = logInfo3;
 
-    cLoaderPlayer::initialise (radio,
-                               radio ? kRadioHost : kTvHost, radio ? "pool_904/live/uk/" : "pool_902/live/uk/",
-                               channelName, audBitrate, vidBitrate,
-                               true, !radio, !radio, true);
+    cLoaderPlayer::initialise (radio, 
+      radio ? kRadioHost : kTvHost, radio ? "pool_904/live/uk/" : "pool_902/live/uk/", channelName,
+      audBitrate, vidBitrate, eLoader (eMfx | eQueueAudio | eQueueVideo));
+
     if (headless) {
       thread ([=](){ hlsLoaderThread(); }).detach();
       while (true)
