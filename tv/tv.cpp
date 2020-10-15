@@ -101,7 +101,8 @@ public:
       const string kRootName = "/home/pi/tv";
     #endif
 
-    auto mDvb = new cDvb (multiplex.mFrequency, kRootName, multiplex.mSelectedChannels, multiplex.mSaveNames, 
+    auto mDvb = new cDvb (multiplex.mFrequency, kRootName, 
+                          multiplex.mSelectedChannels, multiplex.mSaveNames,
                           !headless && decodeSubtitle);
 
    if (!headless) {
@@ -204,7 +205,7 @@ int main (int numArgs, char* args[]) {
 
   // really dumb option parser
   bool all = false;
-  bool decodeSubtitle = false;
+  bool decodeSubtitle = true;
   bool headless = false;
   bool moreLogInfo = false;
   sMultiplex multiplex = kHdMultiplex;
@@ -227,7 +228,7 @@ int main (int numArgs, char* args[]) {
     if (argStrings[i] == "all") all = true;
     else if (argStrings[i] == "h") headless = true;
     else if (argStrings[i] == "l") moreLogInfo = true;
-    else if (argStrings[i] == "s") decodeSubtitle = true;
+    else if (argStrings[i] == "d") decodeSubtitle = false;
     else if (argStrings[i] == "f") {
       //{{{  multiplex frequency all channels
       multiplex = kAllMultiplex;
