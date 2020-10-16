@@ -28,7 +28,7 @@ LIBS      = -no-pie \
 OBJS      = $(SRCS:%=$(BUILD_DIR)/%.o)
 DEPS      = $(OBJS:.o=.d)
 #
-TYPE      = $(shell uname -p 2>&1)
+MACHINE   = $(shell uname -m 2>&1)
 #
 #
 CFLAGS = -Wall -Wno-unused-result \
@@ -39,7 +39,7 @@ CFLAGS = -Wall -Wno-unused-result \
 	 `pkg-config --cflags libswscale` \
 	 -g -O2
 #
-ifeq "$(TYPE)" "x86_64"
+ifeq "$(MACHINE)" "x86_64"
 	CFLAGS += -march=sandybridge
 endif
 #         -march=goldmont-plus
