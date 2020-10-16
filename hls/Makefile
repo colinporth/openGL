@@ -28,8 +28,6 @@ LIBS      = -no-pie \
 OBJS      = $(SRCS:%=$(BUILD_DIR)/%.o)
 DEPS      = $(OBJS:.o=.d)
 #
-MACHINE   = $(shell uname -m 2>&1)
-#
 #
 CFLAGS = -Wall -Wno-unused-result \
 	 -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64 \
@@ -37,12 +35,12 @@ CFLAGS = -Wall -Wno-unused-result \
 	 `pkg-config --cflags libavcodec` \
 	 `pkg-config --cflags libavformat` \
 	 `pkg-config --cflags libswscale` \
-	 -g -O2
+	 -g -O2 \
+	 -march=native
 #
-ifeq "$(MACHINE)" "x86_64"
-	CFLAGS += -march=sandybridge
-endif
-#         -march=goldmont-plus
+#MACHINE   = $(shell uname -m 2>&1)
+#ifeq "$(MACHINE)" "x86_64"
+#endif
 
 LD_VERSION = $(shell ld -v 2>&1 | sed -ne 's/.*\([0-9]\+\.[0-9]\+\).*/\1/p')
 ifeq "$(LD_VERSION)" "2.34"
