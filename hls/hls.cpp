@@ -60,7 +60,7 @@ public:
 
     cLoaderPlayer::initialise (radio,
       radio ? kRadioHost : kTvHost, radio ? "pool_904/live/uk/" : "pool_902/live/uk/", channelName,
-      audBitrate, vidBitrate, 
+      audBitrate, vidBitrate,
       eLoader (eQueueAudio | eQueueVideo));
       //eLoader (eMfx | eQueueAudio | eQueueVideo));
 
