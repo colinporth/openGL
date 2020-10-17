@@ -19,10 +19,16 @@ DEPS      = $(OBJS:.o=.d)
 
 CFLAGS = -Wall -Wno-unused-result \
 	 -march=native \
+	 -ftree-vectorize \
 	 -MMD -MP \
 	 -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64 \
-	 -g -O2 \
-
+	 -g -O2
+#
+MACHINE   = $(shell uname -m 2>&1)
+ifeq "$(MACHINE)" "armv7l"
+  CFLAGS += -mfpu=neon -flax-vector-conversions
+endif
+#
 LD_VERSION = $(shell ld -v 2>&1 | sed -ne 's/.*\([0-9]\+\.[0-9]\+\).*/\1/p')
 ifeq "$(LD_VERSION)" "2.34"
 	CFLAGS += -D HAS_BINUTILS_234
