@@ -30,13 +30,13 @@ DEPS      = $(OBJS:.o=.d)
 #
 #
 CFLAGS = -Wall -Wno-unused-result \
-	 -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64 \
+	 -march=native \
 	 -MMD -MP \
+	 -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64 \
 	 `pkg-config --cflags libavcodec` \
 	 `pkg-config --cflags libavformat` \
 	 `pkg-config --cflags libswscale` \
 	 -g -O2 \
-	 -march=native
 #
 #MACHINE   = $(shell uname -m 2>&1)
 #ifeq "$(MACHINE)" "x86_64"
