@@ -1,5 +1,6 @@
 TARGET    = app
 SRCS      = hls.cpp \
+	    ../../shared/utils/yuv2rgb_neon.cpp \
 	    ../../shared/utils/cLoaderPlayer.cpp \
 	    ../../shared/utils/cVideoDecode.cpp \
 	    ../../shared/utils/cSong.cpp \
