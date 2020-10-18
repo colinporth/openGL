@@ -53,10 +53,8 @@ class cAppWindow : public cGlWindow, public cLoaderPlayer {
 public:
   cAppWindow() : cLoaderPlayer() {}
   //{{{
-  void run (const string& title, int width, int height, bool headless, eLogLevel logLevel,
+  void run (const string& title, int width, int height, bool headless,
             bool radio, const string& channelName, int audBitrate, int vidBitrate)  {
-
-    mLogLevel = logLevel;
 
     cLoaderPlayer::initialise (radio,
       radio ? kRadioHost : kTvHost, radio ? "pool_904/live/uk/" : "pool_902/live/uk/", channelName,
@@ -201,18 +199,8 @@ protected:
         //}}}
 
         //{{{
-        case GLFW_KEY_L: // toggle log level LOGINFO : LOGINFO3
-          if (mLogLevel == LOGERROR)
-            mLogLevel = LOGINFO;
-          else if (mLogLevel == LOGINFO)
-            mLogLevel = LOGINFO1;
-          else if (mLogLevel == LOGINFO1)
-            mLogLevel = LOGINFO2;
-          else if (mLogLevel == LOGINFO2)
-            mLogLevel = LOGINFO3;
-          else if (mLogLevel == LOGINFO3)
-            mLogLevel = LOGERROR;
-          cLog::setLogLevel (mLogLevel);
+        case GLFW_KEY_L:
+          cLog::cycleLogLevel();
           break;
         //}}}
         //{{{
@@ -226,9 +214,6 @@ protected:
       }
     }
   //}}}
-
-  //  vars
-  eLogLevel mLogLevel = LOGINFO;
   };
 
 int main (int numArgs, char* args[]) {
@@ -281,7 +266,7 @@ int main (int numArgs, char* args[]) {
   cLog::log (LOGNOTICE, "openGL hls " + channelName  + " " + dec (audBitrate) + " " + dec (vidBitrate));
 
   cAppWindow appWindow;
-  appWindow.run ("hls", 800, 450, headless, logLevel, radio, channelName, audBitrate, vidBitrate);
+  appWindow.run ("hls", 800, 450, headless, radio, channelName, audBitrate, vidBitrate);
 
   return 0;
   }
