@@ -53,10 +53,10 @@ class cAppWindow : public cGlWindow, public cLoaderPlayer {
 public:
   cAppWindow() : cLoaderPlayer() {}
   //{{{
-  void run (const string& title, int width, int height, bool headless, bool logInfo3,
+  void run (const string& title, int width, int height, bool headless, eLogLevel logLevel,
             bool radio, const string& channelName, int audBitrate, int vidBitrate)  {
 
-    mLogInfo3 = logInfo3;
+    mLogLevel = logLevel;
 
     cLoaderPlayer::initialise (radio,
       radio ? kRadioHost : kTvHost, radio ? "pool_904/live/uk/" : "pool_902/live/uk/", channelName,
@@ -202,8 +202,17 @@ protected:
 
         //{{{
         case GLFW_KEY_L: // toggle log level LOGINFO : LOGINFO3
-          mLogInfo3 = ! mLogInfo3;
-          cLog::setLogLevel (mLogInfo3 ? LOGINFO3 : LOGINFO);
+          if (mLogLevel == LOGERROR)
+            mLogLevel = LOGINFO;
+          else if (mLogLevel == LOGINFO)
+            mLogLevel = LOGINFO1;
+          else if (mLogLevel == LOGINFO1)
+            mLogLevel = LOGINFO2;
+          else if (mLogLevel == LOGINFO2)
+            mLogLevel = LOGINFO3;
+          else if (mLogLevel == LOGINFO3)
+            mLogLevel = LOGERROR;
+          cLog::setLogLevel (mLogLevel);
           break;
         //}}}
         //{{{
@@ -219,7 +228,7 @@ protected:
   //}}}
 
   //  vars
-  bool mLogInfo3 = false;
+  eLogLevel mLogLevel = LOGINFO;
   };
 
 int main (int numArgs, char* args[]) {
@@ -229,7 +238,7 @@ int main (int numArgs, char* args[]) {
     argStrings.push_back (args[i]);
 
   bool headless = false;
-  bool logInfo3 = false;
+  eLogLevel logLevel = LOGINFO;
   int radio = false;
   int channelNum = 3;
   int audBitrate = 128000;
@@ -237,7 +246,7 @@ int main (int numArgs, char* args[]) {
   for (size_t i = 0; i < argStrings.size(); i++) {
     //{{{  parse params
     if (argStrings[i] == "h") headless = true;
-    else if (argStrings[i] == "l") logInfo3 = true;
+    else if (argStrings[i] == "l") logLevel = LOGINFO3;
     else if (argStrings[i] == "r1") { channelNum = 0; radio = true; vidBitrate = 0; }
     else if (argStrings[i] == "r2") { channelNum = 1; radio = true; vidBitrate = 0; }
     else if (argStrings[i] == "r3") { channelNum = 2; radio = true; vidBitrate = 0; }
@@ -268,14 +277,11 @@ int main (int numArgs, char* args[]) {
     //}}}
 
   string channelName = radio ? kRadioChannels[channelNum] : kTvChannels[channelNum];
-  cLog::init (logInfo3 ? LOGINFO3 : LOGINFO);
-  cLog::log (LOGNOTICE, "openGL hls " + channelName  + " " + dec (audBitrate) +
-                        dec (vidBitrate) + " " +
-                        string(logInfo3 ? "logInfo3 " : "") +
-                        string(headless ? "headless " : ""));
+  cLog::init (logLevel);
+  cLog::log (LOGNOTICE, "openGL hls " + channelName  + " " + dec (audBitrate) + " " + dec (vidBitrate));
 
   cAppWindow appWindow;
-  appWindow.run ("hls", 800, 450, headless, logInfo3, radio, channelName, audBitrate, vidBitrate);
+  appWindow.run ("hls", 800, 450, headless, logLevel, radio, channelName, audBitrate, vidBitrate);
 
   return 0;
   }
