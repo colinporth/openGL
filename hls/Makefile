@@ -24,10 +24,8 @@ LIBS      = -no-pie \
 	    `pkg-config --libs libavutil` \
 	    `pkg-config --libs libswscale` \
 #
-#
 OBJS      = $(SRCS:%=$(BUILD_DIR)/%.o)
 DEPS      = $(OBJS:.o=.d)
-#
 #
 CFLAGS = -Wall -Wno-unused-result \
 	 -march=native \
@@ -41,7 +39,7 @@ CFLAGS = -Wall -Wno-unused-result \
 #
 MACHINE   = $(shell uname -m 2>&1)
 ifeq "$(MACHINE)" "armv7l"
-  CFLAGS += -mfpu=neon -flax-vector-conversions
+	CFLAGS += -mfpu=neon -flax-vector-conversions
 endif
 #
 LD_VERSION = $(shell ld -v 2>&1 | sed -ne 's/.*\([0-9]\+\.[0-9]\+\).*/\1/p')
