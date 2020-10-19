@@ -41,6 +41,9 @@ MACHINE   = $(shell uname -m 2>&1)
 ifeq "$(MACHINE)" "armv7l"
 	CFLAGS += -mfpu=neon -flax-vector-conversions
 endif
+ifeq "$(MACHINE)" "aarch64"
+	CFLAGS += -flax-vector-conversions
+endif
 #
 LD_VERSION = $(shell ld -v 2>&1 | sed -ne 's/.*\([0-9]\+\.[0-9]\+\).*/\1/p')
 ifeq "$(LD_VERSION)" "2.34"
