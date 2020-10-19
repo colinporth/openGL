@@ -204,6 +204,11 @@ protected:
           break;
         //}}}
         //{{{
+        case GLFW_KEY_F: // toggle fullScreen
+          toggleFullScreen();
+          break;
+        //}}}
+        //{{{
         case GLFW_KEY_ESCAPE: // exit
           glfwSetWindowShouldClose (mWindow, GL_TRUE);
           mExit = true;
