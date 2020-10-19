@@ -21,14 +21,17 @@ DEPS      = $(OBJS:.o=.d)
 
 CFLAGS = -Wall -Wno-unused-result \
 	 -march=native \
-	 -ftree-vectorize \
 	 -MMD -MP \
 	 -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64 \
+	 -ftree-vectorize \
 	 -g -O2
 #
 MACHINE   = $(shell uname -m 2>&1)
 ifeq "$(MACHINE)" "armv7l"
-  CFLAGS += -mfpu=neon -flax-vector-conversions
+	CFLAGS += -mfpu=neon -flax-vector-conversions
+endif
+ifeq "$(MACHINE)" "aarch64"
+	CFLAGS += -flax-vector-conversions
 endif
 #
 LD_VERSION = $(shell ld -v 2>&1 | sed -ne 's/.*\([0-9]\+\.[0-9]\+\).*/\1/p')

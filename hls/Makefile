@@ -29,12 +29,12 @@ DEPS      = $(OBJS:.o=.d)
 #
 CFLAGS = -Wall -Wno-unused-result \
 	 -march=native \
-	 -ftree-vectorize \
 	 -MMD -MP \
 	 -D _LARGEFILE64_SOURCE -D _FILE_OFFSET_BITS=64 \
 	 `pkg-config --cflags libavcodec` \
 	 `pkg-config --cflags libavformat` \
 	 `pkg-config --cflags libswscale` \
+	 -ftree-vectorize \
 	 -g -O2
 #
 MACHINE   = $(shell uname -m 2>&1)
