@@ -236,7 +236,9 @@ int main (int numArgs, char* args[]) {
   for (size_t i = 0; i < argStrings.size(); i++) {
     //{{{  parse params
     if (argStrings[i] == "h") headless = true;
-    else if (argStrings[i] == "l") logLevel = LOGINFO3;
+    else if (argStrings[i] == "l1") logLevel = LOGINFO1;
+    else if (argStrings[i] == "l2") logLevel = LOGINFO2;
+    else if (argStrings[i] == "l3") logLevel = LOGINFO3;
     else if (argStrings[i] == "r1") { channelNum = 0; radio = true; vidBitrate = 0; }
     else if (argStrings[i] == "r2") { channelNum = 1; radio = true; vidBitrate = 0; }
     else if (argStrings[i] == "r3") { channelNum = 2; radio = true; vidBitrate = 0; }
