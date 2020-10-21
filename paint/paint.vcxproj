@@ -190,6 +190,12 @@
     <ClInclude Include="..\..\shared\utils\cLog.h" />
     <ClInclude Include="..\..\shared\utils\date.h" />
     <ClInclude Include="..\..\shared\utils\utils.h" />
+    <ClInclude Include="..\..\shared\vg\cAtlasText.h" />
+    <ClInclude Include="..\..\shared\vg\cGlWindow.h" />
+    <ClInclude Include="..\..\shared\vg\cPerfGraph.h" />
+    <ClInclude Include="..\..\shared\vg\cPointF.h" />
+    <ClInclude Include="..\..\shared\vg\cRaspWindow.h" />
+    <ClInclude Include="..\..\shared\vg\cVg.h" />
     <ClInclude Include="..\..\shared\widgets\cContainer.h" />
     <ClInclude Include="..\..\shared\widgets\cDvbWidget.h" />
     <ClInclude Include="..\..\shared\widgets\cRootContainer.h" />

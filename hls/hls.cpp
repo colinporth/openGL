@@ -29,7 +29,6 @@
 
 // widgets
 #include "../../shared/vg/cGlWindow.h"
-#include "../../shared/fonts/FreeSansBold.h"
 #include "../../shared/fonts/DroidSansMono1.h"
 #include "../../shared/widgets/cTextBox.h"
 #include "../../shared/widgets/cSongWidget.h"
@@ -48,10 +47,11 @@ const string kRadioHost = "as-hls-uk-live.bbcfmt.s.llnwi.net";
 const vector <string> kRadioChannels = { "bbc_radio_one",    "bbc_radio_two",       "bbc_radio_three",
                                          "bbc_radio_fourfm", "bbc_radio_five_live", "bbc_6music" };
 //}}}
+constexpr int kVideoPoolSize = 128;
 
 class cAppWindow : public cGlWindow, public cLoaderPlayer {
 public:
-  cAppWindow() : cLoaderPlayer() {}
+  cAppWindow() : cLoaderPlayer(kVideoPoolSize) {}
   //{{{
   void run (const string& title, int width, int height, bool headless,
             bool radio, const string& channelName, int audBitrate, int vidBitrate)  {
@@ -74,8 +74,7 @@ public:
 
       thread ([=](){ hlsLoaderThread(); }).detach();
 
-      glClearColor (0, 0, 0, 1.f);
-      cGlWindow::run();
+      cGlWindow::run (false);
       }
 
     cLog::log (LOGINFO, "run exit");

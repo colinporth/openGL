@@ -18,55 +18,10 @@
     <ClCompile Include="..\..\shared\vg\cVg.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\shared\utils\cLog.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\cPerfGraph.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\widgets\cWidget.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\utils\date.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\widgets\iDraw.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\cVg.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\glad\glad.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\utils\utils.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\widgets\cTextBox.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\widgets\iWindow.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\widgets\cRootContainer.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\widgets\cContainer.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\audio\iAudio.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\utils\cSong.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\kissFft\kiss_fft.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\kissFft\kiss_fft_guts.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\kissFft\kiss_fftr.h">
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\net\cHttp.h">
@@ -78,52 +33,118 @@
     <ClInclude Include="..\..\shared\net\cWinSockHttp.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\decoders\cAacDecoder.h">
-      <Filter>h</Filter>
+    <ClInclude Include="..\..\shared\vg\cPointF.h">
+      <Filter>h\vg</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\decoders\iAudioDecoder.h">
-      <Filter>h</Filter>
+    <ClInclude Include="..\..\shared\vg\cGlWindow.h">
+      <Filter>h\vg</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\decoders\cMp3Decoder.h">
-      <Filter>h</Filter>
+    <ClInclude Include="..\..\shared\vg\cAtlasText.h">
+      <Filter>h\vg</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\audio\cCaptureWASAPI.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\widgets\cSongWidget.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\utils\cVideoDecode.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\stb_image.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\stb_truetype.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\utils\readerWriterQueue.h">
-      <Filter>h</Filter>
+    <ClInclude Include="..\..\shared\vg\cVg.h">
+      <Filter>h\vg</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\nanoVg\sColourF.h">
-      <Filter>h</Filter>
+      <Filter>h\vg</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\cPointF.h">
-      <Filter>h</Filter>
+    <ClInclude Include="..\..\shared\nanoVg\stb_image.h">
+      <Filter>h\vg</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\utils\cPesParser.h">
-      <Filter>h</Filter>
+    <ClInclude Include="..\..\shared\nanoVg\stb_truetype.h">
+      <Filter>h\vg</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\widgets\cLoaderPlayerWidget.h">
-      <Filter>h</Filter>
+    <ClInclude Include="..\..\shared\utils\cSong.h">
+      <Filter>h\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\utils\cLog.h">
+      <Filter>h\utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\utils\cLoaderPlayer.h">
-      <Filter>h</Filter>
+      <Filter>h\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\utils\cVideoDecode.h">
+      <Filter>h\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\utils\utils.h">
+      <Filter>h\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\utils\cPesParser.h">
+      <Filter>h\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\utils\readerWriterQueue.h">
+      <Filter>h\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\decoders\iAudioDecoder.h">
+      <Filter>h\decoders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\decoders\cMp3Decoder.h">
+      <Filter>h\decoders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\decoders\cAacDecoder.h">
+      <Filter>h\decoders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cSongWidget.h">
+      <Filter>h\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\kissFft\kiss_fft.h">
+      <Filter>h\kissFft</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\kissFft\kiss_fft_guts.h">
+      <Filter>h\kissFft</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\kissFft\kiss_fftr.h">
+      <Filter>h\kissFft</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\audio\iAudio.h">
+      <Filter>h\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\audio\cCaptureWASAPI.h">
+      <Filter>h\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cRootContainer.h">
+      <Filter>h\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cTextBox.h">
+      <Filter>h\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cContainer.h">
+      <Filter>h\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cLoaderPlayerWidget.h">
+      <Filter>h\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cWidget.h">
+      <Filter>h\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\iDraw.h">
+      <Filter>h\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\iWindow.h">
+      <Filter>h\widgets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">
       <UniqueIdentifier>{309b5935-6d35-41d3-8da8-2c132cc051bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="h\vg">
+      <UniqueIdentifier>{fd2d5c66-35aa-45b2-877d-d7bfa956e754}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="h\utils">
+      <UniqueIdentifier>{1d806821-042c-4a92-9459-f8c3fd839dda}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="h\decoders">
+      <UniqueIdentifier>{c82b45e0-cc3f-4b88-b7ee-fe70a6cbc869}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="h\kissFft">
+      <UniqueIdentifier>{7ef74505-2ba6-49ba-ad99-282e656c5096}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="h\audio">
+      <UniqueIdentifier>{ee413c39-4e11-4246-806b-2d75b8f2f01c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="h\widgets">
+      <UniqueIdentifier>{5a1db6af-05a8-4fb5-b415-b124a582ac44}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

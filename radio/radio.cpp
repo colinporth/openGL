@@ -71,10 +71,8 @@ public:
       while (true)
         this_thread::sleep_for (1s);
       }
-    else {
-      glClearColor (0, 0, 0, 1.f);
-      cGlWindow::run();
-      }
+    else 
+      cGlWindow::run (true);
 
     cLog::log (LOGINFO, "run exit");
     }

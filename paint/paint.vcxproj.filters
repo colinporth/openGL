@@ -225,6 +225,24 @@
     <ClInclude Include="..\..\shared\nanoVg\cPointF.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\vg\cAtlasText.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\vg\cGlWindow.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\vg\cPerfGraph.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\vg\cPointF.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\vg\cRaspWindow.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\vg\cVg.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">

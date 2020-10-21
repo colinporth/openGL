@@ -14,9 +14,6 @@
     <ClInclude Include="..\..\shared\utils\cLog.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\cPerfGraph.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\widgets\cWidget.h">
       <Filter>h</Filter>
     </ClInclude>
@@ -24,9 +21,6 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\widgets\iDraw.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\cVg.h">
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\glad\glad.h">
@@ -71,10 +65,13 @@
     <ClInclude Include="..\..\shared\nanoVg\stb_truetype.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\sColourF.h">
+    <ClInclude Include="..\..\shared\vg\cAtlasText.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\cPointF.h">
+    <ClInclude Include="..\..\shared\vg\cGlWindow.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\vg\cPerfGraph.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>

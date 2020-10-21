@@ -189,9 +189,6 @@
     <ClInclude Include="..\..\shared\kissFft\kiss_fft.h" />
     <ClInclude Include="..\..\shared\kissFft\kiss_fftr.h" />
     <ClInclude Include="..\..\shared\kissFft\kiss_fft_guts.h" />
-    <ClInclude Include="..\..\shared\nanoVg\cPerfGraph.h" />
-    <ClInclude Include="..\..\shared\nanoVg\cPointF.h" />
-    <ClInclude Include="..\..\shared\nanoVg\cVg.h" />
     <ClInclude Include="..\..\shared\nanoVg\sColourF.h" />
     <ClInclude Include="..\..\shared\nanoVg\stb_image.h" />
     <ClInclude Include="..\..\shared\nanoVg\stb_truetype.h" />
@@ -206,6 +203,10 @@
     <ClInclude Include="..\..\shared\utils\date.h" />
     <ClInclude Include="..\..\shared\utils\readerWriterQueue.h" />
     <ClInclude Include="..\..\shared\utils\utils.h" />
+    <ClInclude Include="..\..\shared\vg\cAtlasText.h" />
+    <ClInclude Include="..\..\shared\vg\cGlWindow.h" />
+    <ClInclude Include="..\..\shared\vg\cPointF.h" />
+    <ClInclude Include="..\..\shared\vg\cVg.h" />
     <ClInclude Include="..\..\shared\widgets\cContainer.h" />
     <ClInclude Include="..\..\shared\widgets\cLoaderPlayerWidget.h" />
     <ClInclude Include="..\..\shared\widgets\cRootContainer.h" />
