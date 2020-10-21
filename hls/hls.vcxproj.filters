@@ -1,8 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\..\shared\nanoVg\cGlWindow.cpp" />
-    <ClCompile Include="..\..\shared\nanoVg\cVg.cpp" />
     <ClCompile Include="..\..\shared\utils\cLog.cpp" />
     <ClCompile Include="..\..\shared\glad\glad.c" />
     <ClCompile Include="..\..\shared\utils\cSong.cpp" />
@@ -13,14 +11,13 @@
     <ClCompile Include="..\..\shared\decoders\cAudioDecode.cpp" />
     <ClCompile Include="..\..\shared\decoders\cMp3Decoder.cpp" />
     <ClCompile Include="hls.cpp" />
-    <ClCompile Include="..\..\shared\nanoVg\cAtlasText.cpp" />
     <ClCompile Include="..\..\shared\utils\cLoaderPlayer.cpp" />
     <ClCompile Include="..\..\shared\utils\cVideoDecode.cpp" />
+    <ClCompile Include="..\..\shared\vg\cAtlasText.cpp" />
+    <ClCompile Include="..\..\shared\vg\cGlWindow.cpp" />
+    <ClCompile Include="..\..\shared\vg\cVg.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\shared\nanoVg\cGlWindow.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\utils\cLog.h">
       <Filter>h</Filter>
     </ClInclude>
@@ -43,12 +40,6 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\utils\utils.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\fonts\FreeSansBold.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\fonts\DroidSansMono1.h">
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\widgets\cTextBox.h">
@@ -103,9 +94,6 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\utils\cVideoDecode.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\nanoVg\cAtlasText.h">
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\nanoVg\stb_image.h">

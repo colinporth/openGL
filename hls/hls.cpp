@@ -28,7 +28,7 @@
 #include "../../shared/utils/cLoaderPlayer.h"
 
 // widgets
-#include "../../shared/nanoVg/cGlWindow.h"
+#include "../../shared/vg/cGlWindow.h"
 #include "../../shared/fonts/FreeSansBold.h"
 #include "../../shared/fonts/DroidSansMono1.h"
 #include "../../shared/widgets/cTextBox.h"
@@ -223,16 +223,19 @@ protected:
 
 int main (int numArgs, char* args[]) {
 
+  // args to strings
   vector <string> argStrings;
   for (int i = 1; i < numArgs; i++)
     argStrings.push_back (args[i]);
 
-  bool headless = false;
+  // param defaults
   eLogLevel logLevel = LOGINFO;
+  bool headless = false;
   int radio = false;
   int channelNum = 3;
   int audBitrate = 128000;
   int vidBitrate = 827008;
+
   for (size_t i = 0; i < argStrings.size(); i++) {
     //{{{  parse params
     if (argStrings[i] == "h") headless = true;
@@ -267,8 +270,8 @@ int main (int numArgs, char* args[]) {
     else if (argStrings[i] == "a4") vidBitrate = 320000;
     }
     //}}}
-
   string channelName = radio ? kRadioChannels[channelNum] : kTvChannels[channelNum];
+
   cLog::init (logLevel);
   cLog::log (LOGNOTICE, "openGL hls " + channelName  + " " + dec (audBitrate) + " " + dec (vidBitrate));
 

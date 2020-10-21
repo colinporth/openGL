@@ -6,9 +6,9 @@ SRCS      = hls.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/glad/glad.c \
 	    ../../shared/net/cHttp.cpp \
-	    ../../shared/nanoVg/cVg.cpp \
-	    ../../shared/nanoVg/cAtlasText.cpp \
-	    ../../shared/nanoVg/cGlWindow.cpp \
+	    ../../shared/vg/cVg.cpp \
+	    ../../shared/vg/cAtlasText.cpp \
+	    ../../shared/vg/cGlWindow.cpp \
 	    ../../shared/decoders/cAudioDecode.cpp \
 	    ../../shared/decoders/cAacDecoder.cpp \
 	    ../../shared/decoders/cMp3Decoder.cpp \

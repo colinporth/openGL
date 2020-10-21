@@ -179,13 +179,9 @@
     <ClInclude Include="..\..\shared\decoders\cJpegPic.h" />
     <ClInclude Include="..\..\shared\decoders\cPngPic.h" />
     <ClInclude Include="..\..\shared\decoders\iPic.h" />
-    <ClInclude Include="..\..\shared\fonts\DroidSansMono1.h" />
-    <ClInclude Include="..\..\shared\fonts\FreeSansBold.h" />
     <ClInclude Include="..\..\shared\glad\glad.h" />
     <ClInclude Include="..\..\shared\hls\hls.h" />
     <ClInclude Include="..\..\shared\hls\hlsWidgets.h" />
-    <ClInclude Include="..\..\shared\nanoVg\cAtlasText.h" />
-    <ClInclude Include="..\..\shared\nanoVg\cGlWindow.h" />
     <ClInclude Include="..\..\shared\nanoVg\cPerfGraph.h" />
     <ClInclude Include="..\..\shared\nanoVg\cPointF.h" />
     <ClInclude Include="..\..\shared\nanoVg\cVg.h" />
@@ -212,14 +208,14 @@
   <ItemGroup>
     <ClCompile Include="..\..\shared\audio\cWinAudio16.cpp" />
     <ClCompile Include="..\..\shared\glad\glad.c" />
-    <ClCompile Include="..\..\shared\nanoVg\cAtlasText.cpp" />
-    <ClCompile Include="..\..\shared\nanoVg\cGlWindow.cpp" />
-    <ClCompile Include="..\..\shared\nanoVg\cVg.cpp" />
     <ClCompile Include="..\..\shared\net\cHttp.cpp" />
     <ClCompile Include="..\..\shared\teensyAac\cAacDecoder.cpp" />
     <ClCompile Include="..\..\shared\teensyAac\huffman.cpp" />
     <ClCompile Include="..\..\shared\teensyAac\sbr.cpp" />
     <ClCompile Include="..\..\shared\utils\cLog.cpp" />
+    <ClCompile Include="..\..\shared\vg\cAtlasText.cpp" />
+    <ClCompile Include="..\..\shared\vg\cGlWindow.cpp" />
+    <ClCompile Include="..\..\shared\vg\cVg.cpp" />
     <ClCompile Include="radio.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

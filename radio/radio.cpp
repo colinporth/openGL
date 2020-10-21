@@ -29,7 +29,7 @@
 #include "../../shared/utils/cLog.h"
 #include "../../shared/utils/cSemaphore.h"
 
-#include "../../shared/nanoVg/cGlWindow.h"
+#include "../../shared/vg/cGlWindow.h"
 #include "../../shared/fonts/FreeSansBold.h"
 #include "../../shared/fonts/DroidSansMono1.h"
 

@@ -3,9 +3,9 @@ SRCS      = paint
 .cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/glad/glad.c \
-	    ../../shared/nanoVg/cVg.cpp \
-	    ../../shared/nanoVg/cAtlasText.cpp \
-	    ../../shared/nanoVg/cGlWindow.cpp \
+	    ../../shared/vg/cVg.cpp \
+	    ../../shared/vg/cAtlasText.cpp \
+	    ../../shared/vg/cGlWindow.cpp \
 	    ../../shared/dvb/cDvb.cpp \
 	    ../../shared/dvb/cTransportStream.cpp \
 

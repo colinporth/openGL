@@ -34,7 +34,7 @@
 
 #include "../../shared/dvb/cDvb.h"
 
-#include "../../shared/nanoVg/cGlWindow.h"
+#include "../../shared/vg/cGlWindow.h"
 #include "../../shared/fonts/FreeSansBold.h"
 #include "../../shared/fonts/DroidSansMono1.h"
 
@@ -101,7 +101,7 @@ public:
       const string kRootName = "/home/pi/tv";
     #endif
 
-    auto mDvb = new cDvb (multiplex.mFrequency, kRootName, 
+    auto mDvb = new cDvb (multiplex.mFrequency, kRootName,
                           multiplex.mSelectedChannels, multiplex.mSaveNames,
                           !headless && decodeSubtitle);
 
