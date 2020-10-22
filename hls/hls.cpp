@@ -51,7 +51,7 @@ constexpr int kVideoPoolSize = 128;
 
 class cAppWindow : public cGlWindow, public cLoaderPlayer {
 public:
-  cAppWindow() : cLoaderPlayer(kVideoPoolSize) {}
+  cAppWindow() : cLoaderPlayer() {}
   //{{{
   void run (const string& title, int width, int height, bool headless,
             bool radio, const string& channelName, int audBitrate, int vidBitrate)  {
@@ -60,7 +60,7 @@ public:
       radio ? kRadioHost : kTvHost, radio ? "pool_904/live/uk/" : "pool_902/live/uk/", channelName,
       audBitrate, vidBitrate,
       //eLoader (eQueueAudio | eQueueVideo));
-      eLoader (eMfx | eQueueAudio | eQueueVideo));
+      eLoader (eMfx | eQueueAudio | eQueueVideo), kVideoPoolSize);
 
     if (headless) {
       thread ([=](){ hlsLoaderThread(); }).detach();
@@ -222,10 +222,11 @@ protected:
 
 int main (int numArgs, char* args[]) {
 
-  // args to strings
+  //{{{  args to strings
   vector <string> argStrings;
   for (int i = 1; i < numArgs; i++)
     argStrings.push_back (args[i]);
+  //}}}
 
   // param defaults
   eLogLevel logLevel = LOGINFO;
