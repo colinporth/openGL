@@ -58,9 +58,9 @@ public:
 
     cLoaderPlayer::initialise (radio,
       radio ? kRadioHost : kTvHost, radio ? "pool_904/live/uk/" : "pool_902/live/uk/", channelName,
-      audBitrate, vidBitrate,
-      //eLoader (eQueueAudio | eQueueVideo));
-      eLoader (eMfx | eQueueAudio | eQueueVideo), kVideoPoolSize);
+      audBitrate, vidBitrate, kVideoPoolSize,
+      eLoader (eQueueAudio | eQueueVideo));
+      //eLoader (eMfx | eQueueAudio | eQueueVideo));
 
     if (headless) {
       thread ([=](){ hlsLoaderThread(); }).detach();
