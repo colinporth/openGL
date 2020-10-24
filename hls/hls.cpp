@@ -264,10 +264,10 @@ int main (int numArgs, char* args[]) {
     else if (argStrings[i] == "v3") vidBitrate = 2812032;
     else if (argStrings[i] == "v4") vidBitrate = 5070016;
 
-    else if (argStrings[i] == "a1") vidBitrate = 48000;
-    else if (argStrings[i] == "a2") vidBitrate = 96000;
-    else if (argStrings[i] == "a3") vidBitrate = 128000;
-    else if (argStrings[i] == "a4") vidBitrate = 320000;
+    else if (argStrings[i] == "a1") audBitrate = 48000;
+    else if (argStrings[i] == "a2") audBitrate = 96000;
+    else if (argStrings[i] == "a3") audBitrate = 128000;
+    else if (argStrings[i] == "a4") audBitrate = 320000;
     }
     //}}}
   string channelName = radio ? kRadioChannels[channelNum] : kTvChannels[channelNum];
