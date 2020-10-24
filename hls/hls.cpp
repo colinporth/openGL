@@ -70,7 +70,7 @@ public:
     else {
       cGlWindow::initialise (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
       addTopLeft (new cLoaderPlayerWidget (this, cPointF()));
-      addTopLeft (new cSongWidget (mSong, 0,0));
+      addTopLeft (new cSongWidget (mSong, this, 0,0));
 
       thread ([=](){ hlsLoaderThread(); }).detach();
 

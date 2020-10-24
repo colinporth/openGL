@@ -123,6 +123,9 @@
     <ClInclude Include="..\..\shared\widgets\iWindow.h">
       <Filter>h\widgets</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\iClockTime.h">
+      <Filter>h\widgets</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">

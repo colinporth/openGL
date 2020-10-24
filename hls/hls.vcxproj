@@ -213,6 +213,7 @@
     <ClInclude Include="..\..\shared\widgets\cSongWidget.h" />
     <ClInclude Include="..\..\shared\widgets\cTextBox.h" />
     <ClInclude Include="..\..\shared\widgets\cWidget.h" />
+    <ClInclude Include="..\..\shared\widgets\iClockTime.h" />
     <ClInclude Include="..\..\shared\widgets\iDraw.h" />
     <ClInclude Include="..\..\shared\widgets\iWindow.h" />
   </ItemGroup>
