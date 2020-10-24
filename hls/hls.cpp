@@ -49,6 +49,7 @@ const vector <string> kRadioChannels = { "bbc_radio_one",    "bbc_radio_two",   
 //}}}
 constexpr int kVideoPoolSize = 128;
 
+// cAppWindow
 class cAppWindow : public cGlWindow, public cLoaderPlayer {
 public:
   cAppWindow() : cLoaderPlayer() {}
@@ -80,7 +81,6 @@ public:
     cLog::log (LOGINFO, "run exit");
     }
   //}}}
-
 protected:
   void onChar (char ch, int mods) {}
   //{{{
@@ -220,34 +220,29 @@ protected:
   //}}}
   };
 
+// main
 int main (int numArgs, char* args[]) {
-
   //{{{  args to strings
   vector <string> argStrings;
   for (int i = 1; i < numArgs; i++)
     argStrings.push_back (args[i]);
   //}}}
-
-  // param defaults
+  //{{{  default params
   eLogLevel logLevel = LOGINFO;
+
   bool headless = false;
+
   int radio = false;
   int channelNum = 3;
   int audBitrate = 128000;
   int vidBitrate = 827008;
-
+  //}}}
   for (size_t i = 0; i < argStrings.size(); i++) {
     //{{{  parse params
     if (argStrings[i] == "h") headless = true;
     else if (argStrings[i] == "l1") logLevel = LOGINFO1;
     else if (argStrings[i] == "l2") logLevel = LOGINFO2;
     else if (argStrings[i] == "l3") logLevel = LOGINFO3;
-    else if (argStrings[i] == "r1") { channelNum = 0; radio = true; vidBitrate = 0; }
-    else if (argStrings[i] == "r2") { channelNum = 1; radio = true; vidBitrate = 0; }
-    else if (argStrings[i] == "r3") { channelNum = 2; radio = true; vidBitrate = 0; }
-    else if (argStrings[i] == "r4") { channelNum = 3; radio = true; vidBitrate = 0; }
-    else if (argStrings[i] == "r5") { channelNum = 4; radio = true; vidBitrate = 0; }
-    else if (argStrings[i] == "r6") { channelNum = 5; radio = true; vidBitrate = 0; }
 
     else if (argStrings[i] == "bbc1") channelNum = 0;
     else if (argStrings[i] == "bbc2") channelNum = 1;
@@ -258,16 +253,23 @@ int main (int numArgs, char* args[]) {
     else if (argStrings[i] == "sw") channelNum = 6;
     else if (argStrings[i] == "parl") channelNum = 7;
 
+    else if (argStrings[i] == "r1") { channelNum = 0; radio = true; vidBitrate = 0; }
+    else if (argStrings[i] == "r2") { channelNum = 1; radio = true; vidBitrate = 0; }
+    else if (argStrings[i] == "r3") { channelNum = 2; radio = true; vidBitrate = 0; }
+    else if (argStrings[i] == "r4") { channelNum = 3; radio = true; vidBitrate = 0; }
+    else if (argStrings[i] == "r5") { channelNum = 4; radio = true; vidBitrate = 0; }
+    else if (argStrings[i] == "r6") { channelNum = 5; radio = true; vidBitrate = 0; }
+
     else if (argStrings[i] == "v0") vidBitrate = 0;
     else if (argStrings[i] == "v1") vidBitrate = 827008;
     else if (argStrings[i] == "v2") vidBitrate = 1604032;
     else if (argStrings[i] == "v3") vidBitrate = 2812032;
     else if (argStrings[i] == "v4") vidBitrate = 5070016;
 
-    else if (argStrings[i] == "a1") audBitrate = 48000;
-    else if (argStrings[i] == "a2") audBitrate = 96000;
-    else if (argStrings[i] == "a3") audBitrate = 128000;
-    else if (argStrings[i] == "a4") audBitrate = 320000;
+    else if (argStrings[i] == "48k") audBitrate = 48000;
+    else if (argStrings[i] == "96k") audBitrate = 96000;
+    else if (argStrings[i] == "128k") audBitrate = 128000;
+    else if (argStrings[i] == "320k") audBitrate = 320000;
     }
     //}}}
   string channelName = radio ? kRadioChannels[channelNum] : kTvChannels[channelNum];
