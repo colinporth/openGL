@@ -39,7 +39,7 @@
 #include "../../shared/resources/r4x80.h"
 #include "../../shared/resources/r5x80.h"
 #include "../../shared/resources/r6x80.h"
-#include "../../shared/resources/DroidSansMono1.h"
+#include "../../shared/resources/DroidSansMono.h"
 
 using namespace std;
 using namespace chrono;

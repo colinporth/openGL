@@ -150,10 +150,7 @@
     <ClInclude Include="..\..\shared\resources\r6x80.h">
       <Filter>h\resources</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\resources\DroidSansMono1.h">
-      <Filter>h\resources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\resources\FreeSansBold.h">
+    <ClInclude Include="..\..\shared\resources\DroidSansMono.h">
       <Filter>h\resources</Filter>
     </ClInclude>
   </ItemGroup>

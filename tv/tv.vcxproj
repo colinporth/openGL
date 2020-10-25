@@ -182,6 +182,8 @@
     <ClInclude Include="..\..\shared\glad\glad.h" />
     <ClInclude Include="..\..\shared\nanoVg\stb_image.h" />
     <ClInclude Include="..\..\shared\nanoVg\stb_truetype.h" />
+    <ClInclude Include="..\..\shared\resources\DroidSansMono.h" />
+    <ClInclude Include="..\..\shared\resources\FreeSansBold.h" />
     <ClInclude Include="..\..\shared\utils\cLog.h" />
     <ClInclude Include="..\..\shared\utils\date.h" />
     <ClInclude Include="..\..\shared\utils\utils.h" />

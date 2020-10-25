@@ -36,7 +36,7 @@
 
 #include "../../shared/vg/cGlWindow.h"
 #include "../../shared/resources/FreeSansBold.h"
-#include "../../shared/resources/DroidSansMono1.h"
+#include "../../shared/resources/DroidSansMono.h"
 
 #include "../../shared/widgets/cTextBox.h"
 #include "../../shared/widgets/cDvbWidget.h"

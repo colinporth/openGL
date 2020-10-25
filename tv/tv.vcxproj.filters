@@ -74,6 +74,12 @@
     <ClInclude Include="..\..\shared\vg\cPerfGraph.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\resources\DroidSansMono.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\resources\FreeSansBold.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">
