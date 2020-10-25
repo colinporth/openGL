@@ -50,11 +50,10 @@ class cAppWindow : public cGlWindow, public cLoaderPlayer {
 public:
   cAppWindow() : cLoaderPlayer() {}
   //{{{
-  void run (const string& title, int width, int height, bool headless,
+  void run (const string& title, int width, int height, bool headless, bool forceFFmpeg,
             bool radio, const string& channelName, int audBitrate, int vidBitrate)  {
 
-    eLoader loader = eLoader(eFFmpeg | eQueueAudio | eQueueVideo);
-    //eLoader loader = eLoader(eQueueAudio | eQueueVideo);
+    eLoader loader = forceFFmpeg ? eLoader(eFFmpeg | eQueueAudio | eQueueVideo) : eLoader (eQueueAudio | eQueueVideo);
 
     if (headless) {
       thread ([=](){ hlsLoaderThread (true, "bbc_radio_fourfm", 128000, 0, loader); }).detach();
@@ -67,34 +66,47 @@ public:
       cGlWindow::initialise (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
       addTopLeft (new cLoaderPlayerWidget (this, this, cPointF()));
 
-      if (channelName.empty()) {
+      if (!channelName.empty()) // select cmdline channel
+        thread ([=](){ hlsLoaderThread (radio, channelName, audBitrate, vidBitrate, loader); }).detach();
+      else {
+        // add channel selection gui
         addTopLeft (new cDecodePicWidget (r1x80, sizeof(r1x80), 3, 3, 1,
+          //{{{  lambda callback
           [&](cPicWidget* widget, int value) noexcept {
             thread ([=](){ hlsLoaderThread (true, "bbc_radio_one", 128000,0, loader); }).detach();
             } ));
+          //}}}
         add (new cDecodePicWidget (r2x80, sizeof(r2x80), 3, 3, 2,
+          //{{{  lambda callback
           [&](cPicWidget* widget, int value) noexcept {
             thread ([=](){ hlsLoaderThread (true, "bbc_radio_two", 128000,0, loader); }).detach();
             } ));
+          //}}}
         add (new cDecodePicWidget (r3x80, sizeof(r3x80), 3, 3, 3,
+          //{{{  lambda callback
           [&](cPicWidget* widget, int value) noexcept {
-            thread ([=](){ hlsLoaderThread (true, "bbc_radio_three", 128000,0, loader); }).detach();
+            thread ([=](){ hlsLoaderThread (true, "bbc_radio_three", 320000,0, loader); }).detach();
             } ));
+          //}}}
         add (new cDecodePicWidget (r4x80, sizeof(r4x80), 3, 3, 4,
+          //{{{  lambda callback
           [&](cPicWidget* widget, int value) noexcept {
             thread ([=](){ hlsLoaderThread (true, "bbc_radio_fourfm", 128000,0, loader); }).detach();
             } ));
+          //}}}
         add (new cDecodePicWidget (r5x80, sizeof(r5x80), 3, 3, 5,
+          //{{{  lambda callback
           [&](cPicWidget* widget, int value) noexcept {
             thread ([=](){ hlsLoaderThread (true, "bbc_radio_five_live", 128000,0, loader); }).detach();
             } ));
+          //}}}
         add (new cDecodePicWidget (r6x80, sizeof(r6x80), 3, 3, 6,
+          //{{{  lambda callback
           [&](cPicWidget* widget, int value) noexcept {
             thread ([=](){ hlsLoaderThread (true, "bbc_6music", 128000,0, loader); }).detach();
             } ));
+          //}}}
         }
-      else
-        thread ([=](){ hlsLoaderThread (radio, channelName, audBitrate, vidBitrate, loader); }).detach();
 
       cGlWindow::run (false);
       }
@@ -250,20 +262,19 @@ int main (int numArgs, char* args[]) {
     argStrings.push_back (args[i]);
   //}}}
   //{{{  default params
+  bool headless = false;
+  bool forceFFmpeg = false;
   eLogLevel logLevel = LOGINFO;
 
-  bool headless = false;
-
   int radio = false;
-  int channelNum = 3;
+  string channelName;
   int audBitrate = 128000;
   int vidBitrate = 827008;
-
-  string channelName;
   //}}}
   for (size_t i = 0; i < argStrings.size(); i++) {
     //{{{  parse params
     if (argStrings[i] == "h") headless = true;
+    else if (argStrings[i] == "ff") forceFFmpeg = true;
     else if (argStrings[i] == "l1") logLevel = LOGINFO1;
     else if (argStrings[i] == "l2") logLevel = LOGINFO2;
     else if (argStrings[i] == "l3") logLevel = LOGINFO3;
@@ -301,7 +312,7 @@ int main (int numArgs, char* args[]) {
   cLog::log (LOGNOTICE, "openGL hls " + channelName  + " " + dec (audBitrate) + " " + dec (vidBitrate));
 
   cAppWindow appWindow;
-  appWindow.run ("hls", 800, 450, headless, radio, channelName, audBitrate, vidBitrate);
+  appWindow.run ("hls", 800, 450, headless, forceFFmpeg, radio, channelName, audBitrate, vidBitrate);
 
   return 0;
   }
