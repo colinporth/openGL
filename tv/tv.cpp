@@ -35,8 +35,8 @@
 #include "../../shared/dvb/cDvb.h"
 
 #include "../../shared/vg/cGlWindow.h"
-#include "../../shared/fonts/FreeSansBold.h"
-#include "../../shared/fonts/DroidSansMono1.h"
+#include "../../shared/resources/FreeSansBold.h"
+#include "../../shared/resources/DroidSansMono1.h"
 
 #include "../../shared/widgets/cTextBox.h"
 #include "../../shared/widgets/cDvbWidget.h"

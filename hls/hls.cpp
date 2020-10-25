@@ -29,25 +29,21 @@
 
 // widgets
 #include "../../shared/vg/cGlWindow.h"
-#include "../../shared/fonts/DroidSansMono1.h"
 #include "../../shared/widgets/cTextBox.h"
-#include "../../shared/widgets/cSongWidget.h"
 #include "../../shared/widgets/cLoaderPlayerWidget.h"
+#include "../../shared/widgets/cDecodePicWidget.h"
+
+#include "../../shared/resources/r1x80.h"
+#include "../../shared/resources/r2x80.h"
+#include "../../shared/resources/r3x80.h"
+#include "../../shared/resources/r4x80.h"
+#include "../../shared/resources/r5x80.h"
+#include "../../shared/resources/r6x80.h"
+#include "../../shared/resources/DroidSansMono1.h"
 
 using namespace std;
 using namespace chrono;
 //}}}
-//{{{  channels
-const string kTvHost = "vs-hls-uk-live.akamaized.net";
-const vector <string> kTvChannels = { "bbc_one_hd",          "bbc_two_hd",          "bbc_four_hd", // pa4
-                                    "bbc_news_channel_hd", "bbc_one_scotland_hd", "s4cpbs",      // pa4
-                                    "bbc_one_south_west",  "bbc_parliament" };                   // pa3
-
-const string kRadioHost = "as-hls-uk-live.bbcfmt.s.llnwi.net";
-const vector <string> kRadioChannels = { "bbc_radio_one",    "bbc_radio_two",       "bbc_radio_three",
-                                         "bbc_radio_fourfm", "bbc_radio_five_live", "bbc_6music" };
-//}}}
-constexpr int kVideoPoolSize = 128;
 
 // cAppWindow
 class cAppWindow : public cGlWindow, public cLoaderPlayer {
@@ -57,23 +53,48 @@ public:
   void run (const string& title, int width, int height, bool headless,
             bool radio, const string& channelName, int audBitrate, int vidBitrate)  {
 
-    cLoaderPlayer::initialise (radio,
-      radio ? kRadioHost : kTvHost, radio ? "pool_904/live/uk/" : "pool_902/live/uk/", channelName,
-      audBitrate, vidBitrate, kVideoPoolSize,
-      eLoader (eFFmpeg | eQueueAudio | eQueueVideo));
-      //eLoader (eQueueAudio | eQueueVideo));
+    eLoader loader = eLoader(eFFmpeg | eQueueAudio | eQueueVideo);
+    //eLoader loader = eLoader(eQueueAudio | eQueueVideo);
 
     if (headless) {
-      thread ([=](){ hlsLoaderThread(); }).detach();
+      thread ([=](){ hlsLoaderThread (true, "bbc_radio_fourfm", 128000, 0, loader); }).detach();
       while (true)
         this_thread::sleep_for (200ms);
        }
-    else {
-      cGlWindow::initialise (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
-      addTopLeft (new cLoaderPlayerWidget (this, cPointF()));
-      addTopLeft (new cSongWidget (mSong, this, 0,0));
 
-      thread ([=](){ hlsLoaderThread(); }).detach();
+    else {
+      // start up gui
+      cGlWindow::initialise (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
+      addTopLeft (new cLoaderPlayerWidget (this, this, cPointF()));
+
+      if (channelName.empty()) {
+        addTopLeft (new cDecodePicWidget (r1x80, sizeof(r1x80), 3, 3, 1,
+          [&](cPicWidget* widget, int value) noexcept {
+            thread ([=](){ hlsLoaderThread (true, "bbc_radio_one", 128000,0, loader); }).detach();
+            } ));
+        add (new cDecodePicWidget (r2x80, sizeof(r2x80), 3, 3, 2,
+          [&](cPicWidget* widget, int value) noexcept {
+            thread ([=](){ hlsLoaderThread (true, "bbc_radio_two", 128000,0, loader); }).detach();
+            } ));
+        add (new cDecodePicWidget (r3x80, sizeof(r3x80), 3, 3, 3,
+          [&](cPicWidget* widget, int value) noexcept {
+            thread ([=](){ hlsLoaderThread (true, "bbc_radio_three", 128000,0, loader); }).detach();
+            } ));
+        add (new cDecodePicWidget (r4x80, sizeof(r4x80), 3, 3, 4,
+          [&](cPicWidget* widget, int value) noexcept {
+            thread ([=](){ hlsLoaderThread (true, "bbc_radio_fourfm", 128000,0, loader); }).detach();
+            } ));
+        add (new cDecodePicWidget (r5x80, sizeof(r5x80), 3, 3, 5,
+          [&](cPicWidget* widget, int value) noexcept {
+            thread ([=](){ hlsLoaderThread (true, "bbc_radio_five_live", 128000,0, loader); }).detach();
+            } ));
+        add (new cDecodePicWidget (r6x80, sizeof(r6x80), 3, 3, 6,
+          [&](cPicWidget* widget, int value) noexcept {
+            thread ([=](){ hlsLoaderThread (true, "bbc_6music", 128000,0, loader); }).detach();
+            } ));
+        }
+      else
+        thread ([=](){ hlsLoaderThread (radio, channelName, audBitrate, vidBitrate, loader); }).detach();
 
       cGlWindow::run (false);
       }
@@ -102,20 +123,20 @@ protected:
         //}}}
         //{{{
         case GLFW_KEY_DELETE:    // delete select
-          mSong->getSelect().clearAll();
+          getSong()->getSelect().clearAll();
           //changed();
           break;
         //}}}
 
         //{{{
         case GLFW_KEY_HOME:      // skip beginning
-          mSong->setPlayFrame (mSong->getSelect().empty() ? mSong->getFirstFrame() : mSong->getSelect().getFirstFrame());
+          getSong()->setPlayFrame (getSong()->getSelect().empty() ? getSong()->getFirstFrame() : getSong()->getSelect().getFirstFrame());
           videoFollowAudio();
           break;
         //}}}
         //{{{
         case GLFW_KEY_END:       // skip end
-          mSong->setPlayFrame (mSong->getSelect().empty() ? mSong->getLastFrame() : mSong->getSelect().getLastFrame());
+          getSong()->setPlayFrame (getSong()->getSelect().empty() ? getSong()->getLastFrame() : getSong()->getSelect().getLastFrame());
           videoFollowAudio();
           break;
         //}}}
@@ -129,13 +150,13 @@ protected:
         //}}}
         //{{{
         case GLFW_KEY_LEFT:      // skip back
-          mSong->incPlaySec (-(mods == GLFW_MOD_SHIFT ? 300 : mods == GLFW_MOD_CONTROL ? 10 : 1), false);
+          getSong()->incPlaySec (-(mods == GLFW_MOD_SHIFT ? 300 : mods == GLFW_MOD_CONTROL ? 10 : 1), false);
           videoFollowAudio();
           break;
         //}}}
         //{{{
         case GLFW_KEY_RIGHT:     // skip forward
-          mSong->incPlaySec ((mods == GLFW_MOD_SHIFT ? 300 : mods == GLFW_MOD_CONTROL ? 10 : 1), false);
+          getSong()->incPlaySec ((mods == GLFW_MOD_SHIFT ? 300 : mods == GLFW_MOD_CONTROL ? 10 : 1), false);
           videoFollowAudio();
           break;
         //}}}
@@ -150,7 +171,7 @@ protected:
 
         //{{{
         case GLFW_KEY_M: // mark
-          mSong->getSelect().addMark (mSong->getPlayFrame());
+          getSong()->getSelect().addMark (getSong()->getPlayFrame());
           //changed();
           break;
         //}}}
@@ -218,6 +239,7 @@ protected:
       }
     }
   //}}}
+  int mChan = 0;
   };
 
 // main
@@ -236,6 +258,8 @@ int main (int numArgs, char* args[]) {
   int channelNum = 3;
   int audBitrate = 128000;
   int vidBitrate = 827008;
+
+  string channelName;
   //}}}
   for (size_t i = 0; i < argStrings.size(); i++) {
     //{{{  parse params
@@ -244,21 +268,21 @@ int main (int numArgs, char* args[]) {
     else if (argStrings[i] == "l2") logLevel = LOGINFO2;
     else if (argStrings[i] == "l3") logLevel = LOGINFO3;
 
-    else if (argStrings[i] == "bbc1") channelNum = 0;
-    else if (argStrings[i] == "bbc2") channelNum = 1;
-    else if (argStrings[i] == "bbc4") channelNum = 2;
-    else if (argStrings[i] == "news") channelNum = 3;
-    else if (argStrings[i] == "scot") channelNum = 4;
-    else if (argStrings[i] == "s4c") channelNum = 5;
-    else if (argStrings[i] == "sw") channelNum = 6;
-    else if (argStrings[i] == "parl") channelNum = 7;
+    else if (argStrings[i] == "bbc1") channelName = "bbc_one_hd";
+    else if (argStrings[i] == "bbc2") channelName = "bbc_two_hd";
+    else if (argStrings[i] == "bbc4") channelName = "bbc_four_hd";
+    else if (argStrings[i] == "news") channelName = "bbc_news_channel_hd";
+    else if (argStrings[i] == "scot") channelName = "bbc_one_scotland_hd";
+    else if (argStrings[i] == "s4c") channelName = "s4cpbs";
+    else if (argStrings[i] == "sw") channelName = "bbc_one_south_west";
+    else if (argStrings[i] == "parl") channelName = "bbc_parliament";
 
-    else if (argStrings[i] == "r1") { channelNum = 0; radio = true; vidBitrate = 0; }
-    else if (argStrings[i] == "r2") { channelNum = 1; radio = true; vidBitrate = 0; }
-    else if (argStrings[i] == "r3") { channelNum = 2; radio = true; vidBitrate = 0; }
-    else if (argStrings[i] == "r4") { channelNum = 3; radio = true; vidBitrate = 0; }
-    else if (argStrings[i] == "r5") { channelNum = 4; radio = true; vidBitrate = 0; }
-    else if (argStrings[i] == "r6") { channelNum = 5; radio = true; vidBitrate = 0; }
+    else if (argStrings[i] == "r1") { channelName = "bbc_radio_one"; radio = true; vidBitrate = 0; }
+    else if (argStrings[i] == "r2") { channelName = "bbc_radio_two"; radio = true; vidBitrate = 0; }
+    else if (argStrings[i] == "r3") { channelName = "bbc_radio_three"; radio = true; vidBitrate = 0; }
+    else if (argStrings[i] == "r4") { channelName = "bbc_radio_fourfm"; radio = true; vidBitrate = 0; }
+    else if (argStrings[i] == "r5") { channelName = "bbc_radio_five_live"; radio = true; vidBitrate = 0; }
+    else if (argStrings[i] == "r6") { channelName = "bbc_6music"; radio = true; vidBitrate = 0; }
 
     else if (argStrings[i] == "v0") vidBitrate = 0;
     else if (argStrings[i] == "v1") vidBitrate = 827008;
@@ -272,7 +296,6 @@ int main (int numArgs, char* args[]) {
     else if (argStrings[i] == "320k") audBitrate = 320000;
     }
     //}}}
-  string channelName = radio ? kRadioChannels[channelNum] : kTvChannels[channelNum];
 
   cLog::init (logLevel);
   cLog::log (LOGNOTICE, "openGL hls " + channelName  + " " + dec (audBitrate) + " " + dec (vidBitrate));
