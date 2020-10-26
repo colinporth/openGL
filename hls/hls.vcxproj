@@ -196,6 +196,7 @@
     <ClInclude Include="..\..\shared\net\cUrl.h" />
     <ClInclude Include="..\..\shared\net\cWinSockHttp.h" />
     <ClInclude Include="..\..\shared\resources\bbc1.h" />
+    <ClInclude Include="..\..\shared\resources\bbc2.h" />
     <ClInclude Include="..\..\shared\resources\DroidSansMono.h" />
     <ClInclude Include="..\..\shared\resources\r1.h" />
     <ClInclude Include="..\..\shared\resources\r2.h" />

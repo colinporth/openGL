@@ -156,6 +156,9 @@
     <ClInclude Include="..\..\shared\widgets\cBmpWidget.h">
       <Filter>h\widgets</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\resources\bbc2.h">
+      <Filter>h\resources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">

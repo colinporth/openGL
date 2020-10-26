@@ -32,15 +32,19 @@
 #include "../../shared/widgets/cTextBox.h"
 #include "../../shared/widgets/cBmpWidget.h"
 #include "../../shared/widgets/cLoaderPlayerWidget.h"
-
+//{{{  include resources
 #include "../../shared/resources/bbc1.h"
+#include "../../shared/resources/bbc2.h"
+
 #include "../../shared/resources/r1.h"
 #include "../../shared/resources/r2.h"
 #include "../../shared/resources/r3.h"
 #include "../../shared/resources/r4.h"
 #include "../../shared/resources/r5.h"
 #include "../../shared/resources/r6.h"
+
 #include "../../shared/resources/DroidSansMono.h"
+//}}}
 
 using namespace std;
 using namespace chrono;
@@ -70,24 +74,24 @@ public:
       if (!channelName.empty()) // select cmdline channel
         thread ([=](){ hlsLoaderThread (radio, channelName, audBitrate, vidBitrate, loader); }).detach();
       else {
-        // add channel selection gui
+        // add channel gui
         addTopLeft (new cBmpWidget (r1, sizeof(r1), 0.f, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
           thread ([=](){ hlsLoaderThread (true, "bbc_radio_one", 128000,0, loader); }).detach(); } ));
-        add (new cBmpWidget (r2, sizeof(r2), 0.f, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
+        add (new cBmpWidget (r2, sizeof(r2), false, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
           thread ([=](){ hlsLoaderThread (true, "bbc_radio_two", 128000,0, loader); }).detach(); } ));
-        add (new cBmpWidget (r3, sizeof(r3), 0.f, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
+        add (new cBmpWidget (r3, sizeof(r3), false, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
           thread ([=](){ hlsLoaderThread (true, "bbc_radio_three", 320000,0, loader); }).detach(); } ));
-        add (new cBmpWidget (r4, sizeof(r4), 0.f, 3.f,3.f, [&](cBmpWidget * widget) noexcept {
+        add (new cBmpWidget (r4, sizeof(r4), false, 3.f,3.f, [&](cBmpWidget * widget) noexcept {
           thread ([=](){ hlsLoaderThread (true, "bbc_radio_fourfm", 128000,0, loader); }).detach(); } ));
-        add (new cBmpWidget (r5, sizeof(r5), 0.f, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
+        add (new cBmpWidget (r5, sizeof(r5), false, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
           thread ([=](){ hlsLoaderThread (true, "bbc_radio_five_live", 128000,0, loader); }).detach(); } ));
-        add (new cBmpWidget (r6, sizeof(r6), 0.f, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
+        add (new cBmpWidget (r6, sizeof(r6), false, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
           thread ([=](){ hlsLoaderThread (true, "bbc_6music", 128000,0, loader); }).detach(); } ));
-        add (new cBmpWidget (bbc1, sizeof(bbc1), 0.1f, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
+        add (new cBmpWidget (bbc1, sizeof(bbc1), true, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
           thread ([=](){ hlsLoaderThread (false, "bbc_one_hd", 128000,1604032, loader); }).detach(); } ));
-        add (new cBmpWidget (bbc1, sizeof(bbc1), 0.1f, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
+        add (new cBmpWidget (bbc2, sizeof(bbc2), true, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
           thread ([=](){ hlsLoaderThread (false, "bbc_two_hd", 128000,1604032, loader); }).detach(); } ));
-        add (new cBmpWidget (bbc1, sizeof(bbc1), 0.1f, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
+        add (new cBmpWidget (bbc1, sizeof(bbc1), true, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
           thread ([=](){ hlsLoaderThread (false, "bbc_news_channel_hd", 128000,1604032, loader); }).detach(); } ));
         }
 
