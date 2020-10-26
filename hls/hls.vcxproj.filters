@@ -129,29 +129,32 @@
     <ClInclude Include="..\..\shared\widgets\cDecodePicWidget.h">
       <Filter>h\widgets</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\widgets\cPicWidget.h">
-      <Filter>h\widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\resources\r1x80.h">
-      <Filter>h\resources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\resources\r2x80.h">
-      <Filter>h\resources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\resources\r3x80.h">
-      <Filter>h\resources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\resources\r4x80.h">
-      <Filter>h\resources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\resources\r5x80.h">
-      <Filter>h\resources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\resources\r6x80.h">
-      <Filter>h\resources</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\resources\DroidSansMono.h">
       <Filter>h\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\resources\bbc1.h">
+      <Filter>h\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\resources\r1.h">
+      <Filter>h\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\resources\r2.h">
+      <Filter>h\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\resources\r3.h">
+      <Filter>h\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\resources\r4.h">
+      <Filter>h\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\resources\r5.h">
+      <Filter>h\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\resources\r6.h">
+      <Filter>h\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cBmpWidget.h">
+      <Filter>h\widgets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -179,25 +182,5 @@
     <Filter Include="h\resources">
       <UniqueIdentifier>{793202e5-95b9-4e9a-8895-5223c46eb7ce}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\shared\resources\r1x80.bmp">
-      <Filter>h\resources</Filter>
-    </Image>
-    <Image Include="..\..\shared\resources\r2x80.bmp">
-      <Filter>h\resources</Filter>
-    </Image>
-    <Image Include="..\..\shared\resources\r3x80.bmp">
-      <Filter>h\resources</Filter>
-    </Image>
-    <Image Include="..\..\shared\resources\r4x80.bmp">
-      <Filter>h\resources</Filter>
-    </Image>
-    <Image Include="..\..\shared\resources\r5x80.bmp">
-      <Filter>h\resources</Filter>
-    </Image>
-    <Image Include="..\..\shared\resources\r6x80.bmp">
-      <Filter>h\resources</Filter>
-    </Image>
   </ItemGroup>
 </Project>

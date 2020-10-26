@@ -195,13 +195,14 @@
     <ClInclude Include="..\..\shared\net\cHttp.h" />
     <ClInclude Include="..\..\shared\net\cUrl.h" />
     <ClInclude Include="..\..\shared\net\cWinSockHttp.h" />
+    <ClInclude Include="..\..\shared\resources\bbc1.h" />
     <ClInclude Include="..\..\shared\resources\DroidSansMono.h" />
-    <ClInclude Include="..\..\shared\resources\r1x80.h" />
-    <ClInclude Include="..\..\shared\resources\r2x80.h" />
-    <ClInclude Include="..\..\shared\resources\r3x80.h" />
-    <ClInclude Include="..\..\shared\resources\r4x80.h" />
-    <ClInclude Include="..\..\shared\resources\r5x80.h" />
-    <ClInclude Include="..\..\shared\resources\r6x80.h" />
+    <ClInclude Include="..\..\shared\resources\r1.h" />
+    <ClInclude Include="..\..\shared\resources\r2.h" />
+    <ClInclude Include="..\..\shared\resources\r3.h" />
+    <ClInclude Include="..\..\shared\resources\r4.h" />
+    <ClInclude Include="..\..\shared\resources\r5.h" />
+    <ClInclude Include="..\..\shared\resources\r6.h" />
     <ClInclude Include="..\..\shared\utils\cLoaderPlayer.h" />
     <ClInclude Include="..\..\shared\utils\cLog.h" />
     <ClInclude Include="..\..\shared\utils\cPesParser.h" />
@@ -214,10 +215,10 @@
     <ClInclude Include="..\..\shared\vg\cGlWindow.h" />
     <ClInclude Include="..\..\shared\vg\cPointF.h" />
     <ClInclude Include="..\..\shared\vg\cVg.h" />
+    <ClInclude Include="..\..\shared\widgets\cBmpWidget.h" />
     <ClInclude Include="..\..\shared\widgets\cContainer.h" />
     <ClInclude Include="..\..\shared\widgets\cDecodePicWidget.h" />
     <ClInclude Include="..\..\shared\widgets\cLoaderPlayerWidget.h" />
-    <ClInclude Include="..\..\shared\widgets\cPicWidget.h" />
     <ClInclude Include="..\..\shared\widgets\cRootContainer.h" />
     <ClInclude Include="..\..\shared\widgets\cSongWidget.h" />
     <ClInclude Include="..\..\shared\widgets\cTextBox.h" />
@@ -242,14 +243,6 @@
     <ClCompile Include="..\..\shared\vg\cGlWindow.cpp" />
     <ClCompile Include="..\..\shared\vg\cVg.cpp" />
     <ClCompile Include="hls.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\shared\resources\r1x80.bmp" />
-    <Image Include="..\..\shared\resources\r2x80.bmp" />
-    <Image Include="..\..\shared\resources\r3x80.bmp" />
-    <Image Include="..\..\shared\resources\r4x80.bmp" />
-    <Image Include="..\..\shared\resources\r5x80.bmp" />
-    <Image Include="..\..\shared\resources\r6x80.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

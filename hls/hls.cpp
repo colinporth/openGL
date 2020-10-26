@@ -30,15 +30,16 @@
 // widgets
 #include "../../shared/vg/cGlWindow.h"
 #include "../../shared/widgets/cTextBox.h"
+#include "../../shared/widgets/cBmpWidget.h"
 #include "../../shared/widgets/cLoaderPlayerWidget.h"
-#include "../../shared/widgets/cDecodePicWidget.h"
 
-#include "../../shared/resources/r1x80.h"
-#include "../../shared/resources/r2x80.h"
-#include "../../shared/resources/r3x80.h"
-#include "../../shared/resources/r4x80.h"
-#include "../../shared/resources/r5x80.h"
-#include "../../shared/resources/r6x80.h"
+#include "../../shared/resources/bbc1.h"
+#include "../../shared/resources/r1.h"
+#include "../../shared/resources/r2.h"
+#include "../../shared/resources/r3.h"
+#include "../../shared/resources/r4.h"
+#include "../../shared/resources/r5.h"
+#include "../../shared/resources/r6.h"
 #include "../../shared/resources/DroidSansMono.h"
 
 using namespace std;
@@ -70,42 +71,20 @@ public:
         thread ([=](){ hlsLoaderThread (radio, channelName, audBitrate, vidBitrate, loader); }).detach();
       else {
         // add channel selection gui
-        addTopLeft (new cDecodePicWidget (r1x80, sizeof(r1x80), 3, 3, 1,
-          //{{{  lambda callback
-          [&](cPicWidget* widget, int value) noexcept {
-            thread ([=](){ hlsLoaderThread (true, "bbc_radio_one", 128000,0, loader); }).detach();
-            } ));
-          //}}}
-        add (new cDecodePicWidget (r2x80, sizeof(r2x80), 3, 3, 2,
-          //{{{  lambda callback
-          [&](cPicWidget* widget, int value) noexcept {
-            thread ([=](){ hlsLoaderThread (true, "bbc_radio_two", 128000,0, loader); }).detach();
-            } ));
-          //}}}
-        add (new cDecodePicWidget (r3x80, sizeof(r3x80), 3, 3, 3,
-          //{{{  lambda callback
-          [&](cPicWidget* widget, int value) noexcept {
-            thread ([=](){ hlsLoaderThread (true, "bbc_radio_three", 320000,0, loader); }).detach();
-            } ));
-          //}}}
-        add (new cDecodePicWidget (r4x80, sizeof(r4x80), 3, 3, 4,
-          //{{{  lambda callback
-          [&](cPicWidget* widget, int value) noexcept {
-            thread ([=](){ hlsLoaderThread (true, "bbc_radio_fourfm", 128000,0, loader); }).detach();
-            } ));
-          //}}}
-        add (new cDecodePicWidget (r5x80, sizeof(r5x80), 3, 3, 5,
-          //{{{  lambda callback
-          [&](cPicWidget* widget, int value) noexcept {
-            thread ([=](){ hlsLoaderThread (true, "bbc_radio_five_live", 128000,0, loader); }).detach();
-            } ));
-          //}}}
-        add (new cDecodePicWidget (r6x80, sizeof(r6x80), 3, 3, 6,
-          //{{{  lambda callback
-          [&](cPicWidget* widget, int value) noexcept {
-            thread ([=](){ hlsLoaderThread (true, "bbc_6music", 128000,0, loader); }).detach();
-            } ));
-          //}}}
+        addTopLeft (new cBmpWidget (r1, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
+          thread ([=](){ hlsLoaderThread (true, "bbc_radio_one", 128000,0, loader); }).detach(); } ));
+        add (new cBmpWidget (r2, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
+          thread ([=](){ hlsLoaderThread (true, "bbc_radio_two", 128000,0, loader); }).detach(); } ));
+        add (new cBmpWidget (r3, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
+          thread ([=](){ hlsLoaderThread (true, "bbc_radio_three", 320000,0, loader); }).detach(); } ));
+        add (new cBmpWidget (r4, 3.f,3.f, [&](cBmpWidget * widget) noexcept {
+          thread ([=](){ hlsLoaderThread (true, "bbc_radio_fourfm", 128000,0, loader); }).detach(); } ));
+        add (new cBmpWidget (r5, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
+          thread ([=](){ hlsLoaderThread (true, "bbc_radio_five_live", 128000,0, loader); }).detach(); } ));
+        add (new cBmpWidget (r6, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
+          thread ([=](){ hlsLoaderThread (true, "bbc_6music", 128000,0, loader); }).detach(); } ));
+        add (new cBmpWidget (bbc1, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
+          thread ([=](){ hlsLoaderThread (false, "bbc_one_hd", 128000,1604032, loader); }).detach(); } ));
         }
 
       cGlWindow::run (false);
@@ -263,7 +242,7 @@ int main (int numArgs, char* args[]) {
   //}}}
   //{{{  default params
   bool headless = false;
-  bool forceFFmpeg = false;
+  bool forceFFmpeg = true;
   eLogLevel logLevel = LOGINFO;
 
   int radio = false;
@@ -274,7 +253,7 @@ int main (int numArgs, char* args[]) {
   for (size_t i = 0; i < argStrings.size(); i++) {
     //{{{  parse params
     if (argStrings[i] == "h") headless = true;
-    else if (argStrings[i] == "ff") forceFFmpeg = true;
+    else if (argStrings[i] == "mfx") forceFFmpeg = false;
     else if (argStrings[i] == "l1") logLevel = LOGINFO1;
     else if (argStrings[i] == "l2") logLevel = LOGINFO2;
     else if (argStrings[i] == "l3") logLevel = LOGINFO3;
