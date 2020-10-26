@@ -206,7 +206,6 @@
     <ClInclude Include="..\..\shared\resources\r6.h" />
     <ClInclude Include="..\..\shared\utils\cLoaderPlayer.h" />
     <ClInclude Include="..\..\shared\utils\cLog.h" />
-    <ClInclude Include="..\..\shared\utils\cPesParser.h" />
     <ClInclude Include="..\..\shared\utils\cSong.h" />
     <ClInclude Include="..\..\shared\utils\cVideoDecode.h" />
     <ClInclude Include="..\..\shared\utils\date.h" />

@@ -55,13 +55,11 @@ class cAppWindow : public cGlWindow, public cLoaderPlayer {
 public:
   cAppWindow() : cLoaderPlayer() {}
   //{{{
-  void run (const string& title, int width, int height, bool headless, bool forceFFmpeg,
+  void run (const string& title, int width, int height, bool headless, eLoaderFlags loaderFlags,
             bool radio, const string& channelName, int audBitrate, int vidBitrate)  {
 
-    eLoader loader = forceFFmpeg ? eLoader(eFFmpeg | eQueueAudio | eQueueVideo) : eLoader (eQueueAudio | eQueueVideo);
-
     if (headless) {
-      thread ([=](){ hlsLoaderThread (true, "bbc_radio_fourfm", 128000, 0, loader); }).detach();
+      thread ([=](){ hlsLoaderThread (true, "bbc_radio_fourfm", 128000, 0, loaderFlags); }).detach();
       while (true)
         this_thread::sleep_for (200ms);
        }
@@ -72,27 +70,27 @@ public:
       addTopLeft (new cLoaderPlayerWidget (this, this, cPointF()));
 
       if (!channelName.empty()) // select cmdline channel
-        thread ([=](){ hlsLoaderThread (radio, channelName, audBitrate, vidBitrate, loader); }).detach();
+        thread ([=](){ hlsLoaderThread (radio, channelName, audBitrate, vidBitrate, loaderFlags); }).detach();
       else {
         // add channel gui
         addTopLeft (new cBmpWidget (r1, sizeof(r1), 0.f, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
-          thread ([=](){ hlsLoaderThread (true, "bbc_radio_one", 128000,0, loader); }).detach(); } ));
+          thread ([=](){ hlsLoaderThread (true, "bbc_radio_one", 128000,0, loaderFlags); }).detach(); } ));
         add (new cBmpWidget (r2, sizeof(r2), false, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
-          thread ([=](){ hlsLoaderThread (true, "bbc_radio_two", 128000,0, loader); }).detach(); } ));
+          thread ([=](){ hlsLoaderThread (true, "bbc_radio_two", 128000,0, loaderFlags); }).detach(); } ));
         add (new cBmpWidget (r3, sizeof(r3), false, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
-          thread ([=](){ hlsLoaderThread (true, "bbc_radio_three", 320000,0, loader); }).detach(); } ));
+          thread ([=](){ hlsLoaderThread (true, "bbc_radio_three", 320000,0, loaderFlags); }).detach(); } ));
         add (new cBmpWidget (r4, sizeof(r4), false, 3.f,3.f, [&](cBmpWidget * widget) noexcept {
-          thread ([=](){ hlsLoaderThread (true, "bbc_radio_fourfm", 128000,0, loader); }).detach(); } ));
+          thread ([=](){ hlsLoaderThread (true, "bbc_radio_fourfm", 128000,0, loaderFlags); }).detach(); } ));
         add (new cBmpWidget (r5, sizeof(r5), false, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
-          thread ([=](){ hlsLoaderThread (true, "bbc_radio_five_live", 128000,0, loader); }).detach(); } ));
+          thread ([=](){ hlsLoaderThread (true, "bbc_radio_five_live", 128000,0, loaderFlags); }).detach(); } ));
         add (new cBmpWidget (r6, sizeof(r6), false, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
-          thread ([=](){ hlsLoaderThread (true, "bbc_6music", 128000,0, loader); }).detach(); } ));
+          thread ([=](){ hlsLoaderThread (true, "bbc_6music", 128000,0, loaderFlags); }).detach(); } ));
         add (new cBmpWidget (bbc1, sizeof(bbc1), true, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
-          thread ([=](){ hlsLoaderThread (false, "bbc_one_hd", 128000,1604032, loader); }).detach(); } ));
+          thread ([=](){ hlsLoaderThread (false, "bbc_one_hd", 128000,1604032, loaderFlags); }).detach(); } ));
         add (new cBmpWidget (bbc2, sizeof(bbc2), true, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
-          thread ([=](){ hlsLoaderThread (false, "bbc_two_hd", 128000,1604032, loader); }).detach(); } ));
+          thread ([=](){ hlsLoaderThread (false, "bbc_two_hd", 128000,1604032, loaderFlags); }).detach(); } ));
         add (new cBmpWidget (bbc1, sizeof(bbc1), true, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
-          thread ([=](){ hlsLoaderThread (false, "bbc_news_channel_hd", 128000,1604032, loader); }).detach(); } ));
+          thread ([=](){ hlsLoaderThread (false, "bbc_news_channel_hd", 128000,1604032, loaderFlags); }).detach(); } ));
         }
 
       cGlWindow::run (false);
@@ -238,7 +236,6 @@ protected:
       }
     }
   //}}}
-  int mChan = 0;
   };
 
 // main
@@ -298,8 +295,12 @@ int main (int numArgs, char* args[]) {
   cLog::init (logLevel);
   cLog::log (LOGNOTICE, "openGL hls " + channelName  + " " + dec (audBitrate) + " " + dec (vidBitrate));
 
+  eLoaderFlags loaderFlags = eLoaderFlags(eQueueAudio | eQueueVideo);
+  if (forceFFmpeg)
+    loaderFlags = eLoaderFlags(loaderFlags | eFFmpeg);
+
   cAppWindow appWindow;
-  appWindow.run ("hls", 800, 450, headless, forceFFmpeg, radio, channelName, audBitrate, vidBitrate);
+  appWindow.run ("hls", 800, 450, headless, loaderFlags, radio, channelName, audBitrate, vidBitrate);
 
   return 0;
   }

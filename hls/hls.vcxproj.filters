@@ -69,9 +69,6 @@
     <ClInclude Include="..\..\shared\utils\utils.h">
       <Filter>h\utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\utils\cPesParser.h">
-      <Filter>h\utils</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\utils\readerWriterQueue.h">
       <Filter>h\utils</Filter>
     </ClInclude>
