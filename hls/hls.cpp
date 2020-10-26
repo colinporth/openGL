@@ -62,8 +62,7 @@ public:
       thread ([=](){ hlsLoaderThread (true, "bbc_radio_fourfm", 128000, 0, loaderFlags); }).detach();
       while (true)
         this_thread::sleep_for (200ms);
-       }
-
+      }
     else {
       // start up gui
       cGlWindow::initialise (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
@@ -124,10 +123,21 @@ public:
         add (new cBmpWidget (bbc1, sizeof(bbc1), true, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
           //{{{  lambda
           stopAndWait();
-          thread ([=](){ hlsLoaderThread (false, "bbc_news_channel_hd", 128000,1604032, loaderFlags);
-          }).detach();
-          //}}}
+          thread ([=](){ hlsLoaderThread (false, "bbc_news_channel_hd", 128000,1604032, loaderFlags); }).detach();
           } ));
+          //}}}
+        add (new cBmpWidget (bbc1, sizeof(bbc1), true, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
+          //{{{  lambda
+          stopAndWait();
+          thread ([=](){ hlsLoaderThread (false, "bbc_four_hd", 128000,1604032, loaderFlags); }).detach();
+          } ));
+          //}}}
+        add (new cBmpWidget (bbc1, sizeof(bbc1), true, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
+          //{{{  lambda
+          stopAndWait();
+          thread ([=](){ hlsLoaderThread (false, "bbc_one_south_west", 128000,1604032, loaderFlags); }).detach();
+          } ));
+          //}}}
         }
 
       cGlWindow::run (false);
