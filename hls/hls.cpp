@@ -264,8 +264,8 @@ protected:
         //}}}
         //{{{
         case GLFW_KEY_ESCAPE: // exit
+          stopAndWait();
           glfwSetWindowShouldClose (mWindow, GL_TRUE);
-          mExit = true;
           break;
         //}}}
         default: cLog::log (LOGNOTICE, "Keyboard %x", key); break;
