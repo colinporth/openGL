@@ -64,11 +64,12 @@ public:
         this_thread::sleep_for (200ms);
       }
     else {
-      // start up gui
-      cGlWindow::initialise (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
+      // start gui
+      cGlWindow::initialise (title, width, height, (uint8_t*)droidSansMono, sizeof(droidSansMono));
       addTopLeft (new cLoaderPlayerWidget (this, this, cPointF()));
 
-      if (!channelName.empty()) // select cmdline channel
+      if (!channelName.empty()) 
+        // select cmdline channel
         thread ([=](){ hlsLoaderThread (radio, channelName, audBitrate, vidBitrate, loaderFlags); }).detach();
       else {
         // add channel gui
@@ -139,7 +140,6 @@ public:
           } ));
           //}}}
         }
-
       cGlWindow::run (false);
       }
 
