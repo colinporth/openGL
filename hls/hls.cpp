@@ -288,8 +288,8 @@ protected:
 private:
   //{{{
   void stopAndWait() {
-    mExit = true;
 
+    mExit = true;
     while (mRunning) {
       this_thread::sleep_for (100ms);
       cLog::log(LOGINFO, "waiting to exit");
