@@ -35,6 +35,8 @@
 //{{{  include resources
 #include "../../shared/resources/bbc1.h"
 #include "../../shared/resources/bbc2.h"
+#include "../../shared/resources/bbcfour.h"
+#include "../../shared/resources/bbcnews.h"
 
 #include "../../shared/resources/r1.h"
 #include "../../shared/resources/r2.h"
@@ -68,7 +70,7 @@ public:
       cGlWindow::initialise (title, width, height, (uint8_t*)droidSansMono, sizeof(droidSansMono));
       addTopLeft (new cLoaderPlayerWidget (this, this, cPointF()));
 
-      if (!channelName.empty()) 
+      if (!channelName.empty())
         // select cmdline channel
         thread ([=](){ hlsLoaderThread (radio, channelName, audBitrate, vidBitrate, loaderFlags); }).detach();
       else {
@@ -121,13 +123,13 @@ public:
           thread ([=](){ hlsLoaderThread (false, "bbc_two_hd", 128000,1604032, loaderFlags); }).detach();
           } ));
           //}}}
-        add (new cBmpWidget (bbc1, sizeof(bbc1), true, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
+        add (new cBmpWidget (bbcnews, sizeof(bbcnews), true, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
           //{{{  lambda
           stopAndWait();
           thread ([=](){ hlsLoaderThread (false, "bbc_news_channel_hd", 128000,1604032, loaderFlags); }).detach();
           } ));
           //}}}
-        add (new cBmpWidget (bbc1, sizeof(bbc1), true, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
+        add (new cBmpWidget (bbcfour, sizeof(bbcfour), true, 3.f,3.f, [&](cBmpWidget* widget) noexcept {
           //{{{  lambda
           stopAndWait();
           thread ([=](){ hlsLoaderThread (false, "bbc_four_hd", 128000,1604032, loaderFlags); }).detach();

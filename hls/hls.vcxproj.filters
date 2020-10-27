@@ -156,6 +156,12 @@
     <ClInclude Include="..\..\shared\resources\bbc2.h">
       <Filter>h\resources</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\resources\bbcfour.h">
+      <Filter>h\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\resources\bbcnews.h">
+      <Filter>h\resources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">
