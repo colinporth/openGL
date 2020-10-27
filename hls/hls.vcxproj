@@ -218,7 +218,6 @@
     <ClInclude Include="..\..\shared\vg\cPointF.h" />
     <ClInclude Include="..\..\shared\vg\cVg.h" />
     <ClInclude Include="..\..\shared\widgets\cContainer.h" />
-    <ClInclude Include="..\..\shared\widgets\cDecodePicWidget.h" />
     <ClInclude Include="..\..\shared\widgets\cImageWidget.h" />
     <ClInclude Include="..\..\shared\widgets\cLoaderPlayerWidget.h" />
     <ClInclude Include="..\..\shared\widgets\cRootContainer.h" />

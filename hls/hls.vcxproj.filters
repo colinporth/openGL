@@ -24,15 +24,6 @@
     <ClInclude Include="..\..\shared\glad\glad.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\net\cHttp.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\net\cUrl.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\net\cWinSockHttp.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\vg\cPointF.h">
       <Filter>h\vg</Filter>
     </ClInclude>
@@ -123,9 +114,6 @@
     <ClInclude Include="..\..\shared\widgets\iClockTime.h">
       <Filter>h\widgets</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\widgets\cDecodePicWidget.h">
-      <Filter>h\widgets</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\resources\DroidSansMono.h">
       <Filter>h\resources</Filter>
     </ClInclude>
@@ -162,6 +150,15 @@
     <ClInclude Include="..\..\shared\resources\bbc4.h">
       <Filter>h\resources</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\net\cUrl.h">
+      <Filter>h\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\net\cHttp.h">
+      <Filter>h\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\net\cWinSockHttp.h">
+      <Filter>h\net</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">
@@ -187,6 +184,9 @@
     </Filter>
     <Filter Include="h\resources">
       <UniqueIdentifier>{793202e5-95b9-4e9a-8895-5223c46eb7ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="h\net">
+      <UniqueIdentifier>{d10938b1-cdb9-4375-b8d9-2f3186679a75}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

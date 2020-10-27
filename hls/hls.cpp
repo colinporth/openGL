@@ -1,4 +1,4 @@
-// main.cpp - nanoVg openGL - hls audio/video windows/linux
+// main.cpp - vg openGL - hls audio/video windows/linux
 //{{{  includes
 #ifdef _WIN32
   #define _CRT_SECURE_NO_WARNINGS
@@ -24,7 +24,7 @@
 // video decode
 #include "../../shared/utils/cVideoDecode.h"
 
-// audio,video loader,player
+// loader,player
 #include "../../shared/utils/cLoaderPlayer.h"
 
 // widgets
