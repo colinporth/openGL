@@ -35,7 +35,7 @@
 //{{{  include resources
 #include "../../shared/resources/bbc1.h"
 #include "../../shared/resources/bbc2.h"
-#include "../../shared/resources/bbcfour.h"
+#include "../../shared/resources/bbc4.h"
 #include "../../shared/resources/bbcnews.h"
 
 #include "../../shared/resources/r1.h"
@@ -75,67 +75,67 @@ public:
         thread ([=](){ hlsLoaderThread (radio, channelName, audBitrate, vidBitrate, loaderFlags); }).detach();
       else {
         // add channel gui
-        addTopLeft (new cImageWidget(r1, sizeof(r1), 0.f, 3.f,3.f, [&](cImageWidget* widget) noexcept {
+        addTopLeft (new cImageWidget(r1, sizeof(r1), 3.f,3.f, [&](cImageWidget* widget) noexcept {
           //{{{  lambda
           stopAndWait();
           thread ([=](){ hlsLoaderThread (true, "bbc_radio_one", 128000,0, loaderFlags); }).detach();
           } ));
           //}}}
-        add (new cImageWidget(r2, sizeof(r2), false, 3.f,3.f, [&](cImageWidget* widget) noexcept {
+        add (new cImageWidget(r2, sizeof(r2), 3.f,3.f, [&](cImageWidget* widget) noexcept {
           //{{{  lambda
           stopAndWait();
           thread ([=](){ hlsLoaderThread (true, "bbc_radio_two", 128000,0, loaderFlags); }).detach();
           } ));
           //}}}
-        add (new cImageWidget(r3, sizeof(r3), false, 3.f,3.f, [&](cImageWidget* widget) noexcept {
+        add (new cImageWidget(r3, sizeof(r3), 3.f,3.f, [&](cImageWidget* widget) noexcept {
           //{{{  lambda
           stopAndWait();
           thread ([=](){ hlsLoaderThread (true, "bbc_radio_three", 320000,0, loaderFlags); }).detach();
           } ));
           //}}}
-        add (new cImageWidget(r4, sizeof(r4), false, 3.f,3.f, [&](cImageWidget* widget) noexcept {
+        add (new cImageWidget(r4, sizeof(r4), 3.f,3.f, [&](cImageWidget* widget) noexcept {
           //{{{  lambda
           stopAndWait();
           thread ([=](){ hlsLoaderThread (true, "bbc_radio_fourfm", 128000,0, loaderFlags); }).detach();
           } ));
           //}}}
-        add (new cImageWidget(r5, sizeof(r5), false, 3.f,3.f, [&](cImageWidget* widget) noexcept {
+        add (new cImageWidget(r5, sizeof(r5), 3.f,3.f, [&](cImageWidget* widget) noexcept {
           //{{{  lambda
           stopAndWait();
           thread ([=](){ hlsLoaderThread (true, "bbc_radio_five_live", 128000,0, loaderFlags); }).detach();
           } ));
           //}}}
-        add (new cImageWidget(r6, sizeof(r6), false, 3.f,3.f, [&](cImageWidget* widget) noexcept {
+        add (new cImageWidget(r6, sizeof(r6), 3.f,3.f, [&](cImageWidget* widget) noexcept {
           //{{{  lambda
           stopAndWait();
           thread ([=](){ hlsLoaderThread (true, "bbc_6music", 128000,0, loaderFlags); }).detach();
           } ));
           //}}}
-        add (new cImageWidget(bbc1, sizeof(bbc1), true, 3.f,3.f, [&](cImageWidget* widget) noexcept {
+        add (new cImageWidget(bbc1, sizeof(bbc1), 3.f,3.f, [&](cImageWidget* widget) noexcept {
           //{{{  lambda
           stopAndWait();
           thread ([=](){ hlsLoaderThread (false, "bbc_one_hd", 128000,1604032, loaderFlags); }).detach();
           } ));
           //}}}
-        add (new cImageWidget(bbc2, sizeof(bbc2), true, 3.f,3.f, [&](cImageWidget* widget) noexcept {
+        add (new cImageWidget(bbc2, sizeof(bbc2), 3.f,3.f, [&](cImageWidget* widget) noexcept {
           //{{{  lambda
           stopAndWait();
           thread ([=](){ hlsLoaderThread (false, "bbc_two_hd", 128000,1604032, loaderFlags); }).detach();
           } ));
           //}}}
-        add (new cImageWidget(bbcnews, sizeof(bbcnews), true, 3.f,3.f, [&](cImageWidget* widget) noexcept {
-          //{{{  lambda
-          stopAndWait();
-          thread ([=](){ hlsLoaderThread (false, "bbc_news_channel_hd", 128000,1604032, loaderFlags); }).detach();
-          } ));
-          //}}}
-        add (new cImageWidget(bbcfour, sizeof(bbcfour), true, 3.f,3.f, [&](cImageWidget* widget) noexcept {
+        add (new cImageWidget(bbc4, sizeof(bbc4), 3.f,3.f, [&](cImageWidget* widget) noexcept {
           //{{{  lambda
           stopAndWait();
           thread ([=](){ hlsLoaderThread (false, "bbc_four_hd", 128000,1604032, loaderFlags); }).detach();
           } ));
           //}}}
-        add (new cImageWidget(bbc1, sizeof(bbc1), true, 3.f,3.f, [&](cImageWidget* widget) noexcept {
+        add (new cImageWidget(bbcnews, sizeof(bbcnews), 3.f,3.f, [&](cImageWidget* widget) noexcept {
+          //{{{  lambda
+          stopAndWait();
+          thread ([=](){ hlsLoaderThread (false, "bbc_news_channel_hd", 128000,1604032, loaderFlags); }).detach();
+          } ));
+          //}}}
+        add (new cImageWidget(bbc1, sizeof(bbc1), 3.f,3.f, [&](cImageWidget* widget) noexcept {
           //{{{  lambda
           stopAndWait();
           thread ([=](){ hlsLoaderThread (false, "bbc_one_south_west", 128000,1604032, loaderFlags); }).detach();

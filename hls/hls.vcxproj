@@ -197,7 +197,7 @@
     <ClInclude Include="..\..\shared\net\cWinSockHttp.h" />
     <ClInclude Include="..\..\shared\resources\bbc1.h" />
     <ClInclude Include="..\..\shared\resources\bbc2.h" />
-    <ClInclude Include="..\..\shared\resources\bbcfour.h" />
+    <ClInclude Include="..\..\shared\resources\bbc4.h" />
     <ClInclude Include="..\..\shared\resources\bbcnews.h" />
     <ClInclude Include="..\..\shared\resources\DroidSansMono.h" />
     <ClInclude Include="..\..\shared\resources\r1.h" />

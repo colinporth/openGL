@@ -153,14 +153,14 @@
     <ClInclude Include="..\..\shared\resources\bbc2.h">
       <Filter>h\resources</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\resources\bbcfour.h">
-      <Filter>h\resources</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\resources\bbcnews.h">
       <Filter>h\resources</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\widgets\cImageWidget.h">
       <Filter>h\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\resources\bbc4.h">
+      <Filter>h\resources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
