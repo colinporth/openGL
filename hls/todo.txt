@@ -20,7 +20,6 @@ hls
 
 resource
 - better container
-  - std::embed? proposal
 
 linux
 - x64 mfx
