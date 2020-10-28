@@ -59,7 +59,7 @@ public:
   //{{{
   void run (const string& title, int width, int height, bool headless, eLoaderFlags loaderFlags,
             bool radio, const string& channelName, int audBitrate, int vidBitrate,
-            const vector <string>& args)  {
+            const vector <string>& argStrings)  {
 
     if (headless) {
       thread ([=](){ hlsLoaderThread (true, "bbc_radio_fourfm", 128000, 0, loaderFlags); }).detach();
@@ -73,11 +73,11 @@ public:
       addTopLeft (new cLoaderPlayerWidget (this, this, cPointF()));
 
       if (!channelName.empty())
-        // select cmdline channel
+        // use cmdline channelName,bitrates,loaderFlags
         thread ([=](){ hlsLoaderThread (radio, channelName, audBitrate, vidBitrate, loaderFlags); }).detach();
-      else if (!args.empty()) {
-        thread ([=](){ fileLoaderThread (args[0]); }).detach();
-        }
+      else if (!argStrings.empty()) 
+        // use argStrings as fileList
+        thread ([=](){ fileLoaderThread (argStrings[0]); }).detach();
       else {
         // add channel gui
         addTopLeft (new cImageWidget(r1, sizeof(r1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
@@ -365,7 +365,7 @@ int main (int numArgs, char* args[]) {
     loaderFlags = eLoaderFlags(loaderFlags | eFFmpeg);
 
   cAppWindow appWindow;
-  appWindow.run ("hls", 800, 450, headless, loaderFlags, 
+  appWindow.run ("hls", 800, 450, headless, loaderFlags,
                  radio, channelName, audBitrate, vidBitrate,
                  argStrings);
 
