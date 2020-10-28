@@ -2,6 +2,9 @@ videoDecode
 - use map
 - similar to audio strategy
 
+aacDecoder
+- is CLZ broken on x64 linux
+
 loaderPlayer
 - subclass pesParser
 - listen to PAT then PMT to assign parsers
