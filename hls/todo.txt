@@ -1,6 +1,6 @@
 videoDecode
 - use map
-- similar to audio strategy
+  - similar to audio strategy
 
 aacDecoder
 - is CLZ broken on x64 linux
@@ -19,10 +19,15 @@ hls
 - chunk align back forward
 - fix channel change crash, tv to tv
 - maximise box full screen and back again
+- drag and drop onto player
+- play filelist and directories
 - audio and video bitrate selection gui
 
-resource
+resources
 - better container
+
+widgets
+- why doesn't latest stb_image load bmp correctly
 
 linux
 - x64 mfx
