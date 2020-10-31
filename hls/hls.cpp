@@ -310,9 +310,10 @@ int main (int numArgs, char* args[]) {
   for (int i = 1; i < numArgs; i++)
     argStrings.push_back (args[i]);
   //}}}
+
+  bool forceFFmpeg = true;
   //{{{  default params
   bool headless = false;
-  bool forceFFmpeg = false;
   eLogLevel logLevel = LOGINFO;
 
   int radio = false;
@@ -324,6 +325,7 @@ int main (int numArgs, char* args[]) {
     //{{{  parse params
     if (argStrings[i] == "h") headless = true;
     else if (argStrings[i] == "ff") forceFFmpeg = true;
+    else if (argStrings[i] == "mfx") forceFFmpeg = false;
     else if (argStrings[i] == "l1") logLevel = LOGINFO1;
     else if (argStrings[i] == "l2") logLevel = LOGINFO2;
     else if (argStrings[i] == "l3") logLevel = LOGINFO3;
