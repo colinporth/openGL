@@ -77,7 +77,7 @@ public:
         thread ([=](){ hlsLoaderThread (radio, channelName, audBitrate, vidBitrate, loaderFlags); }).detach();
       else if (!argStrings.empty())
         // use argStrings as fileList
-        thread ([=](){ fileLoaderThread (argStrings[0]); }).detach();
+        thread ([=](){ fileLoaderThread (argStrings[0], loaderFlags); }).detach();
       else {
         // add channel gui
         addTopLeft (new cImageWidget(r1, sizeof(r1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
