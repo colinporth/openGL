@@ -21,8 +21,8 @@
 // audio container
 #include "../../shared/utils/cSong.h"
 
-// video decode
-#include "../../shared/utils/iVideoDecode.h"
+// video decoder
+#include "../../shared/utils/iVideoDecoder.h"
 
 // loader,player
 #include "../../shared/utils/cLoaderPlayer.h"
