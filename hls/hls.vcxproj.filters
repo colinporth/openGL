@@ -14,9 +14,9 @@
     <ClCompile Include="..\..\shared\vg\cAtlasText.cpp" />
     <ClCompile Include="..\..\shared\vg\cGlWindow.cpp" />
     <ClCompile Include="..\..\shared\vg\cVg.cpp" />
-    <ClCompile Include="..\..\shared\decoders\cFFmpegAacDecoder.cpp" />
     <ClCompile Include="..\..\shared\decoders\cAudioParser.cpp" />
     <ClCompile Include="..\..\shared\utils\cVideoDecoder.cpp" />
+    <ClCompile Include="..\..\shared\decoders\cFFmpegAudioDecoder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\utils\date.h">
@@ -154,14 +154,14 @@
     <ClInclude Include="..\..\shared\net\cWinSockHttp.h">
       <Filter>h\net</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\decoders\cFFmpegAacDecoder.h">
-      <Filter>h\decoders</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\decoders\cAudioParser.h">
       <Filter>h\decoders</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\utils\iVideoDecoder.h">
       <Filter>h\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\decoders\cFFmpegAudioDecoder.h">
+      <Filter>h\decoders</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
