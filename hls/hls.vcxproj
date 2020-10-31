@@ -210,7 +210,7 @@
     <ClInclude Include="..\..\shared\utils\cLoaderPlayer.h" />
     <ClInclude Include="..\..\shared\utils\cLog.h" />
     <ClInclude Include="..\..\shared\utils\cSong.h" />
-    <ClInclude Include="..\..\shared\utils\cVideoDecode.h" />
+    <ClInclude Include="..\..\shared\utils\iVideoDecode.h" />
     <ClInclude Include="..\..\shared\utils\date.h" />
     <ClInclude Include="..\..\shared\utils\readerWriterQueue.h" />
     <ClInclude Include="..\..\shared\utils\utils.h" />

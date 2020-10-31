@@ -22,7 +22,7 @@
 #include "../../shared/utils/cSong.h"
 
 // video decode
-#include "../../shared/utils/cVideoDecode.h"
+#include "../../shared/utils/iVideoDecode.h"
 
 // loader,player
 #include "../../shared/utils/cLoaderPlayer.h"
@@ -75,7 +75,7 @@ public:
       if (!channelName.empty())
         // use cmdline channelName,bitrates,loaderFlags
         thread ([=](){ hlsLoaderThread (radio, channelName, audBitrate, vidBitrate, loaderFlags); }).detach();
-      else if (!argStrings.empty()) 
+      else if (!argStrings.empty())
         // use argStrings as fileList
         thread ([=](){ fileLoaderThread (argStrings[0]); }).detach();
       else {
@@ -312,7 +312,7 @@ int main (int numArgs, char* args[]) {
   //}}}
   //{{{  default params
   bool headless = false;
-  bool forceFFmpeg = true;
+  bool forceFFmpeg = false;
   eLogLevel logLevel = LOGINFO;
 
   int radio = false;
@@ -323,7 +323,7 @@ int main (int numArgs, char* args[]) {
   for (size_t i = 0; i < argStrings.size(); i++) {
     //{{{  parse params
     if (argStrings[i] == "h") headless = true;
-    else if (argStrings[i] == "mfx") forceFFmpeg = false;
+    else if (argStrings[i] == "ff") forceFFmpeg = true;
     else if (argStrings[i] == "l1") logLevel = LOGINFO1;
     else if (argStrings[i] == "l2") logLevel = LOGINFO2;
     else if (argStrings[i] == "l3") logLevel = LOGINFO3;
