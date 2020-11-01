@@ -125,7 +125,7 @@ protected:
 
         //{{{
         case GLFW_KEY_SPACE:     // pause
-          mLoader.getPlayer()->togglePlaying();
+          mLoader.getSongPlayer()->togglePlaying();
           break;
         //}}}
         //{{{
