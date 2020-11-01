@@ -57,7 +57,7 @@ using namespace chrono;
 class cAppWindow : public cGlWindow {
 public:
   //{{{
-  void run (const string& title, int width, int height, bool headless, eLoaderFlags loaderFlags,
+  void run (const string& title, int width, int height, bool headless, cLoader::eFlags loaderFlags,
             bool radio, const string& channelName, int audBitrate, int vidBitrate,
             const vector <string>& argStrings)  {
 
@@ -321,9 +321,9 @@ int main (int numArgs, char* args[]) {
   cLog::init (logLevel);
   cLog::log (LOGNOTICE, "openGL hls " + channelName  + " " + dec (audBitrate) + " " + dec (vidBitrate));
 
-  eLoaderFlags loaderFlags = eLoaderFlags(eQueueAudio | eQueueVideo);
+ cLoader::eFlags loaderFlags = cLoader::eFlags(cLoader::eQueueAudio | cLoader::eQueueVideo);
   if (forceFFmpeg)
-    loaderFlags = eLoaderFlags(loaderFlags | eFFmpeg);
+    loaderFlags = cLoader::eFlags(loaderFlags | cLoader::eFFmpeg);
 
   cAppWindow appWindow;
   appWindow.run ("hls", 800, 450, headless, loaderFlags,
