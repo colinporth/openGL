@@ -211,7 +211,7 @@
     <ClInclude Include="..\..\shared\utils\cLog.h" />
     <ClInclude Include="..\..\shared\utils\cSong.h" />
     <ClInclude Include="..\..\shared\utils\cSongPlayer.h" />
-    <ClInclude Include="..\..\shared\utils\iVideoDecoder.h" />
+    <ClInclude Include="..\..\shared\utils\iVideoPool.h" />
     <ClInclude Include="..\..\shared\utils\date.h" />
     <ClInclude Include="..\..\shared\utils\readerWriterQueue.h" />
     <ClInclude Include="..\..\shared\utils\utils.h" />
@@ -243,7 +243,7 @@
     <ClCompile Include="..\..\shared\utils\cLog.cpp" />
     <ClCompile Include="..\..\shared\utils\cSong.cpp" />
     <ClCompile Include="..\..\shared\utils\cSongPlayer.cpp" />
-    <ClCompile Include="..\..\shared\utils\cVideoDecoder.cpp" />
+    <ClCompile Include="..\..\shared\utils\cVideoPool.cpp" />
     <ClCompile Include="..\..\shared\vg\cAtlasText.cpp" />
     <ClCompile Include="..\..\shared\vg\cGlWindow.cpp" />
     <ClCompile Include="..\..\shared\vg\cVg.cpp" />
