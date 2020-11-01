@@ -207,9 +207,10 @@
     <ClInclude Include="..\..\shared\resources\r4.h" />
     <ClInclude Include="..\..\shared\resources\r5.h" />
     <ClInclude Include="..\..\shared\resources\r6.h" />
-    <ClInclude Include="..\..\shared\utils\cLoaderPlayer.h" />
+    <ClInclude Include="..\..\shared\utils\cLoader.h" />
     <ClInclude Include="..\..\shared\utils\cLog.h" />
     <ClInclude Include="..\..\shared\utils\cSong.h" />
+    <ClInclude Include="..\..\shared\utils\cSongPlayer.h" />
     <ClInclude Include="..\..\shared\utils\iVideoDecoder.h" />
     <ClInclude Include="..\..\shared\utils\date.h" />
     <ClInclude Include="..\..\shared\utils\readerWriterQueue.h" />
@@ -238,9 +239,10 @@
     <ClCompile Include="..\..\shared\kissFft\kiss_fft.c" />
     <ClCompile Include="..\..\shared\kissFft\kiss_fftr.c" />
     <ClCompile Include="..\..\shared\net\cHttp.cpp" />
-    <ClCompile Include="..\..\shared\utils\cLoaderPlayer.cpp" />
+    <ClCompile Include="..\..\shared\utils\cLoader.cpp" />
     <ClCompile Include="..\..\shared\utils\cLog.cpp" />
     <ClCompile Include="..\..\shared\utils\cSong.cpp" />
+    <ClCompile Include="..\..\shared\utils\cSongPlayer.cpp" />
     <ClCompile Include="..\..\shared\utils\cVideoDecoder.cpp" />
     <ClCompile Include="..\..\shared\vg\cAtlasText.cpp" />
     <ClCompile Include="..\..\shared\vg\cGlWindow.cpp" />

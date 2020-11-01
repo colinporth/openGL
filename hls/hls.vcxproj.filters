@@ -10,13 +10,14 @@
     <ClCompile Include="..\..\shared\decoders\cAacDecoder.cpp" />
     <ClCompile Include="..\..\shared\decoders\cMp3Decoder.cpp" />
     <ClCompile Include="hls.cpp" />
-    <ClCompile Include="..\..\shared\utils\cLoaderPlayer.cpp" />
     <ClCompile Include="..\..\shared\vg\cAtlasText.cpp" />
     <ClCompile Include="..\..\shared\vg\cGlWindow.cpp" />
     <ClCompile Include="..\..\shared\vg\cVg.cpp" />
     <ClCompile Include="..\..\shared\decoders\cAudioParser.cpp" />
     <ClCompile Include="..\..\shared\utils\cVideoDecoder.cpp" />
     <ClCompile Include="..\..\shared\decoders\cFFmpegAudioDecoder.cpp" />
+    <ClCompile Include="..\..\shared\utils\cSongPlayer.cpp" />
+    <ClCompile Include="..\..\shared\utils\cLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\utils\date.h">
@@ -50,9 +51,6 @@
       <Filter>h\utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\utils\cLog.h">
-      <Filter>h\utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\utils\cLoaderPlayer.h">
       <Filter>h\utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\utils\utils.h">
@@ -162,6 +160,12 @@
     </ClInclude>
     <ClInclude Include="..\..\shared\decoders\cFFmpegAudioDecoder.h">
       <Filter>h\decoders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\utils\cSongPlayer.h">
+      <Filter>h\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\utils\cLoader.h">
+      <Filter>h\utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

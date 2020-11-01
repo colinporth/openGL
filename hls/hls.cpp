@@ -24,14 +24,15 @@
 // video decoder
 #include "../../shared/utils/iVideoDecoder.h"
 
-// loader,player
-#include "../../shared/utils/cLoaderPlayer.h"
+// loader
+#include "../../shared/utils/cLoader.h"
+#include "../../shared/utils/cSongPlayer.h"
 
 // widgets
 #include "../../shared/vg/cGlWindow.h"
 #include "../../shared/widgets/cTextBox.h"
 #include "../../shared/widgets/cImageWidget.h"
-#include "../../shared/widgets/cLoaderPlayerWidget.h"
+#include "../../shared/widgets/cLoaderWidget.h"
 //{{{  include resources
 #include "../../shared/resources/bbc1.h"
 #include "../../shared/resources/bbc2.h"
@@ -53,16 +54,15 @@ using namespace chrono;
 //}}}
 
 // cAppWindow
-class cAppWindow : public cLoaderPlayer, public cGlWindow {
+class cAppWindow : public cGlWindow {
 public:
-  cAppWindow() : cLoaderPlayer() {}
   //{{{
   void run (const string& title, int width, int height, bool headless, eLoaderFlags loaderFlags,
             bool radio, const string& channelName, int audBitrate, int vidBitrate,
             const vector <string>& argStrings)  {
 
     if (headless) {
-      thread ([=](){ hlsLoaderThread (true, "bbc_radio_fourfm", 128000, 0, loaderFlags); }).detach();
+      mLoader.hls (true, "bbc_radio_fourfm", 128000, 0, loaderFlags);
       while (true)
         this_thread::sleep_for (200ms);
       }
@@ -70,82 +70,38 @@ public:
     else {
       // start gui
       cGlWindow::initialise (title, width, height, (uint8_t*)droidSansMono, sizeof(droidSansMono));
-      addTopLeft (new cLoaderPlayerWidget (this, this, cPointF()));
+      addTopLeft (new cLoaderWidget (&mLoader, this, cPointF()));
 
       if (!channelName.empty())
         // use cmdline channelName,bitrates,loaderFlags
-        thread ([=](){ hlsLoaderThread (radio, channelName, audBitrate, vidBitrate, loaderFlags); }).detach();
+        mLoader.hls (radio, channelName, audBitrate, vidBitrate, loaderFlags);
       else if (!argStrings.empty())
         // use argStrings as fileList
-        thread ([=](){ fileLoaderThread (argStrings[0], loaderFlags); }).detach();
+        mLoader.file (argStrings[0], loaderFlags);
       else {
         // add channel gui
         addTopLeft (new cImageWidget(r1, sizeof(r1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          //{{{  lambda
-          stopAndWait();
-          thread ([=](){ hlsLoaderThread (true, "bbc_radio_one", 128000,0, loaderFlags); }).detach();
-          } ));
-          //}}}
+          mLoader.hls (true, "bbc_radio_one", 128000,0, loaderFlags); } ));
         add (new cImageWidget(r2, sizeof(r2), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          //{{{  lambda
-          stopAndWait();
-          thread ([=](){ hlsLoaderThread (true, "bbc_radio_two", 128000,0, loaderFlags); }).detach();
-          } ));
-          //}}}
+          mLoader.hls (true, "bbc_radio_two", 128000,0, loaderFlags); } ));
         add (new cImageWidget(r3, sizeof(r3), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          //{{{  lambda
-          stopAndWait();
-          thread ([=](){ hlsLoaderThread (true, "bbc_radio_three", 320000,0, loaderFlags); }).detach();
-          } ));
-          //}}}
+          mLoader.hls (true, "bbc_radio_three", 320000,0, loaderFlags); } ));
         add (new cImageWidget(r4, sizeof(r4), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          //{{{  lambda
-          stopAndWait();
-          thread ([=](){ hlsLoaderThread (true, "bbc_radio_fourfm", 128000,0, loaderFlags); }).detach();
-          } ));
-          //}}}
+          mLoader.hls (true, "bbc_radio_fourfm", 128000,0, loaderFlags); } ));
         add (new cImageWidget(r5, sizeof(r5), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          //{{{  lambda
-          stopAndWait();
-          thread ([=](){ hlsLoaderThread (true, "bbc_radio_five_live", 128000,0, loaderFlags); }).detach();
-          } ));
-          //}}}
+          mLoader.hls (true, "bbc_radio_five_live", 128000,0, loaderFlags); } ));
         add (new cImageWidget(r6, sizeof(r6), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          //{{{  lambda
-          stopAndWait();
-          thread ([=](){ hlsLoaderThread (true, "bbc_6music", 128000,0, loaderFlags); }).detach();
-          } ));
-          //}}}
+          mLoader.hls (true, "bbc_6music", 128000,0, loaderFlags); } ));
         add (new cImageWidget(bbc1, sizeof(bbc1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          //{{{  lambda
-          stopAndWait();
-          thread ([=](){ hlsLoaderThread (false, "bbc_one_hd", 128000,1604032, loaderFlags); }).detach();
-          } ));
-          //}}}
+          mLoader.hls (false, "bbc_one_hd", 128000,1604032, loaderFlags); } ));
         add (new cImageWidget(bbc2, sizeof(bbc2), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          //{{{  lambda
-          stopAndWait();
-          thread ([=](){ hlsLoaderThread (false, "bbc_two_hd", 128000,1604032, loaderFlags); }).detach();
-          } ));
-          //}}}
+          mLoader.hls (false, "bbc_two_hd", 128000,1604032, loaderFlags); } ));
         add (new cImageWidget(bbc4, sizeof(bbc4), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          //{{{  lambda
-          stopAndWait();
-          thread ([=](){ hlsLoaderThread (false, "bbc_four_hd", 128000,1604032, loaderFlags); }).detach();
-          } ));
-          //}}}
+          mLoader.hls (false, "bbc_four_hd", 128000,1604032, loaderFlags); } ));
         add (new cImageWidget(bbcnews, sizeof(bbcnews), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          //{{{  lambda
-          stopAndWait();
-          thread ([=](){ hlsLoaderThread (false, "bbc_news_channel_hd", 128000,1604032, loaderFlags); }).detach();
-          } ));
-          //}}}
+          mLoader.hls (false, "bbc_news_channel_hd", 128000,1604032, loaderFlags); } ));
         add (new cImageWidget(bbc1, sizeof(bbc1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          //{{{  lambda
-          stopAndWait();
-          thread ([=](){ hlsLoaderThread (false, "bbc_one_south_west", 128000,1604032, loaderFlags); }).detach();
-          } ));
-          //}}}
+          mLoader.hls (false, "bbc_one_south_west", 128000,1604032, loaderFlags); } ));
         }
       cGlWindow::run (false);
       }
@@ -169,26 +125,38 @@ protected:
 
         //{{{
         case GLFW_KEY_SPACE:     // pause
-          mPlaying = !mPlaying;
+          mLoader.getPlayer()->togglePlaying();
           break;
         //}}}
         //{{{
         case GLFW_KEY_DELETE:    // delete select
-          getSong()->getSelect().clearAll();
+          mLoader.getSong()->getSelect().clearAll();
           //changed();
           break;
         //}}}
 
         //{{{
         case GLFW_KEY_HOME:      // skip beginning
-          getSong()->setPlayFrame (getSong()->getSelect().empty() ? getSong()->getFirstFrame() : getSong()->getSelect().getFirstFrame());
-          videoFollowAudio();
+
+          mLoader.getSong()->setPlayFrame (
+            mLoader.getSong()->getSelect().empty() ?
+              mLoader.getSong()->getFirstFrame() :
+              mLoader.getSong()->getSelect().getFirstFrame());
+
+          mLoader.skipped();
+
           break;
         //}}}
         //{{{
         case GLFW_KEY_END:       // skip end
-          getSong()->setPlayFrame (getSong()->getSelect().empty() ? getSong()->getLastFrame() : getSong()->getSelect().getLastFrame());
-          videoFollowAudio();
+
+          mLoader.getSong()->setPlayFrame (
+            mLoader.getSong()->getSelect().empty() ?
+              mLoader.getSong()->getLastFrame() :
+              mLoader.getSong()->getSelect().getLastFrame());
+
+          mLoader.skipped();
+
           break;
         //}}}
         //{{{
@@ -201,14 +169,14 @@ protected:
         //}}}
         //{{{
         case GLFW_KEY_LEFT:      // skip back
-          getSong()->incPlaySec (-(mods == GLFW_MOD_SHIFT ? 300 : mods == GLFW_MOD_CONTROL ? 10 : 1), false);
-          videoFollowAudio();
+          mLoader.getSong()->incPlaySec (-(mods == GLFW_MOD_SHIFT ? 300 : mods == GLFW_MOD_CONTROL ? 10 : 1), false);
+          mLoader.skipped();
           break;
         //}}}
         //{{{
         case GLFW_KEY_RIGHT:     // skip forward
-          getSong()->incPlaySec ((mods == GLFW_MOD_SHIFT ? 300 : mods == GLFW_MOD_CONTROL ? 10 : 1), false);
-          videoFollowAudio();
+          mLoader.getSong()->incPlaySec ((mods == GLFW_MOD_SHIFT ? 300 : mods == GLFW_MOD_CONTROL ? 10 : 1), false);
+          mLoader.skipped();
           break;
         //}}}
         //{{{
@@ -222,7 +190,7 @@ protected:
 
         //{{{
         case GLFW_KEY_M: // mark
-          getSong()->getSelect().addMark (getSong()->getPlayFrame());
+          mLoader.getSong()->getSelect().addMark (mLoader.getSong()->getPlayFrame());
           //changed();
           break;
         //}}}
@@ -281,7 +249,7 @@ protected:
         //}}}
         //{{{
         case GLFW_KEY_ESCAPE: // exit
-          stopAndWait();
+          mLoader.stopAndWait();
           glfwSetWindowShouldClose (mWindow, GL_TRUE);
           break;
         //}}}
@@ -291,16 +259,7 @@ protected:
     }
   //}}}
 private:
-  //{{{
-  void stopAndWait() {
-
-    mExit = true;
-    while (mRunning) {
-      this_thread::sleep_for (100ms);
-      cLog::log(LOGINFO, "waiting to exit");
-      }
-    }
-  //}}}
+  cLoader mLoader;
   };
 
 // main
@@ -370,6 +329,5 @@ int main (int numArgs, char* args[]) {
   appWindow.run ("hls", 800, 450, headless, loaderFlags,
                  radio, channelName, audBitrate, vidBitrate,
                  argStrings);
-
   return 0;
   }

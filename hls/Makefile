@@ -1,6 +1,7 @@
 TARGET    = app
 SRCS      = hls.cpp \
-	    ../../shared/utils/cLoaderPlayer.cpp \
+	    ../../shared/utils/cLoader.cpp \
+	    ../../shared/utils/cSongPlayer.cpp \
 	    ../../shared/utils/cVideoDecoder.cpp \
 	    ../../shared/utils/cSong.cpp \
 	    ../../shared/utils/cLog.cpp \
@@ -10,7 +11,7 @@ SRCS      = hls.cpp \
 	    ../../shared/vg/cAtlasText.cpp \
 	    ../../shared/vg/cGlWindow.cpp \
 	    ../../shared/decoders/cAudioParser.cpp \
-	    ../../shared/decoders/cFFmpegAacDecoder.cpp \
+	    ../../shared/decoders/cFFmpegAudioDecoder.cpp \
 	    ../../shared/decoders/cAacDecoder.cpp \
 	    ../../shared/decoders/cMp3Decoder.cpp \
 	    ../../shared/kissFft/kiss_fft.c \
