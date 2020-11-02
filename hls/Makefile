@@ -1,21 +1,21 @@
 TARGET    = app
 SRCS      = hls.cpp \
-	    ../../shared/utils/cLoader.cpp \
-	    ../../shared/utils/cSongPlayer.cpp \
-	    ../../shared/utils/cVideoDecoder.cpp \
-	    ../../shared/utils/cSong.cpp \
 	    ../../shared/utils/cLog.cpp \
-	    ../../shared/glad/glad.c \
-	    ../../shared/net/cHttp.cpp \
-	    ../../shared/vg/cVg.cpp \
-	    ../../shared/vg/cAtlasText.cpp \
-	    ../../shared/vg/cGlWindow.cpp \
+	    ../../shared/utils/cLoader.cpp \
+	    ../../shared/utils/cSong.cpp \
+	    ../../shared/utils/cSongPlayer.cpp \
+	    ../../shared/utils/cVideoPool.cpp \
 	    ../../shared/decoders/cAudioParser.cpp \
 	    ../../shared/decoders/cFFmpegAudioDecoder.cpp \
 	    ../../shared/decoders/cAacDecoder.cpp \
 	    ../../shared/decoders/cMp3Decoder.cpp \
 	    ../../shared/kissFft/kiss_fft.c \
 	    ../../shared/kissFft/kiss_fftr.c \
+	    ../../shared/net/cHttp.cpp \
+	    ../../shared/vg/cVg.cpp \
+	    ../../shared/vg/cAtlasText.cpp \
+	    ../../shared/vg/cGlWindow.cpp \
+	    ../../shared/glad/glad.c \
 
 BUILD_DIR = ./build
 CLEAN_DIRS = $(BUILD_DIR) $(BUILD_DIR)../../shared
