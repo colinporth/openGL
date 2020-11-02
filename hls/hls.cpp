@@ -1,4 +1,4 @@
-// main.cpp - vg openGL - hls audio/video windows/linux
+// main.cpp - vg openGL - hls,file,icycast audio/video windows/linux
 //{{{  includes
 #ifdef _WIN32
   #define _CRT_SECURE_NO_WARNINGS
@@ -321,7 +321,7 @@ int main (int numArgs, char* args[]) {
   cLog::init (logLevel);
   cLog::log (LOGNOTICE, "openGL hls " + channelName  + " " + dec (audBitrate) + " " + dec (vidBitrate));
 
- cLoader::eFlags loaderFlags = cLoader::eFlags(cLoader::eQueueAudio | cLoader::eQueueVideo);
+  cLoader::eFlags loaderFlags = cLoader::eFlags(cLoader::eQueueAudio | cLoader::eQueueVideo);
   if (forceFFmpeg)
     loaderFlags = cLoader::eFlags(loaderFlags | cLoader::eFFmpeg);
 
