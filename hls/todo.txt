@@ -1,8 +1,5 @@
 videoDecode
 
-aacDecoder
-- is CLZ broken on x64 linux
-
 loaderPlayer
 
 song
@@ -21,6 +18,9 @@ resources
 
 widgets
 - why doesn't latest stb_image load bmp correctly
+
+window
+- minimise gives texture error atlas
 
 linux
 - x64 mfx
