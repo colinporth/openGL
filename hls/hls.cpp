@@ -243,7 +243,8 @@ protected:
         //{{{
         case GLFW_KEY_G: // toggleShowGraphics
           mLoader.toggleShowGraphics();
-          mChannels->setVisible (mLoader.getShowGraphics());
+          if (mChannels)
+            mChannels->setVisible (mLoader.getShowGraphics());
           break;
         //}}}
         //{{{
