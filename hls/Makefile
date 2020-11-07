@@ -7,8 +7,6 @@ SRCS      = hls.cpp \
 	    ../../shared/utils/cVideoPool.cpp \
 	    ../../shared/decoders/cAudioParser.cpp \
 	    ../../shared/decoders/cFFmpegAudioDecoder.cpp \
-	    ../../shared/decoders/cAacDecoder.cpp \
-	    ../../shared/decoders/cMp3Decoder.cpp \
 	    ../../shared/kissFft/kiss_fft.c \
 	    ../../shared/kissFft/kiss_fftr.c \
 	    ../../shared/net/cHttp.cpp \
