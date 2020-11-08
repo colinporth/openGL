@@ -127,7 +127,7 @@ public:
     else
       thread ([=](){ mDvb->readThread (fileName); } ).detach();
 
-    if (gui) 
+    if (gui)
       cGlWindow::run (true);
     else
       while (true)
@@ -194,50 +194,50 @@ int main (int numArgs, char* args[]) {
 
   CoInitializeEx (NULL, COINIT_MULTITHREADED);
   cLog::init();
-
+  //{{{  args to strings
   vector <string> argStrings;
   for (int i = 1; i < numArgs; i++)
     argStrings.push_back (args[i]);
+  //}}}
 
-  // really dumb option parser
+  // options
   bool all = false;
-  bool decodeSubtitle = true;
+  bool decodeSubtitle = false;
   bool gui = false;
   bool moreLogInfo = false;
   sMultiplex multiplex = kHdMultiplex;
   string fileName;
-
+  //{{{  option parser
   for (size_t i = 0; i < argStrings.size(); i++) {
-    //{{{  look for named multiplex
+    // look for named multiplex
     bool multiplexFound = false;
-
     for (size_t j = 0; j < kMultiplexes.mMultiplexes.size() && !multiplexFound; j++) {
       if (argStrings[i] == kMultiplexes.mMultiplexes[j].mName) {
         multiplex = kMultiplexes.mMultiplexes[j];
         multiplexFound = true;
         }
       }
-
     if (multiplexFound)
       continue;
-    //}}}
+
     if (argStrings[i] == "all") all = true;
     else if (argStrings[i] == "g") gui = true;
     else if (argStrings[i] == "l") moreLogInfo = true;
-    else if (argStrings[i] == "d") decodeSubtitle = false;
+    else if (argStrings[i] == "d") decodeSubtitle = true;
+
     else if (argStrings[i] == "f") {
-      //{{{  multiplex frequency all channels
+      //  multiplex frequency all channels
       multiplex = kAllMultiplex;
       multiplex.mFrequency = stoi (argStrings[i++]);
       }
-      //}}}
+
     else if (!argStrings[i].empty()) {
-      //{{{  fileName
+      // fileName
       multiplex.mFrequency = 0;
       fileName = argStrings[i];
       }
-      //}}}
     }
+  //}}}
 
   cLog::log (LOGNOTICE, "tv - moreLog:" + dec(moreLogInfo) + " freq:" + dec(multiplex.mFrequency));
   if (moreLogInfo)

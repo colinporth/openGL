@@ -1,4 +1,4 @@
-TARGET    = app
+TARGET    = tvApp
 SRCS      = tv.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/glad/glad.c \
