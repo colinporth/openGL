@@ -85,12 +85,12 @@ struct sMultiplexes {
 const sMultiplexes kMultiplexes = { { kHdMultiplex, kItvMultiplex, kBbcMultiplex } };
 //}}}
 
+// cAppWindow
 class cAppWindow : public cGlWindow {
 public:
   cAppWindow() {}
   //{{{
-  void run (const string& title, int width, int height,
-            bool headless, bool moreLogInfo, bool all, bool decodeSubtitle,
+  void run (const string& title, int width, int height, bool gui, bool moreLogInfo, bool all, bool decodeSubtitle,
             sMultiplex multiplex, const string& fileName) {
 
     mMoreLogInfo = moreLogInfo;
@@ -103,9 +103,9 @@ public:
 
     auto mDvb = new cDvb (multiplex.mFrequency, kRootName,
                           multiplex.mSelectedChannels, multiplex.mSaveNames,
-                          !headless && decodeSubtitle);
+                          gui && decodeSubtitle);
 
-   if (!headless) {
+   if (gui) {
       initialise (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
       add (new cTextBox (mDvb->mErrorStr, 15.f));
       add (new cTextBox (mDvb->mTuneStr, 12.f));
@@ -122,24 +122,22 @@ public:
         captureThread.detach();
       #endif
 
-      thread ([=]() { mDvb->grabThread (all ? kRootName : "", multiplex.mName); } ).detach();
+      thread ([=](){ mDvb->grabThread (all ? kRootName : "", multiplex.mName); } ).detach();
       }
     else
-      thread ([=]() { mDvb->readThread (fileName); } ).detach();
+      thread ([=](){ mDvb->readThread (fileName); } ).detach();
 
-    if (headless) {
+    if (gui) 
+      cGlWindow::run (true);
+    else
       while (true)
         this_thread::sleep_for (1s);
-      }
-    else 
-      cGlWindow::run (true);
 
     delete mDvb;
 
     cLog::log (LOGINFO, "run exit");
     }
   //}}}
-
 protected:
   //{{{
   void onKey (int key, int scancode, int action, int mods) {
@@ -187,11 +185,11 @@ protected:
     }
   //}}}
   void onChar (char ch, int mods) {}
-
 private:
   bool mMoreLogInfo = false;
   };
 
+// main
 int main (int numArgs, char* args[]) {
 
   CoInitializeEx (NULL, COINIT_MULTITHREADED);
@@ -204,7 +202,7 @@ int main (int numArgs, char* args[]) {
   // really dumb option parser
   bool all = false;
   bool decodeSubtitle = true;
-  bool headless = false;
+  bool gui = false;
   bool moreLogInfo = false;
   sMultiplex multiplex = kHdMultiplex;
   string fileName;
@@ -224,7 +222,7 @@ int main (int numArgs, char* args[]) {
       continue;
     //}}}
     if (argStrings[i] == "all") all = true;
-    else if (argStrings[i] == "h") headless = true;
+    else if (argStrings[i] == "g") gui = true;
     else if (argStrings[i] == "l") moreLogInfo = true;
     else if (argStrings[i] == "d") decodeSubtitle = false;
     else if (argStrings[i] == "f") {
@@ -246,7 +244,7 @@ int main (int numArgs, char* args[]) {
     cLog::setLogLevel (LOGINFO3);
 
   cAppWindow appWindow;
-  appWindow.run ("tv", 790, YSIZE, headless, moreLogInfo, all, decodeSubtitle, multiplex, fileName);
+  appWindow.run ("tv", 790, YSIZE, gui, moreLogInfo, all, decodeSubtitle, multiplex, fileName);
 
   return 0;
   }

@@ -57,17 +57,11 @@ using namespace chrono;
 class cAppWindow : public cGlWindow {
 public:
   //{{{
-  void run (const string& title, int width, int height, bool headless, cLoader::eFlags loaderFlags,
+  void run (const string& title, int width, int height, bool gui, cLoader::eFlags loaderFlags,
             bool radio, const string& channelName, int audBitrate, int vidBitrate,
             const vector <string>& argStrings)  {
 
-    if (headless) {
-      mLoader.hls (true, "bbc_radio_fourfm", 128000, 0, loaderFlags);
-      while (true)
-        this_thread::sleep_for (200ms);
-      }
-
-    else {
+    if (gui) {
       // start gui
       cGlWindow::initialise (title, width, height, (uint8_t*)droidSansMono, sizeof(droidSansMono));
       addTopLeft (new cLoaderWidget (&mLoader, this, cPointF()));
@@ -107,6 +101,12 @@ public:
           mLoader.hls (false, "bbc_one_south_west", 128000,1604032, loaderFlags); } ));
         }
       cGlWindow::run (false);
+      }
+
+    else {
+      mLoader.hls (true, "bbc_radio_fourfm", 128000, 0, loaderFlags);
+      while (true)
+        this_thread::sleep_for (200ms);
       }
 
     cLog::log (LOGINFO, "run exit");
@@ -283,7 +283,7 @@ int main (int numArgs, char* args[]) {
 
   bool forceFFmpeg = true;
   //{{{  default params
-  bool headless = false;
+  bool gui = true;
   eLogLevel logLevel = LOGINFO;
 
   int radio = false;
@@ -293,7 +293,7 @@ int main (int numArgs, char* args[]) {
   //}}}
   for (size_t i = 0; i < argStrings.size(); i++) {
     //{{{  parse params
-    if (argStrings[i] == "h") headless = true;
+    if (argStrings[i] == "h") gui = false;
     else if (argStrings[i] == "ff") forceFFmpeg = true;
     else if (argStrings[i] == "mfx") forceFFmpeg = false;
     else if (argStrings[i] == "l1") logLevel = LOGINFO1;
@@ -337,7 +337,7 @@ int main (int numArgs, char* args[]) {
     loaderFlags = cLoader::eFlags(loaderFlags | cLoader::eFFmpeg);
 
   cAppWindow appWindow;
-  appWindow.run ("hls", 800, 450, headless, loaderFlags,
+  appWindow.run ("hls", 800, 450, gui, loaderFlags,
                  radio, channelName, audBitrate, vidBitrate,
                  argStrings);
   return 0;
