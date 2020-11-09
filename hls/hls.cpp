@@ -140,26 +140,14 @@ protected:
 
         //{{{
         case GLFW_KEY_HOME:      // skip beginning
-
-          //mLoader.getSong()->setPlayFrame (
-          //  mLoader.getSong()->getSelect().empty() ?
-          //    mLoader.getSong()->getFirstFrame() :
-          //    mLoader.getSong()->getSelect().getFirstFrame());
-
+          mLoader.getSong()->setPlayFirstFrame();
           mLoader.skipped();
-
           break;
         //}}}
         //{{{
         case GLFW_KEY_END:       // skip end
-
-          //mLoader.getSong()->setPlayFrame (
-          //  mLoader.getSong()->getSelect().empty() ?
-          //    mLoader.getSong()->getLastFrame() :
-          //    mLoader.getSong()->getSelect().getLastFrame());
-
+          mLoader.getSong()->setPlayLastFrame();
           mLoader.skipped();
-
           break;
         //}}}
         //{{{
