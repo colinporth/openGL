@@ -141,10 +141,10 @@ protected:
         //{{{
         case GLFW_KEY_HOME:      // skip beginning
 
-          mLoader.getSong()->setPlayFrame (
-            mLoader.getSong()->getSelect().empty() ?
-              mLoader.getSong()->getFirstFrame() :
-              mLoader.getSong()->getSelect().getFirstFrame());
+          //mLoader.getSong()->setPlayFrame (
+          //  mLoader.getSong()->getSelect().empty() ?
+          //    mLoader.getSong()->getFirstFrame() :
+          //    mLoader.getSong()->getSelect().getFirstFrame());
 
           mLoader.skipped();
 
@@ -153,10 +153,10 @@ protected:
         //{{{
         case GLFW_KEY_END:       // skip end
 
-          mLoader.getSong()->setPlayFrame (
-            mLoader.getSong()->getSelect().empty() ?
-              mLoader.getSong()->getLastFrame() :
-              mLoader.getSong()->getSelect().getLastFrame());
+          //mLoader.getSong()->setPlayFrame (
+          //  mLoader.getSong()->getSelect().empty() ?
+          //    mLoader.getSong()->getLastFrame() :
+          //    mLoader.getSong()->getSelect().getLastFrame());
 
           mLoader.skipped();
 
@@ -193,7 +193,7 @@ protected:
 
         //{{{
         case GLFW_KEY_M: // mark
-          mLoader.getSong()->getSelect().addMark (mLoader.getSong()->getPlayFrame());
+          mLoader.getSong()->getSelect().addMark (mLoader.getSong()->getPlayPts());
           //changed();
           break;
         //}}}

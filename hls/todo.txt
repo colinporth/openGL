@@ -22,4 +22,5 @@ linux
 videoPool
 
 loaderPlayer
-
+- file id3 tag skipping broken
+- jpeg broken
