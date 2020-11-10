@@ -269,7 +269,7 @@ int main (int numArgs, char* args[]) {
     argStrings.push_back (args[i]);
   //}}}
 
-  bool forceFFmpeg = true;
+  bool ffmpeg = true;
   //{{{  default params
   bool gui = true;
   eLogLevel logLevel = LOGINFO;
@@ -282,8 +282,8 @@ int main (int numArgs, char* args[]) {
   for (size_t i = 0; i < argStrings.size(); i++) {
     //{{{  parse params
     if (argStrings[i] == "h") gui = false;
-    else if (argStrings[i] == "ff") forceFFmpeg = true;
-    else if (argStrings[i] == "mfx") forceFFmpeg = false;
+    else if (argStrings[i] == "ff") ffmpeg = true;
+    else if (argStrings[i] == "mfx") ffmpeg = false;
     else if (argStrings[i] == "l1") logLevel = LOGINFO1;
     else if (argStrings[i] == "l2") logLevel = LOGINFO2;
     else if (argStrings[i] == "l3") logLevel = LOGINFO3;
@@ -310,10 +310,10 @@ int main (int numArgs, char* args[]) {
     else if (argStrings[i] == "v3") vidBitrate = 2812032;
     else if (argStrings[i] == "v4") vidBitrate = 5070016;
 
-    else if (argStrings[i] == "48k") audBitrate = 48000;
-    else if (argStrings[i] == "96k") audBitrate = 96000;
-    else if (argStrings[i] == "128k") audBitrate = 128000;
-    else if (argStrings[i] == "320k") audBitrate = 320000;
+    else if (argStrings[i] == "a48") audBitrate = 48000;
+    else if (argStrings[i] == "a96") audBitrate = 96000;
+    else if (argStrings[i] == "a128") audBitrate = 128000;
+    else if (argStrings[i] == "a320") audBitrate = 320000;
     }
     //}}}
 
@@ -321,7 +321,7 @@ int main (int numArgs, char* args[]) {
   cLog::log (LOGNOTICE, "openGL hls " + channelName  + " " + dec (audBitrate) + " " + dec (vidBitrate));
 
   cLoader::eFlags loaderFlags = cLoader::eFlags(cLoader::eQueueAudio | cLoader::eQueueVideo);
-  if (forceFFmpeg)
+  if (ffmpeg)
     loaderFlags = cLoader::eFlags(loaderFlags | cLoader::eFFmpeg);
 
   cAppWindow appWindow;
