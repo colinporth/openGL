@@ -269,13 +269,15 @@ int main (int numArgs, char* args[]) {
     argStrings.push_back (args[i]);
   //}}}
 
-  bool ffmpeg = true;
   //{{{  default params
+  bool ffmpeg = true;
   bool gui = true;
+
   eLogLevel logLevel = LOGINFO;
 
   int radio = false;
   string channelName;
+
   int audBitrate = 128000;
   int vidBitrate = 827008;
   //}}}
