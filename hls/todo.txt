@@ -2,6 +2,7 @@ song
 - use windows cSongBox widget
 
 hls
+- glfw drag and drop
 - chunk align back forward
 - fix channel change crash, tv to tv
 - maximise box full screen and back again   flashing
