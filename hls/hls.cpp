@@ -57,54 +57,47 @@ using namespace chrono;
 class cAppWindow : public cGlWindow {
 public:
   //{{{
-  void run (const string& title, int width, int height, bool gui, cLoader::eFlags loaderFlags,
-            bool radio, const string& channelName, int audBitrate, int vidBitrate,
-            const vector <string>& argStrings)  {
+  void run (const string& title, int width, int height, bool gui, const vector <string>& argStrings)  {
 
     if (gui) {
       // start gui
       cGlWindow::initialise (title, width, height, (uint8_t*)droidSansMono, sizeof(droidSansMono));
+
       addTopLeft (new cLoaderWidget (&mLoader, this, cPointF()));
 
-      if (!channelName.empty())
-        // use cmdline channelName,bitrates,loaderFlags
-        mLoader.hls (radio, channelName, audBitrate, vidBitrate, loaderFlags);
-      else if (!argStrings.empty())
-        // use argStrings as fileList
-        mLoader.file (argStrings[0], loaderFlags);
-      else {
-        mChannels = new cContainer (0.f, 2.5f);
-        addTopLeft (mChannels);
+      mIcons = new cContainer (0.f, 2.5f);
+      addTopLeft (mIcons);
 
-        // add channel gui
-        mChannels->addTopLeft (new cImageWidget(r1, sizeof(r1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          mLoader.hls (true, "bbc_radio_one", 128000,0, loaderFlags); } ));
-        mChannels->add (new cImageWidget(r2, sizeof(r2), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          mLoader.hls (true, "bbc_radio_two", 128000,0, loaderFlags); } ));
-        mChannels->add (new cImageWidget(r3, sizeof(r3), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          mLoader.hls (true, "bbc_radio_three", 320000,0, loaderFlags); } ));
-        mChannels->add (new cImageWidget(r4, sizeof(r4), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          mLoader.hls (true, "bbc_radio_fourfm", 128000,0, loaderFlags); } ));
-        mChannels->add (new cImageWidget(r5, sizeof(r5), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          mLoader.hls (true, "bbc_radio_five_live", 128000,0, loaderFlags); } ));
-        mChannels->add (new cImageWidget(r6, sizeof(r6), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          mLoader.hls (true, "bbc_6music", 128000,0, loaderFlags); } ));
-        mChannels->add (new cImageWidget(bbc1, sizeof(bbc1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          mLoader.hls (false, "bbc_one_hd", 128000,1604032, loaderFlags); } ));
-        mChannels->add (new cImageWidget(bbc2, sizeof(bbc2), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          mLoader.hls (false, "bbc_two_hd", 128000,1604032, loaderFlags); } ));
-        mChannels->add (new cImageWidget(bbc4, sizeof(bbc4), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          mLoader.hls (false, "bbc_four_hd", 128000,1604032, loaderFlags); } ));
-        mChannels->add (new cImageWidget(bbcnews, sizeof(bbcnews), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          mLoader.hls (false, "bbc_news_channel_hd", 128000,1604032, loaderFlags); } ));
-        mChannels->add (new cImageWidget(bbc1, sizeof(bbc1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-          mLoader.hls (false, "bbc_one_south_west", 128000,1604032, loaderFlags); } ));
-        }
+      // add channel gui
+      mIcons->addTopLeft (new cImageWidget(r1, sizeof(r1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
+        mLoader.load ({"bbc_radio_one", "a128"}); } ));
+      mIcons->add (new cImageWidget(r2, sizeof(r2), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
+        mLoader.load({"bbc_radio_two", "a128"}); } ));
+      mIcons->add (new cImageWidget(r3, sizeof(r3), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
+        mLoader.load({"bbc_radio_three", "a320"}); } ));
+      mIcons->add (new cImageWidget(r4, sizeof(r4), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
+        mLoader.load({"bbc_radio_fourfm", "a64"}); } ));
+      mIcons->add (new cImageWidget(r5, sizeof(r5), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
+        mLoader.load({"bbc_radio_five_live", "a128"}); } ));
+      mIcons->add (new cImageWidget(r6, sizeof(r6), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
+        mLoader.load({"bbc_6music", "a128"}); } ));
+      mIcons->add (new cImageWidget(bbc1, sizeof(bbc1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
+        mLoader.load({"bbc_one_hd", "a128"}); } ));
+      mIcons->add (new cImageWidget(bbc2, sizeof(bbc2), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
+        mLoader.load({"bbc_two_hd", "a128"}); } ));
+      mIcons->add (new cImageWidget(bbc4, sizeof(bbc4), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
+        mLoader.load({"bbc_four_hd", "a128"}); } ));
+      mIcons->add (new cImageWidget(bbcnews, sizeof(bbcnews), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
+        mLoader.load({"bbc_news_channel_hd", "a128"}); } ));
+      mIcons->add (new cImageWidget(bbc1, sizeof(bbc1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
+        mLoader.load({"bbc_one_south_west", "a128"}); } ));
+
+      mLoader.load (argStrings);
       cGlWindow::run (false);
       }
 
     else {
-      mLoader.hls (true, "bbc_radio_fourfm", 128000, 0, loaderFlags);
+      mLoader.load ({"bbc_radio_fourfm", "a128"});
       while (true)
         this_thread::sleep_for (200ms);
       }
@@ -128,7 +121,7 @@ protected:
 
         //{{{
         case GLFW_KEY_SPACE:     // pause
-          mLoader.getSongPlayer()->togglePlaying();
+          mLoader.getSong()->togglePlaying();
           break;
         //}}}
         //{{{
@@ -231,8 +224,8 @@ protected:
         //{{{
         case GLFW_KEY_G: // toggleShowGraphics
           mLoader.toggleShowGraphics();
-          if (mChannels)
-            mChannels->setVisible (mLoader.getShowGraphics());
+          if (mIcons)
+            mIcons->setVisible (mLoader.getShowGraphics());
           break;
         //}}}
         //{{{
@@ -258,7 +251,7 @@ protected:
   //}}}
 private:
   cLoader mLoader;
-  cContainer* mChannels = nullptr;
+  cContainer* mIcons = nullptr;
   };
 
 // main
@@ -269,66 +262,22 @@ int main (int numArgs, char* args[]) {
     argStrings.push_back (args[i]);
   //}}}
 
-  //{{{  default params
-  bool ffmpeg = true;
+  // default params
   bool gui = true;
-
   eLogLevel logLevel = LOGINFO;
-
-  int radio = false;
-  string channelName;
-
-  int audBitrate = 128000;
-  int vidBitrate = 827008;
-  //}}}
   for (size_t i = 0; i < argStrings.size(); i++) {
     //{{{  parse params
     if (argStrings[i] == "h") gui = false;
-    else if (argStrings[i] == "ff") ffmpeg = true;
-    else if (argStrings[i] == "mfx") ffmpeg = false;
     else if (argStrings[i] == "l1") logLevel = LOGINFO1;
     else if (argStrings[i] == "l2") logLevel = LOGINFO2;
     else if (argStrings[i] == "l3") logLevel = LOGINFO3;
-
-    else if (argStrings[i] == "bbc1") channelName = "bbc_one_hd";
-    else if (argStrings[i] == "bbc2") channelName = "bbc_two_hd";
-    else if (argStrings[i] == "bbc4") channelName = "bbc_four_hd";
-    else if (argStrings[i] == "news") channelName = "bbc_news_channel_hd";
-    else if (argStrings[i] == "scot") channelName = "bbc_one_scotland_hd";
-    else if (argStrings[i] == "s4c") channelName = "s4cpbs";
-    else if (argStrings[i] == "sw") channelName = "bbc_one_south_west";
-    else if (argStrings[i] == "parl") channelName = "bbc_parliament";
-
-    else if (argStrings[i] == "r1") { channelName = "bbc_radio_one"; radio = true; vidBitrate = 0; }
-    else if (argStrings[i] == "r2") { channelName = "bbc_radio_two"; radio = true; vidBitrate = 0; }
-    else if (argStrings[i] == "r3") { channelName = "bbc_radio_three"; radio = true; vidBitrate = 0; }
-    else if (argStrings[i] == "r4") { channelName = "bbc_radio_fourfm"; radio = true; vidBitrate = 0; }
-    else if (argStrings[i] == "r5") { channelName = "bbc_radio_five_live"; radio = true; vidBitrate = 0; }
-    else if (argStrings[i] == "r6") { channelName = "bbc_6music"; radio = true; vidBitrate = 0; }
-
-    else if (argStrings[i] == "v0") vidBitrate = 0;
-    else if (argStrings[i] == "v1") vidBitrate = 827008;
-    else if (argStrings[i] == "v2") vidBitrate = 1604032;
-    else if (argStrings[i] == "v3") vidBitrate = 2812032;
-    else if (argStrings[i] == "v4") vidBitrate = 5070016;
-
-    else if (argStrings[i] == "a48") audBitrate = 48000;
-    else if (argStrings[i] == "a96") audBitrate = 96000;
-    else if (argStrings[i] == "a128") audBitrate = 128000;
-    else if (argStrings[i] == "a320") audBitrate = 320000;
     }
     //}}}
 
   cLog::init (logLevel);
-  cLog::log (LOGNOTICE, "openGL hls " + channelName  + " " + dec (audBitrate) + " " + dec (vidBitrate));
-
-  cLoader::eFlags loaderFlags = cLoader::eFlags(cLoader::eQueueAudio | cLoader::eQueueVideo);
-  if (ffmpeg)
-    loaderFlags = cLoader::eFlags(loaderFlags | cLoader::eFFmpeg);
+  cLog::log (LOGNOTICE, "openGL hls");
 
   cAppWindow appWindow;
-  appWindow.run ("hls", 800, 450, gui, loaderFlags,
-                 radio, channelName, audBitrate, vidBitrate,
-                 argStrings);
+  appWindow.run ("hls", 800, 450, gui, argStrings);
   return 0;
   }
