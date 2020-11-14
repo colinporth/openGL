@@ -52,52 +52,67 @@
 using namespace std;
 using namespace chrono;
 //}}}
+//{{{  const
+static const vector<string> kRadio1 = {"r1", "a128"};
+static const vector<string> kRadio2 = {"r2", "a128"};
+static const vector<string> kRadio3 = {"r3", "a320"};
+static const vector<string> kRadio4 = {"r4", "a64"};
+static const vector<string> kRadio5 = {"r5", "a128"};
+static const vector<string> kRadio6 = {"r6", "a128"};
+
+static const vector<string> kBbc1   = {"bbc1", "a128"};
+static const vector<string> kBbc2   = {"bbc2", "a128"};
+static const vector<string> kBbc4   = {"bbc4", "a128"};
+static const vector<string> kNews   = {"news", "a128"};
+static const vector<string> kBbcSw  = {"sw", "a128"};
+//}}}
 
 // cAppWindow
 class cAppWindow : public cGlWindow {
 public:
   //{{{
-  void run (const string& title, int width, int height, bool gui, const vector <string>& argStrings)  {
+  void run (const string& title, int width, int height, bool gui, const vector <string>& strings)  {
 
     if (gui) {
-      // start gui
       cGlWindow::initialise (title, width, height, (uint8_t*)droidSansMono, sizeof(droidSansMono));
 
       addTopLeft (new cLoaderWidget (&mLoader, this, cPointF()));
 
+      // add channel icons
       mIcons = new cContainer (0.f, 2.5f);
       addTopLeft (mIcons);
 
-      // add channel gui
       mIcons->addTopLeft (new cImageWidget(r1, sizeof(r1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-        mLoader.load ({"bbc_radio_one", "a128"}); } ));
+        mLoader.load (kRadio1); } ));
       mIcons->add (new cImageWidget(r2, sizeof(r2), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-        mLoader.load({"bbc_radio_two", "a128"}); } ));
+        mLoader.load (kRadio2); } ));
       mIcons->add (new cImageWidget(r3, sizeof(r3), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-        mLoader.load({"bbc_radio_three", "a320"}); } ));
+        mLoader.load (kRadio3); } ));
       mIcons->add (new cImageWidget(r4, sizeof(r4), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-        mLoader.load({"bbc_radio_fourfm", "a64"}); } ));
+        mLoader.load (kRadio4); } ));
       mIcons->add (new cImageWidget(r5, sizeof(r5), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-        mLoader.load({"bbc_radio_five_live", "a128"}); } ));
+        mLoader.load (kRadio5); } ));
       mIcons->add (new cImageWidget(r6, sizeof(r6), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-        mLoader.load({"bbc_6music", "a128"}); } ));
-      mIcons->add (new cImageWidget(bbc1, sizeof(bbc1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-        mLoader.load({"bbc_one_hd", "a128"}); } ));
-      mIcons->add (new cImageWidget(bbc2, sizeof(bbc2), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-        mLoader.load({"bbc_two_hd", "a128"}); } ));
-      mIcons->add (new cImageWidget(bbc4, sizeof(bbc4), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-        mLoader.load({"bbc_four_hd", "a128"}); } ));
-      mIcons->add (new cImageWidget(bbcnews, sizeof(bbcnews), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-        mLoader.load({"bbc_news_channel_hd", "a128"}); } ));
-      mIcons->add (new cImageWidget(bbc1, sizeof(bbc1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
-        mLoader.load({"bbc_one_south_west", "a128"}); } ));
+        mLoader.load (kRadio6); } ));
 
-      mLoader.load (argStrings);
+      mIcons->add (new cImageWidget(bbc1, sizeof(bbc1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
+        mLoader.load (kBbc1); } ));
+      mIcons->add (new cImageWidget(bbc2, sizeof(bbc2), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
+        mLoader.load (kBbc2); } ));
+      mIcons->add (new cImageWidget(bbc4, sizeof(bbc4), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
+        mLoader.load (kBbc4); } ));
+      mIcons->add (new cImageWidget(bbcnews, sizeof(bbcnews), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
+        mLoader.load (kNews); } ));
+      mIcons->add (new cImageWidget(bbc1, sizeof(bbc1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
+        mLoader.load (kBbcSw); } ));
+
+      mLoader.load (strings);
       cGlWindow::run (false);
       }
 
     else {
-      mLoader.load ({"bbc_radio_fourfm", "a128"});
+      // no gui
+      mLoader.load (strings.empty() ? kRadio4 : strings);
       while (true)
         this_thread::sleep_for (200ms);
       }
@@ -112,69 +127,45 @@ protected:
 
     if ((action == GLFW_PRESS) || (action == GLFW_REPEAT)) {
       switch (key) {
-        case GLFW_KEY_1:
-        case GLFW_KEY_2:
-        case GLFW_KEY_3:
-        case GLFW_KEY_4:
-        case GLFW_KEY_5:
-        case GLFW_KEY_6: break;
-
         //{{{
-        case GLFW_KEY_SPACE:     // pause
+        case GLFW_KEY_SPACE: // toggle play/pause
           mLoader.getSong()->togglePlaying();
           break;
         //}}}
         //{{{
-        case GLFW_KEY_DELETE:    // delete select
-          mLoader.getSong()->getSelect().clearAll();
-          //changed();
-          break;
-        //}}}
-
-        //{{{
-        case GLFW_KEY_HOME:      // skip beginning
+        case GLFW_KEY_HOME:  // skip beginning
           mLoader.getSong()->setPlayFirstFrame();
           mLoader.skipped();
           break;
         //}}}
         //{{{
-        case GLFW_KEY_END:       // skip end
+        case GLFW_KEY_END:   // skip end
           mLoader.getSong()->setPlayLastFrame();
           mLoader.skipped();
           break;
         //}}}
         //{{{
-        case GLFW_KEY_PAGE_UP:   // nothing
-          break;
-        //}}}
-        //{{{
-        case GLFW_KEY_PAGE_DOWN: // nothing
-          break;
-        //}}}
-        //{{{
-        case GLFW_KEY_LEFT:      // skip back
+        case GLFW_KEY_LEFT:  // skip back
           mLoader.getSong()->incPlaySec (-(mods == GLFW_MOD_SHIFT ? 300 : mods == GLFW_MOD_CONTROL ? 10 : 1), false);
           mLoader.skipped();
           break;
         //}}}
         //{{{
-        case GLFW_KEY_RIGHT:     // skip forward
+        case GLFW_KEY_RIGHT: // skip forward
           mLoader.getSong()->incPlaySec ((mods == GLFW_MOD_SHIFT ? 300 : mods == GLFW_MOD_CONTROL ? 10 : 1), false);
           mLoader.skipped();
           break;
         //}}}
-        //{{{
-        case GLFW_KEY_DOWN:      // nothing
-          break;
-        //}}}
-        //{{{
-        case GLFW_KEY_UP:        // nothing
-          break;
-        //}}}
 
         //{{{
-        case GLFW_KEY_M: // mark
+        case GLFW_KEY_M:      // mark select
           mLoader.getSong()->getSelect().addMark (mLoader.getSong()->getPlayPts());
+          //changed();
+          break;
+        //}}}
+        //{{{
+        case GLFW_KEY_DELETE: // delete select
+          mLoader.getSong()->getSelect().clearAll();
           //changed();
           break;
         //}}}
@@ -199,7 +190,6 @@ protected:
           toggleTests();
           break;
         //}}}
-
         //{{{
         case GLFW_KEY_I: // toggle solid
           toggleSolid();
@@ -229,21 +219,34 @@ protected:
           break;
         //}}}
         //{{{
-        case GLFW_KEY_L: // cycle logLevel
-          cLog::cycleLogLevel();
-          break;
-        //}}}
-        //{{{
         case GLFW_KEY_F: // toggle fullScreen
           toggleFullScreen();
           break;
         //}}}
+        //{{{
+        case GLFW_KEY_L: // cycle logLevel
+          cLog::cycleLogLevel();
+          break;
+        //}}}
+
         //{{{
         case GLFW_KEY_ESCAPE: // exit
           mLoader.stopAndWait();
           glfwSetWindowShouldClose (mWindow, GL_TRUE);
           break;
         //}}}
+
+        case GLFW_KEY_DOWN:
+        case GLFW_KEY_UP:
+        case GLFW_KEY_PAGE_UP:
+        case GLFW_KEY_PAGE_DOWN:
+        case GLFW_KEY_1:
+        case GLFW_KEY_2:
+        case GLFW_KEY_3:
+        case GLFW_KEY_4:
+        case GLFW_KEY_5:
+        case GLFW_KEY_6: break;
+
         default: cLog::log (LOGNOTICE, "Keyboard %x", key); break;
         }
       }
@@ -257,20 +260,20 @@ private:
 // main
 int main (int numArgs, char* args[]) {
   //{{{  args to strings
-  vector <string> argStrings;
+  vector <string> strings;
   for (int i = 1; i < numArgs; i++)
-    argStrings.push_back (args[i]);
+    strings.push_back (args[i]);
   //}}}
 
   // default params
   bool gui = true;
   eLogLevel logLevel = LOGINFO;
-  for (size_t i = 0; i < argStrings.size(); i++) {
-    //{{{  parse params
-    if (argStrings[i] == "h") gui = false;
-    else if (argStrings[i] == "l1") logLevel = LOGINFO1;
-    else if (argStrings[i] == "l2") logLevel = LOGINFO2;
-    else if (argStrings[i] == "l3") logLevel = LOGINFO3;
+  for (auto it = strings.begin(); it < strings.end(); ++it) {
+    //{{{  parse for params
+    if (*it == "h") { gui = false; strings.erase (it); }
+    else if (*it == "l1") { logLevel = LOGINFO1; strings.erase (it); }
+    else if (*it == "l2") { logLevel = LOGINFO2; strings.erase (it); }
+    else if (*it == "l3") { logLevel = LOGINFO3; strings.erase (it); }
     }
     //}}}
 
@@ -278,6 +281,6 @@ int main (int numArgs, char* args[]) {
   cLog::log (LOGNOTICE, "openGL hls");
 
   cAppWindow appWindow;
-  appWindow.run ("hls", 800, 450, gui, argStrings);
+  appWindow.run ("hls", 800, 450, gui, strings);
   return 0;
   }
