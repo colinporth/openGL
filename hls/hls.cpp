@@ -127,6 +127,13 @@ protected:
 
     if ((action == GLFW_PRESS) || (action == GLFW_REPEAT)) {
       switch (key) {
+        case GLFW_KEY_1: mLoader.load (kRadio1); break;
+        case GLFW_KEY_2: mLoader.load (kRadio2); break;
+        case GLFW_KEY_3: mLoader.load (kRadio3); break;
+        case GLFW_KEY_4: mLoader.load (kRadio4); break;
+        case GLFW_KEY_5: mLoader.load (kRadio5); break;
+        case GLFW_KEY_6: mLoader.load (kRadio6); break;
+
         //{{{
         case GLFW_KEY_SPACE: // toggle play/pause
           mLoader.getSong()->togglePlaying();
@@ -240,12 +247,6 @@ protected:
         case GLFW_KEY_UP:
         case GLFW_KEY_PAGE_UP:
         case GLFW_KEY_PAGE_DOWN:
-        case GLFW_KEY_1:
-        case GLFW_KEY_2:
-        case GLFW_KEY_3:
-        case GLFW_KEY_4:
-        case GLFW_KEY_5:
-        case GLFW_KEY_6: break;
 
         default: cLog::log (LOGNOTICE, "Keyboard %x", key); break;
         }
