@@ -176,7 +176,7 @@ protected:
         //{{{
         case GLFW_KEY_ESCAPE: // exit
           mExit = true;
-          mLoader.stopAndWait();
+          mLoader.exit();
           glfwSetWindowShouldClose (mWindow, GL_TRUE);
           break;
         //}}}
