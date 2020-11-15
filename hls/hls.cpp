@@ -10,23 +10,14 @@
 // c++
 #include <cstdint>
 #include <string>
-#include <thread>
 #include <chrono>
+#include <thread>
 
 // utils
-#include "../../shared/date/date.h"
-#include "../../shared/utils/utils.h"
 #include "../../shared/utils/cLog.h"
-
-// audio container
-#include "../../shared/utils/cSong.h"
-
-// video pool
-#include "../../shared/utils/iVideoPool.h"
 
 // loader
 #include "../../shared/utils/cLoader.h"
-#include "../../shared/utils/cSongPlayer.h"
 
 // widgets
 #include "../../shared/vg/cGlWindow.h"
@@ -121,7 +112,7 @@ public:
       // run loader
       mLoader.load (strings.empty() ? kRadio4 : strings);
 
-      // no gui, probable don't get the exit keystroke
+      // no gui, probably don't get the exit keystroke
       while (!mExit)
         this_thread::sleep_for (200ms);
       }
