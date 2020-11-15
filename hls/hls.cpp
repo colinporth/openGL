@@ -76,7 +76,9 @@ public:
     if (gui) {
       cGlWindow::initialise (title, width, height, (uint8_t*)droidSansMono, sizeof(droidSansMono));
 
-      addTopLeft (new cLoaderWidget (&mLoader, this, cPointF()));
+      // main full screen widget
+      mLoaderWidget = new cLoaderWidget (&mLoader, this, cPointF());
+      addTopLeft (mLoaderWidget);
 
       // add channel icons
       mIcons = new cContainer (0.f, 2.5f);
@@ -134,110 +136,38 @@ protected:
         case GLFW_KEY_5: mLoader.load (kRadio5); break;
         case GLFW_KEY_6: mLoader.load (kRadio6); break;
 
-        //{{{
-        case GLFW_KEY_SPACE: // toggle play/pause
-          mLoader.getSong()->togglePlaying();
-          break;
-        //}}}
-        //{{{
-        case GLFW_KEY_HOME:  // skip beginning
-          mLoader.getSong()->setPlayFirstFrame();
-          mLoader.skipped();
-          break;
-        //}}}
-        //{{{
-        case GLFW_KEY_END:   // skip end
-          mLoader.getSong()->setPlayLastFrame();
-          mLoader.skipped();
-          break;
-        //}}}
-        //{{{
-        case GLFW_KEY_LEFT:  // skip back
-          mLoader.getSong()->incPlaySec (-(mods == GLFW_MOD_SHIFT ? 300 : mods == GLFW_MOD_CONTROL ? 10 : 1), false);
-          mLoader.skipped();
-          break;
-        //}}}
-        //{{{
-        case GLFW_KEY_RIGHT: // skip forward
-          mLoader.getSong()->incPlaySec ((mods == GLFW_MOD_SHIFT ? 300 : mods == GLFW_MOD_CONTROL ? 10 : 1), false);
-          mLoader.skipped();
-          break;
-        //}}}
+        // !!! return false is key not handled , we could push next icon ???
+        case GLFW_KEY_SPACE: mLoader.togglePlaying(); break;
+        case GLFW_KEY_HOME:  mLoader.skipBegin(); break;
+        case GLFW_KEY_END:   mLoader.skipEnd(); break;
+        case GLFW_KEY_LEFT:  mLoader.skipBack (mods == GLFW_MOD_SHIFT, mods == GLFW_MOD_CONTROL); break;
+        case GLFW_KEY_RIGHT: mLoader.skipForward (mods == GLFW_MOD_SHIFT, mods == GLFW_MOD_CONTROL); break;
+
+        case GLFW_KEY_M:      mLoader.getSong()->getSelect().addMark (mLoader.getSong()->getPlayPts()); break;
+        case GLFW_KEY_DELETE: mLoader.getSong()->getSelect().clearAll(); break;
+
+        case GLFW_KEY_V: toggleVsync(); break;
+        case GLFW_KEY_P: togglePerf(); break;
+        case GLFW_KEY_S: toggleStats(); break;
+        case GLFW_KEY_T: toggleTests(); break;
+        case GLFW_KEY_I: toggleSolid(); break;
+        case GLFW_KEY_A: toggleEdges(); break;
+        case GLFW_KEY_Q: setFringeWidth (getFringeWidth() - 0.25f); break;
+        case GLFW_KEY_W: setFringeWidth (getFringeWidth() + 0.25f); break;
+
+        case GLFW_KEY_F: toggleFullScreen(); break;
+        case GLFW_KEY_L: cLog::cycleLogLevel(); break;
 
         //{{{
-        case GLFW_KEY_M:      // mark select
-          mLoader.getSong()->getSelect().addMark (mLoader.getSong()->getPlayPts());
-          //changed();
-          break;
-        //}}}
-        //{{{
-        case GLFW_KEY_DELETE: // delete select
-          mLoader.getSong()->getSelect().clearAll();
-          //changed();
-          break;
-        //}}}
-
-        //{{{
-        case GLFW_KEY_V: // toggle vsync
-          toggleVsync();
-          break;
-        //}}}
-        //{{{
-        case GLFW_KEY_P: // toggle perf stats
-          togglePerf();
-          break;
-        //}}}
-        //{{{
-        case GLFW_KEY_S: // toggle vg stats
-          toggleStats();
-          break;
-        //}}}
-        //{{{
-        case GLFW_KEY_T: // toggle tests
-          toggleTests();
-          break;
-        //}}}
-        //{{{
-        case GLFW_KEY_I: // toggle solid
-          toggleSolid();
-          break;
-        //}}}
-        //{{{
-        case GLFW_KEY_A: // toggle edges
-          toggleEdges();
-          break;
-        //}}}
-        //{{{
-        case GLFW_KEY_Q: // less edge
-          setFringeWidth (getFringeWidth() - 0.25f);
-          break;
-        //}}}
-        //{{{
-        case GLFW_KEY_W: // more edge
-          setFringeWidth (getFringeWidth() + 0.25f);
-          break;
-        //}}}
-
-        //{{{
-        case GLFW_KEY_G: // toggleShowGraphics
-          mLoader.toggleShowGraphics();
+        case GLFW_KEY_G:
+          if (mLoaderWidget)
+            mLoaderWidget->toggleGraphics();
           if (mIcons)
-            mIcons->setVisible (mLoader.getShowGraphics());
+            mIcons->toggleVisible();
           break;
         //}}}
         //{{{
-        case GLFW_KEY_F: // toggle fullScreen
-          toggleFullScreen();
-          break;
-        //}}}
-        //{{{
-        case GLFW_KEY_L: // cycle logLevel
-          cLog::cycleLogLevel();
-          break;
-        //}}}
-
-        //{{{
-        case GLFW_KEY_ESCAPE: // exit
+        case GLFW_KEY_ESCAPE:
           mLoader.stopAndWait();
           glfwSetWindowShouldClose (mWindow, GL_TRUE);
           break;
@@ -255,6 +185,7 @@ protected:
   //}}}
 private:
   cLoader mLoader;
+  cLoaderWidget* mLoaderWidget = nullptr;
   cContainer* mIcons = nullptr;
   };
 
