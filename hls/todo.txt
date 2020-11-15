@@ -12,6 +12,9 @@ hls
 
 widgets
 - why doesn't latest stb_image load bmp correctly
+- add clock widget from boxes
+- add date widget from boxes
+- volume, peak widget from boxes
 
 window
 - minimise gives texture error atlas
@@ -19,6 +22,10 @@ window
 linux
 - x64 mfx
 - daylight saving
+
+audioDecoder
+- pass 5.1 through to player before crunching to stereo
+- mono ok?
 
 videoPool
 

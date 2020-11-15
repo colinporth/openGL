@@ -152,10 +152,7 @@ protected:
         case GLFW_KEY_A: toggleEdges(); break;
         case GLFW_KEY_Q: setFringeWidth (getFringeWidth() - 0.25f); break;
         case GLFW_KEY_W: setFringeWidth (getFringeWidth() + 0.25f); break;
-
         case GLFW_KEY_F: toggleFullScreen(); break;
-        case GLFW_KEY_L: cLog::cycleLogLevel(); break;
-
         //{{{
         case GLFW_KEY_G: // toggle selected graphics
           if (mLoaderWidget)
@@ -164,6 +161,8 @@ protected:
             mIcons->toggleVisible();
           break;
         //}}}
+
+        case GLFW_KEY_L: cLog::cycleLogLevel(); break;
         //{{{
         case GLFW_KEY_ESCAPE: // exit
           mExit = true;
