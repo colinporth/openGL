@@ -80,11 +80,12 @@ public:
       mLoaderWidget = new cLoaderWidget (&mLoader, this, cPointF());
       addTopLeft (mLoaderWidget);
 
-      // add channel icons
+      // add channel icons to mIcons container
       mIcons = new cContainer (0.f, 2.5f);
       addTopLeft (mIcons);
 
-      mIcons->addTopLeft (new cImageWidget(r1, sizeof(r1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
+      // radio
+      mIcons->add (new cImageWidget(r1, sizeof(r1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
         mLoader.load (kRadio1); } ));
       mIcons->add (new cImageWidget(r2, sizeof(r2), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
         mLoader.load (kRadio2); } ));
@@ -97,6 +98,7 @@ public:
       mIcons->add (new cImageWidget(r6, sizeof(r6), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
         mLoader.load (kRadio6); } ));
 
+      // tv
       mIcons->add (new cImageWidget(bbc1, sizeof(bbc1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
         mLoader.load (kBbc1); } ));
       mIcons->add (new cImageWidget(bbc2, sizeof(bbc2), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
@@ -108,14 +110,19 @@ public:
       mIcons->add (new cImageWidget(bbc1, sizeof(bbc1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
         mLoader.load (kBbcSw); } ));
 
+      // run loader
       mLoader.load (strings);
+
+      // run gui
       cGlWindow::run (false);
       }
 
     else {
-      // no gui
+      // run loader
       mLoader.load (strings.empty() ? kRadio4 : strings);
-      while (true)
+
+      // no gui, probable don't get the exit keystroke
+      while (!mExit)
         this_thread::sleep_for (200ms);
       }
 
@@ -159,7 +166,7 @@ protected:
         case GLFW_KEY_L: cLog::cycleLogLevel(); break;
 
         //{{{
-        case GLFW_KEY_G:
+        case GLFW_KEY_G: // toggle selected graphics
           if (mLoaderWidget)
             mLoaderWidget->toggleGraphics();
           if (mIcons)
@@ -167,7 +174,8 @@ protected:
           break;
         //}}}
         //{{{
-        case GLFW_KEY_ESCAPE:
+        case GLFW_KEY_ESCAPE: // exit
+          mExit = true;
           mLoader.stopAndWait();
           glfwSetWindowShouldClose (mWindow, GL_TRUE);
           break;
@@ -184,28 +192,33 @@ protected:
     }
   //}}}
 private:
+  //{{{  vars
   cLoader mLoader;
+
   cLoaderWidget* mLoaderWidget = nullptr;
   cContainer* mIcons = nullptr;
+
+  bool mExit = false;
+  //}}}
   };
 
 // main
 int main (int numArgs, char* args[]) {
   //{{{  args to strings
-  vector <string> strings;
+  vector <string> params;
   for (int i = 1; i < numArgs; i++)
-    strings.push_back (args[i]);
+    params.push_back (args[i]);
   //}}}
 
   // default params
   bool gui = true;
   eLogLevel logLevel = LOGINFO;
-  for (auto it = strings.begin(); it < strings.end(); ++it) {
+  for (auto it = params.begin(); it < params.end(); ++it) {
     //{{{  parse for params
-    if (*it == "h") { gui = false; strings.erase (it); }
-    else if (*it == "l1") { logLevel = LOGINFO1; strings.erase (it); }
-    else if (*it == "l2") { logLevel = LOGINFO2; strings.erase (it); }
-    else if (*it == "l3") { logLevel = LOGINFO3; strings.erase (it); }
+    if (*it == "h") { gui = false; params.erase (it); }
+    else if (*it == "l1") { logLevel = LOGINFO1; params.erase (it); }
+    else if (*it == "l2") { logLevel = LOGINFO2; params.erase (it); }
+    else if (*it == "l3") { logLevel = LOGINFO3; params.erase (it); }
     }
     //}}}
 
@@ -213,6 +226,6 @@ int main (int numArgs, char* args[]) {
   cLog::log (LOGNOTICE, "openGL hls");
 
   cAppWindow appWindow;
-  appWindow.run ("hls", 800, 450, gui, strings);
+  appWindow.run ("hls", 800, 450, gui, params);
   return 0;
   }
