@@ -219,7 +219,7 @@
     <ClInclude Include="..\..\shared\vg\cVg.h" />
     <ClInclude Include="..\..\shared\widgets\cContainer.h" />
     <ClInclude Include="..\..\shared\widgets\cImageWidget.h" />
-    <ClInclude Include="..\..\shared\widgets\cLoaderPlayerWidget.h" />
+    <ClInclude Include="..\..\shared\widgets\cLoaderWidget.h" />
     <ClInclude Include="..\..\shared\widgets\cRootContainer.h" />
     <ClInclude Include="..\..\shared\widgets\cSongWidget.h" />
     <ClInclude Include="..\..\shared\widgets\cTextBox.h" />

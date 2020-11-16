@@ -72,7 +72,7 @@ public:
       addTopLeft (mLoaderWidget);
 
       // add channel icons to mIcons container
-      mIcons = new cContainer (0.f, 2.5f);
+      mIcons = new cContainer (0.f, 2.5f, "iconsContainer");
       addTopLeft (mIcons);
 
       // radio

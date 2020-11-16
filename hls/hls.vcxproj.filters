@@ -84,9 +84,6 @@
     <ClInclude Include="..\..\shared\widgets\cContainer.h">
       <Filter>h\widgets</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\widgets\cLoaderPlayerWidget.h">
-      <Filter>h\widgets</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\widgets\cWidget.h">
       <Filter>h\widgets</Filter>
     </ClInclude>
@@ -158,6 +155,9 @@
     </ClInclude>
     <ClInclude Include="..\..\shared\utils\iVideoPool.h">
       <Filter>h\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cLoaderWidget.h">
+      <Filter>h\widgets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
