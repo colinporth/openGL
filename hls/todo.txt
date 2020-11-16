@@ -15,7 +15,6 @@ widgets
 - add clock widget from boxes
 - add date widget from boxes
 - volume, peak widget from boxes
-- toggle full screen (and back again to debug), mIcons size is full screen height, no 2.5
 
 window
 - minimise gives texture error atlas
