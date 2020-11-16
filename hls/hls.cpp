@@ -56,6 +56,8 @@ static const vector<string> kBbc2   = {"bbc2", "a128"};
 static const vector<string> kBbc4   = {"bbc4", "a128"};
 static const vector<string> kNews   = {"news", "a128"};
 static const vector<string> kBbcSw  = {"sw", "a128"};
+
+static const vector<string> kWqxr  = {"http://stream.wqxr.org/js-stream.aac"};
 //}}}
 
 // cAppWindow
@@ -100,6 +102,9 @@ public:
         mLoader.load (kNews); } ));
       mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
         mLoader.load (kBbcSw); } ));
+
+      mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), 2.5f,2.5f, [&](cImageWidget* widget) noexcept {
+        mLoader.load (kWqxr); } ));
 
       // run loader
       mLoader.load (strings);
