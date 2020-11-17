@@ -129,7 +129,7 @@ public:
         this_thread::sleep_for (1s);
       }
     else
-      cGlWindow::run (true);
+      runGui (true);
 
     delete mDvb;
 

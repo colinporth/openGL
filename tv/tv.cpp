@@ -127,7 +127,7 @@ public:
       thread ([=](){ mDvb->readThread (fileName); } ).detach();
 
     if (gui)
-      cGlWindow::run (true);
+      runGui (true);
     else
       while (true)
         this_thread::sleep_for (1s);
