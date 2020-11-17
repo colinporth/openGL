@@ -70,41 +70,39 @@ public:
       cGlWindow::initialise (title, width, height, (uint8_t*)droidSansMono, sizeof(droidSansMono));
 
       // main full screen widget
-      mLoaderWidget = new cLoaderWidget (&mLoader, this);
-      addTopLeft (mLoaderWidget);
+      mLoaderWidget = (cLoaderWidget*)addTopLeft (new cLoaderWidget (&mLoader, this));
 
       // add channel icons to mIcons container
-      mIcons = new cContainer (0.f, 2.5f, "iconsContainer");
-      addTopLeft (mIcons);
+      mIcons = (cContainer*)addTopLeft (new cContainer ("icons"));
 
       // radio
       constexpr float kIcon = 2.5f * cWidget::kBox;
-      mIcons->add (new cImageWidget (r1, sizeof(r1), kIcon,kIcon, [&](cImageWidget* widget) noexcept {
+      mIcons->add (new cImageWidget (r1, sizeof(r1), kIcon,kIcon, [&](cWidget* widget) noexcept {
         mLoader.load (kRadio1); }, "r1"));
-      mIcons->add (new cImageWidget (r2, sizeof(r2), kIcon,kIcon, [&](cImageWidget* widget) noexcept {
+      mIcons->add (new cImageWidget (r2, sizeof(r2), kIcon,kIcon, [&](cWidget* widget) noexcept {
         mLoader.load (kRadio2); }, "r2"));
-      mIcons->add (new cImageWidget (r3, sizeof(r3), kIcon,kIcon, [&](cImageWidget* widget) noexcept {
+      mIcons->add (new cImageWidget (r3, sizeof(r3), kIcon,kIcon, [&](cWidget* widget) noexcept {
         mLoader.load (kRadio3); }, "r3"));
-      mIcons->add (new cImageWidget (r4, sizeof(r4), kIcon,kIcon, [&](cImageWidget* widget) noexcept {
+      mIcons->add (new cImageWidget (r4, sizeof(r4), kIcon,kIcon, [&](cWidget* widget) noexcept {
         mLoader.load (kRadio4); }, "r4"));
-      mIcons->add (new cImageWidget (r5, sizeof(r5), kIcon,kIcon, [&](cImageWidget* widget) noexcept {
+      mIcons->add (new cImageWidget (r5, sizeof(r5), kIcon,kIcon, [&](cWidget* widget) noexcept {
         mLoader.load (kRadio5); }, "r5"));
-      mIcons->add (new cImageWidget (r6, sizeof(r6), kIcon,kIcon, [&](cImageWidget* widget) noexcept {
+      mIcons->add (new cImageWidget (r6, sizeof(r6), kIcon,kIcon, [&](cWidget* widget) noexcept {
         mLoader.load (kRadio6); }, "r6"));
 
       // tv
-      mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cImageWidget* widget) noexcept {
+      mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
         mLoader.load (kBbc1); } ));
-      mIcons->add (new cImageWidget (bbc2, sizeof(bbc2), kIcon,kIcon, [&](cImageWidget* widget) noexcept {
+      mIcons->add (new cImageWidget (bbc2, sizeof(bbc2), kIcon,kIcon, [&](cWidget* widget) noexcept {
         mLoader.load (kBbc2); } ));
-      mIcons->add (new cImageWidget (bbc4, sizeof(bbc4), kIcon,kIcon, [&](cImageWidget* widget) noexcept {
+      mIcons->add (new cImageWidget (bbc4, sizeof(bbc4), kIcon,kIcon, [&](cWidget* widget) noexcept {
         mLoader.load (kBbc4); } ));
-      mIcons->add (new cImageWidget (bbcnews, sizeof(bbcnews),kIcon, kIcon, [&](cImageWidget* widget) noexcept {
+      mIcons->add (new cImageWidget (bbcnews, sizeof(bbcnews),kIcon, kIcon, [&](cWidget* widget) noexcept {
         mLoader.load (kNews); } ));
-      mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cImageWidget* widget) noexcept {
+      mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
         mLoader.load (kBbcSw); } ));
 
-      mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cImageWidget* widget) noexcept {
+      mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
         mLoader.load (kWqxr); } ));
 
       // run loader
@@ -190,7 +188,6 @@ protected:
 private:
   //{{{  vars
   cLoader mLoader;
-
   cLoaderWidget* mLoaderWidget = nullptr;
   cContainer* mIcons = nullptr;
 
@@ -200,7 +197,7 @@ private:
 
 // main
 int main (int numArgs, char* args[]) {
-  //{{{  args to strings
+  //{{{  args to params vector<string>
   vector <string> params;
   for (int i = 1; i < numArgs; i++)
     params.push_back (args[i]);
