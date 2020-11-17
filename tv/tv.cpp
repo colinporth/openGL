@@ -43,7 +43,7 @@
 
 using namespace std;
 //}}}
-//{{{  multiplexes
+//{{{  const multiplexes
 struct sMultiplex {
   string mName;
   int mFrequency;
@@ -83,6 +83,12 @@ struct sMultiplexes {
   vector <sMultiplex> mMultiplexes;
   };
 const sMultiplexes kMultiplexes = { { kHdMultiplex, kItvMultiplex, kBbcMultiplex } };
+
+#ifdef _WIN32
+  const string kRootName = "/tv";
+#else
+  const string kRootName = "/home/pi/tv";
+#endif
 //}}}
 
 // cAppWindow
@@ -90,16 +96,8 @@ class cAppWindow : public cGlWindow {
 public:
   cAppWindow() {}
   //{{{
-  void run (const string& title, int width, int height, bool gui, bool moreLogInfo, bool all, bool decodeSubtitle,
+  void run (const string& title, int width, int height, bool gui, bool all, bool decodeSubtitle,
             sMultiplex multiplex, const string& fileName) {
-
-    mMoreLogInfo = moreLogInfo;
-
-    #ifdef _WIN32
-      const string kRootName = "/tv";
-    #else
-      const string kRootName = "/home/pi/tv";
-    #endif
 
     auto mDvb = new cDvb (multiplex.mFrequency, kRootName,
                           multiplex.mSelectedChannels, multiplex.mSaveNames,
@@ -176,19 +174,13 @@ protected:
         case GLFW_KEY_Q: setFringeWidth (getFringeWidth() - 0.25f); break;
         case GLFW_KEY_W: setFringeWidth (getFringeWidth() + 0.25f); break;
 
-        case GLFW_KEY_L:
-          mMoreLogInfo = ! mMoreLogInfo;
-          cLog::setLogLevel (mMoreLogInfo ? LOGINFO3 : LOGNOTICE);
-          break;
-
+        case GLFW_KEY_L: cLog::cycleLogLevel(); break;
         default: cLog::log (LOGNOTICE, "Keyboard %x", key); break;
         }
       }
     }
   //}}}
   void onChar (char ch, int mods) {}
-private:
-  bool mMoreLogInfo = false;
   };
 
 // main
@@ -206,7 +198,7 @@ int main (int numArgs, char* args[]) {
   bool all = false;
   bool decodeSubtitle = false;
   bool gui = false;
-  bool moreLogInfo = false;
+  eLogLevel logLevel = LOGINFO;
   sMultiplex multiplex = kHdMultiplex;
   string fileName;
   //{{{  option parser
@@ -224,7 +216,9 @@ int main (int numArgs, char* args[]) {
 
     if (argStrings[i] == "all") all = true;
     else if (argStrings[i] == "g") gui = true;
-    else if (argStrings[i] == "l") moreLogInfo = true;
+    else if (argStrings[i] == "l1") logLevel = LOGINFO1; 
+    else if (argStrings[i] == "l2") logLevel = LOGINFO2; 
+    else if (argStrings[i] == "l3") logLevel = LOGINFO3; 
     else if (argStrings[i] == "d") decodeSubtitle = true;
 
     else if (argStrings[i] == "f") {
@@ -241,12 +235,11 @@ int main (int numArgs, char* args[]) {
     }
   //}}}
 
-  cLog::log (LOGNOTICE, "tv - moreLog:" + dec(moreLogInfo) + " freq:" + dec(multiplex.mFrequency));
-  if (moreLogInfo)
-    cLog::setLogLevel (LOGINFO3);
+  cLog::log (LOGNOTICE, "tv - freq:" + dec(multiplex.mFrequency));
+  cLog::setLogLevel (logLevel);
 
   cAppWindow appWindow;
-  appWindow.run ("tv", 790, YSIZE, gui, moreLogInfo, all, decodeSubtitle, multiplex, fileName);
+  appWindow.run ("tv", 790, YSIZE, gui, all, decodeSubtitle, multiplex, fileName);
 
   return 0;
   }

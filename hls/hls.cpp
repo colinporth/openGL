@@ -74,7 +74,7 @@ public:
       mLoaderWidget = (cLoaderWidget*)addTopLeft (new cLoaderWidget (&mLoader, this));
 
       // add channel icons to mIcons container
-      mIcons = (cContainer*)addTopLeft (new cContainer ("icons"));
+      mIcons = (cContainer*)addAt (new cContainer ("icons"), cPointF(0.f, cWidget::kBox));
 
       // radio
       constexpr float kIcon = 2.5f * cWidget::kBox;
