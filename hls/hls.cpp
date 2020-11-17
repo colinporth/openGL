@@ -68,10 +68,11 @@ public:
   void run (const string& title, int width, int height, bool gui, const vector <string>& strings)  {
 
     if (gui) {
+      // init gui
       cGlWindow::initialise (title, width, height, (uint8_t*)droidSansMono, sizeof(droidSansMono));
 
-      // main full screen widget
-      mLoaderWidget = (cLoaderWidget*)addTopLeft (new cLoaderWidget (&mLoader, this));
+      // main widget
+      mLoaderWidget = (cLoaderWidget*)add (new cLoaderWidget (&mLoader, this));
 
       // add channel icons to mIcons container
       mIcons = (cContainer*)addAt (new cContainer ("icons"), cPointF(0.f, cWidget::kBox));
@@ -79,48 +80,42 @@ public:
       // radio
       constexpr float kIcon = 2.5f * cWidget::kBox;
       mIcons->add (new cImageWidget (r1, sizeof(r1), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        mLoader.load (kRadio1); }, "r1"));
+        mLoader.launchLoad (kRadio1); }, "r1"));
       mIcons->add (new cImageWidget (r2, sizeof(r2), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        mLoader.load (kRadio2); }, "r2"));
+        mLoader.launchLoad (kRadio2); }, "r2"));
       mIcons->add (new cImageWidget (r3, sizeof(r3), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        mLoader.load (kRadio3); }, "r3"));
+        mLoader.launchLoad (kRadio3); }, "r3"));
       mIcons->add (new cImageWidget (r4, sizeof(r4), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        mLoader.load (kRadio4); }, "r4"));
+        mLoader.launchLoad (kRadio4); }, "r4"));
       mIcons->add (new cImageWidget (r5, sizeof(r5), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        mLoader.load (kRadio5); }, "r5"));
+        mLoader.launchLoad (kRadio5); }, "r5"));
       mIcons->add (new cImageWidget (r6, sizeof(r6), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        mLoader.load (kRadio6); }, "r6"));
+        mLoader.launchLoad (kRadio6); }, "r6"));
 
       // tv
       mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        mLoader.load (kBbc1); } ));
+        mLoader.launchLoad (kBbc1); } ));
       mIcons->add (new cImageWidget (bbc2, sizeof(bbc2), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        mLoader.load (kBbc2); } ));
+        mLoader.launchLoad (kBbc2); } ));
       mIcons->add (new cImageWidget (bbc4, sizeof(bbc4), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        mLoader.load (kBbc4); } ));
+        mLoader.launchLoad (kBbc4); } ));
       mIcons->add (new cImageWidget (bbcnews, sizeof(bbcnews),kIcon, kIcon, [&](cWidget* widget) noexcept {
-        mLoader.load (kNews); } ));
+        mLoader.launchLoad (kNews); } ));
       mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        mLoader.load (kBbcSw); } ));
+        mLoader.launchLoad (kBbcSw); } ));
 
       mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
         mLoader.load (kWqxr); } ));
 
-      // run loader
-      mLoader.load (strings);
+      // launch load in its own thread
+      mLoader.launchLoad (strings);
 
-      // run gui
+      // run gui in main thread, no clear
       cGlWindow::run (false);
       }
-
-    else {
-      // run loader
+    else
+      // run load in main thread
       mLoader.load (strings.empty() ? kRadio4 : strings);
-
-      // no gui, probably don't get the exit keystroke
-      while (!mExit)
-        this_thread::sleep_for (200ms);
-      }
 
     cLog::log (LOGINFO, "run exit");
     }
@@ -132,12 +127,12 @@ protected:
 
     if ((action == GLFW_PRESS) || (action == GLFW_REPEAT)) {
       switch (key) {
-        case GLFW_KEY_1: mLoader.load (kRadio1); break;
-        case GLFW_KEY_2: mLoader.load (kRadio2); break;
-        case GLFW_KEY_3: mLoader.load (kRadio3); break;
-        case GLFW_KEY_4: mLoader.load (kRadio4); break;
-        case GLFW_KEY_5: mLoader.load (kRadio5); break;
-        case GLFW_KEY_6: mLoader.load (kRadio6); break;
+        case GLFW_KEY_1: mLoader.launchLoad (kRadio1); break;
+        case GLFW_KEY_2: mLoader.launchLoad (kRadio2); break;
+        case GLFW_KEY_3: mLoader.launchLoad (kRadio3); break;
+        case GLFW_KEY_4: mLoader.launchLoad (kRadio4); break;
+        case GLFW_KEY_5: mLoader.launchLoad (kRadio5); break;
+        case GLFW_KEY_6: mLoader.launchLoad (kRadio6); break;
 
         // !!! return false is key not handled , we could push next icon ???
         case GLFW_KEY_SPACE: mLoader.togglePlaying(); break;
@@ -170,7 +165,6 @@ protected:
         case GLFW_KEY_L: cLog::cycleLogLevel(); break;
         //{{{
         case GLFW_KEY_ESCAPE: // exit
-          mExit = true;
           mLoader.exit();
           glfwSetWindowShouldClose (mWindow, GL_TRUE);
           break;
@@ -189,10 +183,9 @@ protected:
 private:
   //{{{  vars
   cLoader mLoader;
+
   cLoaderWidget* mLoaderWidget = nullptr;
   cContainer* mIcons = nullptr;
-
-  bool mExit = false;
   //}}}
   };
 
@@ -208,7 +201,7 @@ int main (int numArgs, char* args[]) {
   bool gui = true;
   eLogLevel logLevel = LOGINFO;
   for (auto it = params.begin(); it < params.end(); ++it) {
-    //{{{  parse for params
+    //{{{  parse params, removing if consumed
     if (*it == "h") { gui = false; params.erase (it); }
     else if (*it == "l1") { logLevel = LOGINFO1; params.erase (it); }
     else if (*it == "l2") { logLevel = LOGINFO2; params.erase (it); }
