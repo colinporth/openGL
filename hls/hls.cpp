@@ -191,22 +191,19 @@ private:
 
 // main
 int main (int numArgs, char* args[]) {
-  //{{{  args to params vector<string>
-  vector <string> params;
-  for (int i = 1; i < numArgs; i++)
-    params.push_back (args[i]);
+  //{{{  args to params 
   //}}}
 
   // default params
   bool gui = true;
   eLogLevel logLevel = LOGINFO;
-  for (auto it = params.begin(); it < params.end(); ++it) {
-    //{{{  parse params, removing if consumed
-    if (*it == "h") { gui = false; params.erase (it); }
-    else if (*it == "l1") { logLevel = LOGINFO1; params.erase (it); }
-    else if (*it == "l2") { logLevel = LOGINFO2; params.erase (it); }
-    else if (*it == "l3") { logLevel = LOGINFO3; params.erase (it); }
-    }
+    //{{{  parse params
+    for (auto it = params.begin(); it < params.end(); ++it) {
+      if (*it == "nogui") { gui = false; params.erase (it); }
+      else if (*it == "log1") { logLevel = LOGINFO1; params.erase (it); }
+      else if (*it == "log2") { logLevel = LOGINFO2; params.erase (it); }
+      else if (*it == "log3") { logLevel = LOGINFO3; params.erase (it); }
+      }
     //}}}
 
   cLog::init (logLevel);

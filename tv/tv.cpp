@@ -184,14 +184,13 @@ protected:
 
 // main
 int main (int numArgs, char* args[]) {
-
+  //{{{  args to params vector<string>
+  vector <string> params;
+  for (int i = 1; i < numArgs; i++)
+    params.push_back (args[i]);
+  //}}}
   CoInitializeEx (NULL, COINIT_MULTITHREADED);
   cLog::init();
-  //{{{  args to strings
-  vector <string> argStrings;
-  for (int i = 1; i < numArgs; i++)
-    argStrings.push_back (args[i]);
-  //}}}
 
   // options
   bool all = false;
@@ -201,11 +200,11 @@ int main (int numArgs, char* args[]) {
   sMultiplex multiplex = kHdMultiplex;
   string fileName;
   //{{{  option parser
-  for (size_t i = 0; i < argStrings.size(); i++) {
+  for (size_t i = 0; i < params.size(); i++) {
     // look for named multiplex
     bool multiplexFound = false;
     for (size_t j = 0; j < kMultiplexes.mMultiplexes.size() && !multiplexFound; j++) {
-      if (argStrings[i] == kMultiplexes.mMultiplexes[j].mName) {
+      if (params[i] == kMultiplexes.mMultiplexes[j].mName) {
         multiplex = kMultiplexes.mMultiplexes[j];
         multiplexFound = true;
         }
@@ -213,23 +212,22 @@ int main (int numArgs, char* args[]) {
     if (multiplexFound)
       continue;
 
-    if (argStrings[i] == "all") all = true;
-    else if (argStrings[i] == "g") gui = true;
-    else if (argStrings[i] == "l1") logLevel = LOGINFO1;
-    else if (argStrings[i] == "l2") logLevel = LOGINFO2;
-    else if (argStrings[i] == "l3") logLevel = LOGINFO3;
-    else if (argStrings[i] == "d") decodeSubtitle = true;
-
-    else if (argStrings[i] == "f") {
+    if (params[i] == "all") all = true;
+    else if (params[i] == "gui") gui = true;
+    else if (params[i] == "sub") decodeSubtitle = true;
+    else if (params[i] == "log1") logLevel = LOGINFO1;
+    else if (params[i] == "log2") logLevel = LOGINFO2;
+    else if (params[i] == "log3") logLevel = LOGINFO3;
+    else if (params[i] == "freq") {
       //  multiplex frequency all channels
       multiplex = kAllMultiplex;
-      multiplex.mFrequency = stoi (argStrings[i++]);
+      multiplex.mFrequency = stoi (params[i++]);
       }
 
-    else if (!argStrings[i].empty()) {
+    else if (!params[i].empty()) {
       // fileName
       multiplex.mFrequency = 0;
-      fileName = argStrings[i];
+      fileName = params[i];
       }
     }
   //}}}
@@ -242,4 +240,3 @@ int main (int numArgs, char* args[]) {
 
   return 0;
   }
-
