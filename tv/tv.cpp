@@ -108,11 +108,11 @@ public:
    if (gui) {
       initialise (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
 
-      addTopLeft (new cDvbWidget(mDvb, 0.f, -cWidget::kBoxHeight));
+      addTopLeft (new cDvbWidget(mDvb, 0.f, -cWidget::kBox));
 
-      addTopLeft (new cTextBox (mDvb->mErrorStr, 15.f * cWidget::kBoxHeight));
-      add (new cTextBox (mDvb->mTuneStr, 12.f * cWidget::kBoxHeight));
-      add (new cTextBox (mDvb->mSignalStr, 12.f * cWidget::kBoxHeight));
+      addTopLeft (new cTextBox (mDvb->mErrorStr, 15.f * cWidget::kBox));
+      add (new cTextBox (mDvb->mTuneStr, 12.f * cWidget::kBox));
+      add (new cTextBox (mDvb->mSignalStr, 12.f * cWidget::kBox));
       }
 
     if (fileName.empty()) {
