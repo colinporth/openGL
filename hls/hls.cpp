@@ -21,6 +21,7 @@
 
 // widgets
 #include "../../shared/vg/cGlWindow.h"
+#include "../../shared/widgets/cContainer.h"
 #include "../../shared/widgets/cTextBox.h"
 #include "../../shared/widgets/cImageWidget.h"
 #include "../../shared/widgets/cLoaderWidget.h"
