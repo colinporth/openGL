@@ -6,7 +6,6 @@ hls
 - chunk align back forward
 - fix channel change crash, tv to tv
 - maximise box full screen and back again   flashing
-- drag and drop onto player
 - play filelist and directories
 - audio and video bitrate selection gui
 
@@ -26,6 +25,7 @@ linux
 audioDecoder
 - pass 5.1 through to player before crunching to stereo
 - mono ok?
+- sample rate ok in song player, paly a wxqr aac file
 
 videoPool
 
@@ -33,4 +33,3 @@ loaderPlayer
 - file id3 tag skipping broken
 - jpeg broken
 - home end broken
-- length broken for aac

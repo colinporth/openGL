@@ -174,6 +174,8 @@ protected:
         case GLFW_KEY_UP:
         case GLFW_KEY_PAGE_UP:
         case GLFW_KEY_PAGE_DOWN:
+        case 154:
+        case 155: break;
 
         default: cLog::log (LOGNOTICE, "Keyboard %x", key); break;
         }
