@@ -1,4 +1,5 @@
 song
+- use <format> lib for time and info strings
 - use windows cSongBox widget
 
 hls
