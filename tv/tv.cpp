@@ -104,7 +104,7 @@ public:
                           gui && decodeSubtitle);
 
    if (gui) {
-      initialise (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
+      initialiseGui (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
 
       add (new cTextBox (mDvb->mErrorStr, 15.f * cWidget::kBox));
       add (new cTextBox (mDvb->mTuneStr, 12.f * cWidget::kBox));

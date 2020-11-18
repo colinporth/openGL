@@ -69,7 +69,7 @@ public:
 
     if (gui) {
       // init gui
-      initialise (title, width, height, (uint8_t*)droidSansMono, sizeof(droidSansMono));
+      initialiseGui (title, width, height, (uint8_t*)droidSansMono, sizeof(droidSansMono));
 
       // main widget
       mLoaderWidget = (cLoaderWidget*)add (new cLoaderWidget (this, this));
