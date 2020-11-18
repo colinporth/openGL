@@ -16,6 +16,7 @@
     <ClCompile Include="..\..\shared\utils\cSongPlayer.cpp" />
     <ClCompile Include="..\..\shared\utils\cLoader.cpp" />
     <ClCompile Include="..\..\shared\utils\cVideoPool.cpp" />
+    <ClCompile Include="..\..\shared\fmt\format.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\utils\date.h">
@@ -159,6 +160,45 @@
     <ClInclude Include="..\..\shared\widgets\cLoaderWidget.h">
       <Filter>h\widgets</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\args.h">
+      <Filter>h\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\chrono.h">
+      <Filter>h\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\color.h">
+      <Filter>h\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\compile.h">
+      <Filter>h\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\core.h">
+      <Filter>h\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\format.h">
+      <Filter>h\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\format-inl.h">
+      <Filter>h\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\locale.h">
+      <Filter>h\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\os.h">
+      <Filter>h\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\ostream.h">
+      <Filter>h\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\posix.h">
+      <Filter>h\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\printf.h">
+      <Filter>h\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\ranges.h">
+      <Filter>h\fmt</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">
@@ -187,6 +227,9 @@
     </Filter>
     <Filter Include="h\net">
       <UniqueIdentifier>{d10938b1-cdb9-4375-b8d9-2f3186679a75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="h\fmt">
+      <UniqueIdentifier>{83e68f0e-6909-4afb-81e1-d86e790dca0b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

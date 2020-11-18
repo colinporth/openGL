@@ -184,6 +184,19 @@
     <ClInclude Include="..\..\shared\audio\iAudio.h" />
     <ClInclude Include="..\..\shared\decoders\cAudioParser.h" />
     <ClInclude Include="..\..\shared\decoders\cFFmpegAudioDecoder.h" />
+    <ClInclude Include="..\..\shared\fmt\args.h" />
+    <ClInclude Include="..\..\shared\fmt\chrono.h" />
+    <ClInclude Include="..\..\shared\fmt\color.h" />
+    <ClInclude Include="..\..\shared\fmt\compile.h" />
+    <ClInclude Include="..\..\shared\fmt\core.h" />
+    <ClInclude Include="..\..\shared\fmt\format-inl.h" />
+    <ClInclude Include="..\..\shared\fmt\format.h" />
+    <ClInclude Include="..\..\shared\fmt\locale.h" />
+    <ClInclude Include="..\..\shared\fmt\os.h" />
+    <ClInclude Include="..\..\shared\fmt\ostream.h" />
+    <ClInclude Include="..\..\shared\fmt\posix.h" />
+    <ClInclude Include="..\..\shared\fmt\printf.h" />
+    <ClInclude Include="..\..\shared\fmt\ranges.h" />
     <ClInclude Include="..\..\shared\glad\glad.h" />
     <ClInclude Include="..\..\shared\kissFft\kiss_fft.h" />
     <ClInclude Include="..\..\shared\kissFft\kiss_fftr.h" />
@@ -231,6 +244,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\shared\decoders\cAudioParser.cpp" />
     <ClCompile Include="..\..\shared\decoders\cFFmpegAudioDecoder.cpp" />
+    <ClCompile Include="..\..\shared\fmt\format.cpp" />
     <ClCompile Include="..\..\shared\glad\glad.c" />
     <ClCompile Include="..\..\shared\kissFft\kiss_fft.c" />
     <ClCompile Include="..\..\shared\kissFft\kiss_fftr.c" />

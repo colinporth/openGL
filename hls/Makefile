@@ -5,6 +5,7 @@ SRCS      = hls.cpp \
 	    ../../shared/utils/cSong.cpp \
 	    ../../shared/utils/cSongPlayer.cpp \
 	    ../../shared/utils/cVideoPool.cpp \
+	    ../../shared/fmt/format.cpp \
 	    ../../shared/decoders/cAudioParser.cpp \
 	    ../../shared/decoders/cFFmpegAudioDecoder.cpp \
 	    ../../shared/kissFft/kiss_fft.c \
