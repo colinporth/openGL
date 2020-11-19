@@ -1,5 +1,5 @@
 song
-- use <format> lib for time and info strings
+- use <fmt> lib more
 - use windows cSongBox widget
 
 hls

@@ -14,6 +14,7 @@
 #include <thread>
 
 // utils
+#include "../../shared/fmt/core.h"
 #include "../../shared/utils/cLog.h"
 
 // loader
@@ -42,6 +43,7 @@
 //}}}
 
 using namespace std;
+using namespace fmt;
 using namespace chrono;
 //}}}
 //{{{  const
@@ -68,44 +70,45 @@ public:
   void run (const string& title, int width, int height, bool gui, const vector <string>& strings)  {
 
     if (gui) {
-      // init gui
+      // startup gui, the rootContainer
       initialiseGui (title, width, height, (uint8_t*)droidSansMono, sizeof(droidSansMono));
 
-      // main widget
+      // main widget - full window
       mLoaderWidget = (cLoaderWidget*)add (new cLoaderWidget (this, this));
 
-      // add channel icons to mIcons container
-      mIcons = (cContainer*)addAt (new cContainer ("icons"), cPointF(0.f, cWidget::kBox));
+      // add mIcons container, offset one row for loaderWidget infoStrings
+      mIcons = (cContainer*)add (new cContainer ("icons"), cPointF(0.f, cWidget::kBox));
 
-      // radio
+      // add radio channel icons
       constexpr float kIcon = 2.5f * cWidget::kBox;
       mIcons->add (new cImageWidget (r1, sizeof(r1), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        launchLoad (kRadio1); }, "r1"));
+        launchLoad (kRadio1); }, "r1"), 2.f);
       mIcons->add (new cImageWidget (r2, sizeof(r2), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        launchLoad (kRadio2); }, "r2"));
+        launchLoad (kRadio2); }, "r2"), 2.f);
       mIcons->add (new cImageWidget (r3, sizeof(r3), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        launchLoad (kRadio3); }, "r3"));
+        launchLoad (kRadio3); }, "r3"), 2.f);
       mIcons->add (new cImageWidget (r4, sizeof(r4), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        launchLoad (kRadio4); }, "r4"));
+        launchLoad (kRadio4); }, "r4"), 2.f);
       mIcons->add (new cImageWidget (r5, sizeof(r5), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        launchLoad (kRadio5); }, "r5"));
+        launchLoad (kRadio5); }, "r5"), 2.f);
       mIcons->add (new cImageWidget (r6, sizeof(r6), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        launchLoad (kRadio6); }, "r6"));
+        launchLoad (kRadio6); }, "r6"), 2.f);
 
-      // tv
+      // add tv channel icons
       mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        launchLoad (kBbc1); } ));
+        launchLoad (kBbc1); }, "bbc1"), 2.f);
       mIcons->add (new cImageWidget (bbc2, sizeof(bbc2), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        launchLoad (kBbc2); } ));
+        launchLoad (kBbc2); }, "bbc2"), 2.f);
       mIcons->add (new cImageWidget (bbc4, sizeof(bbc4), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        launchLoad (kBbc4); } ));
-      mIcons->add (new cImageWidget (bbcnews, sizeof(bbcnews),kIcon, kIcon, [&](cWidget* widget) noexcept {
-        launchLoad (kNews); } ));
+        launchLoad (kBbc4); }, "bbc4"), 2.f);
+      mIcons->add (new cImageWidget (bbcnews, sizeof(bbcnews), kIcon,kIcon, [&](cWidget* widget) noexcept {
+        launchLoad (kNews); }, "bbcnews"), 2.f);
       mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        launchLoad (kBbcSw); } ));
+        launchLoad (kBbcSw); }, "sw"), 2.f);
 
+      // add icycast channel icons
       mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        load (kWqxr); } ));
+        load (kWqxr); }, "wxqr"));
 
       // launch load in its own thread
       launchLoad (strings);
@@ -177,7 +180,7 @@ protected:
         case 154:
         case 155: break;
 
-        default: cLog::log (LOGNOTICE, "Keyboard %x", key); break;
+        default: cLog::log (LOGNOTICE, format ("Keyboard {:x}", key)); break;
         }
       }
     }
