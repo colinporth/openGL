@@ -199,6 +199,9 @@
     <ClInclude Include="..\..\shared\fmt\ranges.h">
       <Filter>h\fmt</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\widgets\cLoaderInfoWidget.h">
+      <Filter>h\widgets</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="h">

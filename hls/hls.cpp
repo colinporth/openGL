@@ -26,6 +26,7 @@
 #include "../../shared/widgets/cTextBox.h"
 #include "../../shared/widgets/cImageWidget.h"
 #include "../../shared/widgets/cLoaderWidget.h"
+#include "../../shared/widgets/cLoaderInfoWidget.h"
 //{{{  include resources
 #include "../../shared/resources/bbc1.h"
 #include "../../shared/resources/bbc2.h"
@@ -74,13 +75,14 @@ public:
       initialiseGui (title, width, height, (uint8_t*)droidSansMono, sizeof(droidSansMono));
 
       // main widget - full window
-      mLoaderWidget = (cLoaderWidget*)add (new cLoaderWidget (this, this));
+      mLoaderWidget = (cLoaderWidget*)addTopLeft (new cLoaderWidget (this, this));
 
-      // add mIcons container, offset one row for loaderWidget infoStrings
-      mIcons = (cContainer*)add (new cContainer ("icons"), cPointF(0.f, cWidget::kBox));
+      // add mIcons container
+      constexpr float kIcon = 2.5f * cWidget::kBox;
+      mIcons = (cContainer*)addTopLeft (new cContainer ("icons"));
+      mLoaderInfoWidget = (cLoaderInfoWidget*)add (new cLoaderInfoWidget (this), cPointF (0.f,kIcon));
 
       // add radio channel icons
-      constexpr float kIcon = 2.5f * cWidget::kBox;
       mIcons->add (new cImageWidget (r1, sizeof(r1), kIcon,kIcon, [&](cWidget* widget) noexcept {
         launchLoad (kRadio1); }, "r1"), 2.f);
       mIcons->add (new cImageWidget (r2, sizeof(r2), kIcon,kIcon, [&](cWidget* widget) noexcept {
@@ -188,6 +190,7 @@ protected:
 private:
   //{{{  vars
   cLoaderWidget* mLoaderWidget = nullptr;
+  cLoaderInfoWidget* mLoaderInfoWidget = nullptr;
   cContainer* mIcons = nullptr;
   //}}}
   };
