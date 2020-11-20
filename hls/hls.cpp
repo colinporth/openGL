@@ -80,7 +80,7 @@ public:
       // add mIcons container
       constexpr float kIcon = 2.5f * cWidget::kBox;
       mIcons = (cContainer*)addTopLeft (new cContainer ("icons"));
-      mLoaderInfoWidget = (cLoaderInfoWidget*)add (new cLoaderInfoWidget (this), cPointF (0.f,kIcon));
+      mLoaderInfoWidget = (cLoaderInfoWidget*)addBelowLeft (new cLoaderInfoWidget (this));
 
       // add radio channel icons
       mIcons->add (new cImageWidget (r1, sizeof(r1), kIcon,kIcon, [&](cWidget* widget) noexcept {
