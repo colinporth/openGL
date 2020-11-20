@@ -205,6 +205,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\shared\dvb\cDvb.cpp" />
     <ClCompile Include="..\..\shared\dvb\cTransportStream.cpp" />
+    <ClCompile Include="..\..\shared\fmt\format.cpp" />
     <ClCompile Include="..\..\shared\glad\glad.c" />
     <ClCompile Include="..\..\shared\utils\cLog.cpp" />
     <ClCompile Include="..\..\shared\vg\cAtlasText.cpp" />

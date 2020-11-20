@@ -9,6 +9,7 @@
     <ClCompile Include="..\..\shared\vg\cAtlasText.cpp" />
     <ClCompile Include="..\..\shared\vg\cGlWindow.cpp" />
     <ClCompile Include="..\..\shared\vg\cVg.cpp" />
+    <ClCompile Include="..\..\shared\fmt\format.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\utils\cLog.h">

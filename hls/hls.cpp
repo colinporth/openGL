@@ -22,6 +22,7 @@
 
 // widgets
 #include "../../shared/vg/cGlWindow.h"
+#include "../../shared/widgets/cRootContainer.h"
 #include "../../shared/widgets/cContainer.h"
 #include "../../shared/widgets/cTextBox.h"
 #include "../../shared/widgets/cImageWidget.h"
@@ -79,7 +80,7 @@ public:
 
       // add mIcons container
       constexpr float kIcon = 2.5f * cWidget::kBox;
-      mIcons = (cContainer*)addTopLeft (new cContainer ("icons"));
+      mIcons = (cContainer*)addTopLeft (new cContainer ("iconsContainer"));
       mLoaderInfoWidget = (cLoaderInfoWidget*)addBelowLeft (new cLoaderInfoWidget (this));
 
       // add radio channel icons
@@ -166,6 +167,7 @@ protected:
             mIcons->toggleVisible();
           break;
         //}}}
+        case GLFW_KEY_D: getRootContainer()->toggleDebug(); break;
 
         case GLFW_KEY_L: cLog::cycleLogLevel(); break;
         //{{{
