@@ -167,8 +167,8 @@ protected:
             mIcons->toggleVisible();
           break;
         //}}}
-        case GLFW_KEY_D: getRootContainer()->toggleDebug(); break;
 
+        case GLFW_KEY_D: toggleDebug(); break;
         case GLFW_KEY_L: cLog::cycleLogLevel(); break;
         //{{{
         case GLFW_KEY_ESCAPE: // exit

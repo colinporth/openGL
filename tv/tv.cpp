@@ -173,6 +173,7 @@ protected:
         case GLFW_KEY_Q: setFringeWidth (getFringeWidth() - 0.25f); break;
         case GLFW_KEY_W: setFringeWidth (getFringeWidth() + 0.25f); break;
 
+        case GLFW_KEY_D: toggleDebug(); break;
         case GLFW_KEY_L: cLog::cycleLogLevel(); break;
         default: cLog::log (LOGNOTICE, "Keyboard %x", key); break;
         }
