@@ -1,6 +1,7 @@
 TARGET    = tvApp
 SRCS      = tv.cpp \
 	    ../../shared/utils/cLog.cpp \
+	    ../../shared/fmt/format.cpp \
 	    ../../shared/glad/glad.c \
 	    ../../shared/vg/cVg.cpp \
 	    ../../shared/vg/cAtlasText.cpp \
@@ -43,7 +44,7 @@ $(BUILD_DIR)/%.c.o: %.c
 
 $(BUILD_DIR)/%.cpp.o: %.cpp
 	mkdir -p $(dir $@)
-	g++ -std=c++17 $(CFLAGS) -c $< -o $@
+	g++ -std=c++2a $(CFLAGS) -c $< -o $@
 
 $(TARGET): $(OBJS)
 	g++ $(OBJS) -o $@ $(LIBS)

@@ -1,6 +1,7 @@
 song
 - use <fmt> lib more
 - use windows cSongBox widget
+- aac file length broken
 
 hls
 - glfw drag and drop

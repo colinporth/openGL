@@ -81,7 +81,6 @@ public:
       // add mIcons container
       constexpr float kIcon = 2.5f * cWidget::kBox;
       mIcons = (cContainer*)addTopLeft (new cContainer ("iconsContainer"));
-      mLoaderInfoWidget = (cLoaderInfoWidget*)addBelowLeft (new cLoaderInfoWidget (this));
 
       // add radio channel icons
       mIcons->add (new cImageWidget (r1, sizeof(r1), kIcon,kIcon, [&](cWidget* widget) noexcept {
@@ -112,6 +111,8 @@ public:
       // add icycast channel icons
       mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
         load (kWqxr); }, "wxqr"));
+
+      mIcons->addBelowLeft (new cLoaderInfoWidget (this));
 
       // launch load in its own thread
       launchLoad (strings);
