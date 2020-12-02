@@ -17,6 +17,7 @@
     <ClCompile Include="..\..\shared\utils\cLoader.cpp" />
     <ClCompile Include="..\..\shared\utils\cVideoPool.cpp" />
     <ClCompile Include="..\..\shared\fmt\format.cpp" />
+    <ClCompile Include="..\..\shared\dvb\cDvbSimple.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\utils\date.h">
@@ -201,6 +202,12 @@
     </ClInclude>
     <ClInclude Include="..\..\shared\widgets\cLoaderInfoWidget.h">
       <Filter>h\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\dvb\cDvb.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\dvb\cDvbSimple.h">
+      <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
