@@ -65,6 +65,7 @@ static const vector<string> kBbcSw  = {"sw", "a128"};
 static const vector<string> kWqxr  = {"http://stream.wqxr.org/js-stream.aac"};
 
 static const vector<string> kRtp  = {"rtp"};
+static const vector<string> kDvb  = {"dvb"};
 //}}}
 
 // cAppWindow
@@ -113,6 +114,8 @@ public:
       // add icycast channel icons
       mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
         load (kRtp); }, "rtp"));
+      mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
+        load (kDvb); }, "dvb"));
 
       mIcons->addBelowLeft (new cLoaderInfoWidget (this));
 
