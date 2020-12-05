@@ -21,7 +21,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "paint", "paint\paint.vcxpro
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bintoc", "bintoc\bintoc.vcxproj", "{E4447D52-6EEB-419D-933B-320A5957BCAE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hello", "hello\hello.vcxproj", "{9CC4E530-17AE-4CC8-93D5-B47AB407622E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "clientServerTestBed", "hello\hello.vcxproj", "{9CC4E530-17AE-4CC8-93D5-B47AB407622E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
