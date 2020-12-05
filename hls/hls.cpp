@@ -133,7 +133,6 @@ public:
     }
   //}}}
 protected:
-  void onChar (char ch, int mods) {}
   //{{{
   void onKey (int key, int scancode, int action, int mods) {
 

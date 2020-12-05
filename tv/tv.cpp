@@ -180,7 +180,6 @@ protected:
       }
     }
   //}}}
-  void onChar (char ch, int mods) {}
   };
 
 // main
