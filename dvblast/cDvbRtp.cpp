@@ -2305,7 +2305,7 @@ namespace {
     mNumPackets++;
     if (!ts_validate (block->mTs)) {
       //{{{  error return
-      cLog::log (LOGINFO, "lost TS sync");
+      cLog::log (LOGERROR, "lost TS sync");
       mBlockPool->freeBlock (block);
       mNumInvalids++;
       return;
@@ -2323,14 +2323,14 @@ namespace {
       uint16_t sid = 0;
       const char* pidDesc = getPidDesc (pidNum, &sid);
       int expected = (tsPid->mLastContinuity + 1) & 0x0f;
-      cLog::log (LOGERROR, "continuity pid:%d %d:%d sid:%d %s", pidNum, expected, continuity, sid, pidDesc);
+      cLog::log (LOGERROR, format ("continuity sid:{} pid:{} {}:{}d {}", sid, pidNum, expected, continuity, pidDesc));
       }
 
     if (ts_get_transporterror (block->mTs)) {
       // get and log info
       uint16_t sid = 0;
       const char* desc = getPidDesc (pidNum, &sid);
-      cLog::log (LOGINFO, "transport_error_indicator pid:%hu %s sid:%u", pidNum, desc, sid);
+      cLog::log (LOGERROR, format ("transportErorIndicator pid:{} {} sid:{}", pidNum, desc, sid));
 
       // inc error counts
       mNumErrors++;
