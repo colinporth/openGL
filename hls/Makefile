@@ -18,7 +18,7 @@ SRCS      = hls.cpp \
 	    ../../shared/glad/glad.c \
 
 BUILD_DIR = ./build
-CLEAN_DIRS = $(BUILD_DIR) $(BUILD_DIR)../../shared
+CLEAN_DIRS = $(BUILD_DIR) $(BUILD_DIR)./shared
 LIBS      = -no-pie \
 	    -ldl -lbfd -lpthread -lGL -lglfw -lasound \
 	    `pkg-config --libs libavcodec` \

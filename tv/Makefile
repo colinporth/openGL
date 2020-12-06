@@ -10,7 +10,7 @@ SRCS      = tv.cpp \
 	    ../../shared/dvb/cTransportStream.cpp \
 
 BUILD_DIR = ./build
-CLEAN_DIRS = $(BUILD_DIR) $(BUILD_DIR)../../shared
+CLEAN_DIRS = $(BUILD_DIR) $(BUILD_DIR)./shared
 LIBS      = -no-pie \
 	    -ldl -lbfd -lpthread -lGL -lglfw
 #
