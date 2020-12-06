@@ -143,7 +143,7 @@ namespace {
       }
     //}}}
     //{{{
-    void initialise (const std::string& networkName, const std::string& providerName) {
+    void initialise (const string& networkName, const string& providerName) {
 
       mDisplayName = "displayName";
       mOutputDvb = true;
@@ -178,7 +178,7 @@ namespace {
       }
     //}}}
 
-    std::string mDisplayName;
+    string mDisplayName;
     uint64_t mOutputDvb = true;
     uint64_t mOutputEpg = true;
 
@@ -190,9 +190,9 @@ namespace {
 
     // output config
     uint16_t mNetworkId = 0xffff;
-    std::string mNetworkName = "networkName";
-    std::string mServiceName = "serviceName";;
-    std::string mProviderName = "providerName";;
+    string mNetworkName = "networkName";
+    string mServiceName = "serviceName";;
+    string mProviderName = "providerName";;
 
     uint8_t mSsrc[4] = { 0 };
     int mTtl = 64;
@@ -1354,6 +1354,7 @@ namespace {
     return NULL;
     }
   //}}}
+
   //{{{
   cOutput* createOutput (const cOutputConfig* config) {
 
@@ -1367,29 +1368,14 @@ namespace {
     return  NULL;
     }
   //}}}
+
   //{{{
   void changeOutput (cOutput* output, const cOutputConfig* config) {
 
-    int numWantedPids;
-    uint16_t* wantedPids;
-    uint16_t wantedPcrPid;
-
-    uint16_t* currentPids;
-    int numCurrentPids;
-    uint16_t currentPcrPid;
-
     uint16_t sidNum = config->mSid;
     uint16_t oldSidNum = output->mConfig.mSid;
-
-    int oldNumPids = output->mConfig.mNumPids;
-    uint16_t* oldPids = output->mConfig.mPids;
-
-    int numPids = config->mNumPids;
-    uint16_t* pids = config->mPids;
-
     bool sidChange = sidNum != oldSidNum;
-    bool pidChange = false;
-    bool tsidChange = false;
+
     bool dvbChange = output->mConfig.mOutputDvb != config->mOutputDvb;
     bool epgChange = output->mConfig.mOutputEpg != config->mOutputEpg;
 
@@ -1409,12 +1395,12 @@ namespace {
     output->mConfig.mServiceName = config->mServiceName;
     output->mConfig.mProviderName = config->mProviderName;
 
+    bool tsidChange = false;
     if ((config->mTsId != -1) && (output->mConfig.mTsId != config->mTsId)) {
       output->mTsId = config->mTsId;
       output->mConfig.mTsId = config->mTsId;
       tsidChange = true;
       }
-
     if ((config->mTsId == -1) && (output->mConfig.mTsId != -1)) {
       output->mConfig.mTsId = config->mTsId;
       if (psi_table_validate (mCurrentPatSections))
@@ -1422,56 +1408,68 @@ namespace {
       tsidChange = true;
       }
 
-    if (!sidChange &&
-        (config->mNumPids == output->mConfig.mNumPids) &&
-        (!config->mNumPids || !memcmp (output->mConfig.mPids, config->mPids, config->mNumPids * sizeof(uint16_t))))
-      goto outChange;
+    bool pidChange = false;
+    if (!(!sidChange &&
+         (config->mNumPids == output->mConfig.mNumPids) &&
+         (!config->mNumPids || !memcmp (output->mConfig.mPids, config->mPids, config->mNumPids * sizeof(uint16_t))))) {
+      //{{{  pids change
+      uint16_t* wantedPids;
+      int numWantedPids;
+      uint16_t wantedPcrPid;
+      uint16_t* pids = config->mPids;
+      int numPids = config->mNumPids;
+      getPids (&wantedPids, &numWantedPids, &wantedPcrPid, sidNum, pids, numPids);
 
-    getPids (&wantedPids, &numWantedPids, &wantedPcrPid, sidNum, pids, numPids);
-    getPids (&currentPids, &numCurrentPids, &currentPcrPid, oldSidNum, oldPids, oldNumPids);
+      uint16_t* currentPids;
+      int numCurrentPids;
+      uint16_t currentPcrPid;
+      uint16_t* oldPids = output->mConfig.mPids;
+      int oldNumPids = output->mConfig.mNumPids;
+      getPids (&currentPids, &numCurrentPids, &currentPcrPid, oldSidNum, oldPids, oldNumPids);
 
-    if (sidChange && oldSidNum) {
-      sSid* oldSid = findSid (oldSidNum);
-      output->mConfig.mSid = config->mSid;
-      if (oldSid)
-        if (sidNum != oldSidNum)
-          unselectPMT (oldSidNum, oldSid->mPmtPid);
-      }
-
-    for (int i = 0; i < numCurrentPids; i++) {
-      if (!isIn (wantedPids, numWantedPids, currentPids[i])) {
-        stopPid (output, currentPids[i]);
-        pidChange = true;
+      if (sidChange && oldSidNum) {
+        sSid* oldSid = findSid (oldSidNum);
+        output->mConfig.mSid = config->mSid;
+        if (oldSid)
+          if (sidNum != oldSidNum)
+            unselectPMT (oldSidNum, oldSid->mPmtPid);
         }
-      }
 
-    for (int i = 0; i < numWantedPids; i++) {
-      if (!isIn (currentPids, numCurrentPids, wantedPids[i])) {
-        startPid (output, wantedPids[i]);
-        pidChange = true;
+      for (int i = 0; i < numCurrentPids; i++) {
+        if (!isIn (wantedPids, numWantedPids, currentPids[i])) {
+          stopPid (output, currentPids[i]);
+          pidChange = true;
+          }
         }
+
+      for (int i = 0; i < numWantedPids; i++) {
+        if (!isIn (currentPids, numCurrentPids, wantedPids[i])) {
+          startPid (output, wantedPids[i]);
+          pidChange = true;
+          }
+        }
+
+      free (wantedPids);
+      free (currentPids);
+      output->mPcrPid = wantedPcrPid;
+
+      if (sidChange && sidNum) {
+        sSid* sid = findSid (sidNum);
+        output->mConfig.mSid = oldSidNum;
+        if (sid)
+          if (sidNum != oldSidNum)
+            selectPMT (sidNum, sid->mPmtPid);
+        }
+
+      output->mConfig.mSid = sidNum;
+      free (output->mConfig.mPids);
+
+      output->mConfig.mPids = (uint16_t*)malloc (sizeof(uint16_t) * numPids);
+      memcpy (output->mConfig.mPids, pids, sizeof(uint16_t) * numPids);
+      output->mConfig.mNumPids = numPids;
       }
+      //}}}
 
-    free (wantedPids);
-    free (currentPids);
-    output->mPcrPid = wantedPcrPid;
-
-    if (sidChange && sidNum) {
-      sSid* sid = findSid (sidNum);
-      output->mConfig.mSid = oldSidNum;
-      if (sid)
-        if (sidNum != oldSidNum)
-          selectPMT (sidNum, sid->mPmtPid);
-      }
-
-    output->mConfig.mSid = sidNum;
-    free (output->mConfig.mPids);
-
-    output->mConfig.mPids = (uint16_t*)malloc (sizeof(uint16_t) * numPids);
-    memcpy (output->mConfig.mPids, pids, sizeof(uint16_t) * numPids);
-    output->mConfig.mNumPids = numPids;
-
-  outChange:
     if (sidChange || pidChange || tsidChange || dvbChange || networkChange || mServiceNameChange)
       cLog::log (LOGINFO, "dvbRtpChange - %s%s%s%s%s%s changed",
                  sidChange ? "sid " : "",
@@ -2477,12 +2475,12 @@ cDvbRtp::~cDvbRtp() {
 //}}}
 
 uint64_t cDvbRtp::getNumPackets() { return mNumPackets; }
+uint64_t cDvbRtp::getNumErrors() { return mNumErrors; }
 uint64_t cDvbRtp::getNumInvalids() { return mNumInvalids; }
 uint64_t cDvbRtp::getNumDiscontinuities() { return mNumDiscontinuities; }
-uint64_t cDvbRtp::getNumErrors() { return mNumErrors; }
 
 //{{{
-bool cDvbRtp::setOutput (const std::string& outputString, int sid) {
+bool cDvbRtp::setOutput (const string& outputString, int sid) {
 
   struct addrinfo* addr = parseHost (outputString.c_str(), DEFAULT_PORT);
   if (!addr)
@@ -2527,9 +2525,9 @@ bool cDvbRtp::setOutput (const std::string& outputString, int sid) {
 void cDvbRtp::processBlockList (cBlock* blockList) {
 // process block list
 
-  // set blocks DTS
   mWallclock = mdate();
 
+  // set blockList DTS
   int numTs = 0;
   cBlock* block = blockList;
   while (block) {
@@ -2537,7 +2535,7 @@ void cDvbRtp::processBlockList (cBlock* blockList) {
     block = block->mNextBlock;
     }
 
-  // assume is CBR, at least between two consecutive read(), especially true in budget mode
+  // assume CBR, at least between two consecutive read(), especially true in budget mode
   int64_t duration = (mLastDts == -1)  ? 0 : mWallclock - mLastDts;
   block = blockList;
   int i = numTs - 1;
