@@ -14,12 +14,11 @@
 #include <netinet/ip.h>
 #include <unistd.h>
 
-#include "bitstream/dvb/si.h"
-#include "bitstream/mpeg/ts.h"
-#include "bitstream/mpeg/pes.h"
-#include "bitstream/mpeg/psi.h"
-#include "bitstream/dvb/si.h"
-#include "bitstream/ietf/rtp.h"
+#include "../../shared/bitstream/dvb/si.h"
+#include "../../shared/bitstream/mpeg/ts.h"
+#include "../../shared/bitstream/mpeg/pes.h"
+#include "../../shared/bitstream/mpeg/psi.h"
+#include "../../shared/bitstream/ietf/rtp.h"
 
 // utils
 #include "../../shared/fmt/core.h"
