@@ -44,7 +44,7 @@ using namespace fmt;
 //}}}
 
 namespace {
-  constexpr int kDvrFd = 0;
+  constexpr int kDvrFdIndex = 0;
   constexpr int kDvrBufferSize = 40*188*1024;
   //{{{  dtv_properties
   //{{{
@@ -151,24 +151,26 @@ cDvb::cDvb (int frequency, int adapter) {
     this_thread::sleep_for (100ms);
 
   string dvr = format ("/dev/dvb/adapter{}/dvr{}", mAdapter, mFeNum);
-  fds[kDvrFd].fd = open (dvr.c_str(), O_RDONLY | O_NONBLOCK);
-  fds[kDvrFd].events = POLLIN;
-  if (fds[kDvrFd].fd < 0) {
+  fds[kDvrFdIndex].fd = open (dvr.c_str(), O_RDONLY | O_NONBLOCK);
+  fds[kDvrFdIndex].events = POLLIN;
+  if (fds[kDvrFdIndex].fd < 0) {
     //{{{  error exit
     cLog::log (LOGERROR, "opening device faile" + dvr);
     exit (1);
     }
     //}}}
 
-  if (ioctl (fds[kDvrFd].fd, DMX_SET_BUFFER_SIZE, kDvrBufferSize) < 0)
+  if (ioctl (fds[kDvrFdIndex].fd, DMX_SET_BUFFER_SIZE, kDvrBufferSize) < 0)
     cLog::log (LOGERROR, "dvbOpen setBufferSize failed" + dvr);
 
   cLog::log (LOGINFO, "dvb tuned with lock, bufferSize %d", kDvrBufferSize);
   }
 //}}}
+//{{{
 cDvb::~cDvb() {
-  close (fds[kDvrFd].fd);
+  close (fds[kDvrFdIndex].fd);
   }
+//}}}
 
 //{{{
 cBlock* cDvb::read (cBlockPool* blockPool) {
@@ -190,7 +192,7 @@ cBlock* cDvb::read (cBlockPool* blockPool) {
   while (poll (fds, 1, -1) <= 0)
     cLog::log (LOGINFO, "poll waiting");
 
-  int size = readv (fds[kDvrFd].fd, iovecs, kMaxRead);
+  int size = readv (fds[kDvrFdIndex].fd, iovecs, kMaxRead);
   if (size < 0) {
     cLog::log (LOGERROR, format ("readv DVR failed {}", strerror(errno)));
     size = 0;
@@ -349,7 +351,7 @@ void cDvb::frontendInfo (struct dvb_frontend_info& info, uint32_t version,
 
   // info
   string infoString = "has - ";
-  //{{{  fec
+  //{{{  report fec
   if (info.caps & FE_IS_STUPID)
     infoString += "stupid ";
 
@@ -385,7 +387,7 @@ void cDvb::frontendInfo (struct dvb_frontend_info& info, uint32_t version,
 
   cLog::log (LOGINFO, infoString);
   //}}}
-  //{{{  qam
+  //{{{  report qam
   infoString = "has - ";
 
   if (info.caps & FE_CAN_QPSK)
@@ -411,7 +413,7 @@ void cDvb::frontendInfo (struct dvb_frontend_info& info, uint32_t version,
 
   cLog::log (LOGINFO, infoString);
   //}}}
-  //{{{  other
+  //{{{  report other
   infoString = "has - ";
 
   if (info.caps & FE_CAN_TRANSMISSION_MODE_AUTO)
@@ -455,7 +457,7 @@ void cDvb::frontendInfo (struct dvb_frontend_info& info, uint32_t version,
 
   cLog::log (LOGINFO, infoString);
   //}}}
-  //{{{  delivery systems
+  //{{{  report delivery systems
   infoString = "has - ";
 
   for (int i = 0; i < numSystems; i++)
@@ -586,20 +588,16 @@ bool cDvb::frontendStatus() {
   bool result = false;
 
   struct dvb_frontend_event event;
-  int ret = ioctl (mFrontend, FE_GET_EVENT, &event);
-  if (ret < 0) {
+  if (ioctl (mFrontend, FE_GET_EVENT, &event) < 0) {
     if (errno == EWOULDBLOCK)
       return false;
-
-    cLog::log (LOGERROR, "reading frontend event failed");
+    cLog::log (LOGERROR, "cDvb read FE_GET_EVENT failed");
     return false;
     }
 
-  // calc change in status
+  // report status change
   fe_status_t status = event.status;
   fe_status_t diff = (fe_status_t)(status ^ mLastStatus);
-  mLastStatus = status;
-
   if (diff) {
     string statusString = "status - ";
 
@@ -611,7 +609,6 @@ bool cDvb::frontendStatus() {
         statusString += "lostSignal ";
       }
       //}}}
-
     if (diff & FE_HAS_CARRIER) {
       //{{{  carrier
       if (status & FE_HAS_CARRIER)
@@ -620,7 +617,6 @@ bool cDvb::frontendStatus() {
         statusString += "lostCarrier ";
       }
       //}}}
-
     if (diff & FE_HAS_VITERBI) {
       //{{{  fec
       if (status & FE_HAS_VITERBI)
@@ -629,7 +625,6 @@ bool cDvb::frontendStatus() {
         statusString += "lostFec ";
       }
       //}}}
-
     if (diff & FE_HAS_SYNC) {
       //{{{  sync
       if (status & FE_HAS_SYNC)
@@ -638,7 +633,6 @@ bool cDvb::frontendStatus() {
         statusString += "lostSync ";
       }
       //}}}
-
     if (diff & FE_HAS_LOCK) {
       //{{{  lock
       if (status & FE_HAS_LOCK) {
@@ -661,6 +655,8 @@ bool cDvb::frontendStatus() {
 
     cLog::log (LOGINFO, statusString);
     }
+
+  mLastStatus = status;
 
   return result;
   }

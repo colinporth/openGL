@@ -69,7 +69,6 @@ const sMultiplexes kMultiplexes = { { kHdMultiplex, kItvMultiplex, kBbcMultiplex
 // cAppWindow
 class cApp : public cGlWindow {
 public:
-  cApp() {}
   //{{{
   void run (const string& title, int width, int height, bool gui, bool all, sMultiplex multiplex) {
 
@@ -135,18 +134,12 @@ private:
   //{{{
   void dvblast() {
 
-    //{{{  set thread realtime priority
-    int policy;
+    // set thread realtime priority
     struct sched_param param;
-    int error = pthread_getschedparam (pthread_self(), &policy, &param);
-    if (error)
-      cLog::log (LOGERROR, "pthread_setschedparam failed: %s", strerror (error));
-
     param.sched_priority = sched_get_priority_max (SCHED_RR);
-    error = pthread_setschedparam (pthread_self(), SCHED_RR, &param);
+    int error = pthread_setschedparam (pthread_self(), SCHED_RR, &param);
     if (error)
-      cLog::log (LOGERROR, "pthread_setschedparam failed: %s", strerror (error));
-    //}}}
+      cLog::log (LOGERROR, "dvblast - pthread_setschedparam failed: %s", strerror (error));
 
     // init blockPool
     cBlockPool blockPool (100);
