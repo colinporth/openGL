@@ -28,7 +28,6 @@ private:
   fe_transmit_mode_t getTransmission();
   fe_spectral_inversion_t getInversion();
   fe_code_rate_t getFEC (fe_caps_t fe_caps, int fecValue);
-  fe_delivery_system_t frontendGuessSystem (fe_delivery_system_t* systems, int numSystems);
 
   void frontendInfo (struct dvb_frontend_info& info, uint32_t version,
                      fe_delivery_system_t* systems, int numSystems);

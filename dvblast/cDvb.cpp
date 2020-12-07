@@ -56,6 +56,7 @@ namespace {
     .props = info_cmdargs
     };
   //}}}
+
   //{{{
   struct dtv_property enum_cmdargs[] = { DTV_ENUM_DELSYS, 0,0,0, 0,0 };
   //}}}
@@ -65,6 +66,7 @@ namespace {
     .props = enum_cmdargs
     };
   //}}}
+
   //{{{
   struct dtv_property dvbt_cmdargs[] = {
     { DTV_DELIVERY_SYSTEM,   0,0,0, SYS_DVBT,0 },
@@ -80,6 +82,13 @@ namespace {
     { DTV_TUNE,              0,0,0, 0,0 }
     };
   //}}}
+  //{{{
+  struct dtv_properties dvbt_cmdseq = {
+    .num = sizeof(dvbt_cmdargs)/sizeof(struct dtv_property),
+    .props = dvbt_cmdargs
+    };
+  //}}}
+
   //{{{
   struct dtv_property dvbt2_cmdargs[] = {
     { DTV_DELIVERY_SYSTEM,   0,0,0, SYS_DVBT2,0 },
@@ -99,12 +108,6 @@ namespace {
   struct dtv_properties dvbt2_cmdseq = {
     .num = sizeof(dvbt2_cmdargs)/sizeof(struct dtv_property),
     .props = dvbt2_cmdargs
-    };
-  //}}}
-  //{{{
-  struct dtv_properties dvbt_cmdseq = {
-    .num = sizeof(dvbt_cmdargs)/sizeof(struct dtv_property),
-    .props = dvbt_cmdargs
     };
   //}}}
 
@@ -335,39 +338,16 @@ fe_code_rate_t cDvb::getFEC (fe_caps_t fe_caps, int fecValue) {
   return FEC_AUTO;
   }
 //}}}
-//{{{
-fe_delivery_system_t cDvb::frontendGuessSystem (fe_delivery_system_t* systems, int numSystems) {
-
-  // use the local T2 frequency
-  for (int i = 0; i < numSystems; i++) {
-    switch (systems[i]) {
-      case SYS_DVBT:
-        if (mFrequency == 626000000)
-          return SYS_DVBT2;
-        break;
-
-      case SYS_DVBT2:
-        if (mFrequency != 626000000)
-          return SYS_DVBT;
-        break;
-
-      default:
-        break;
-      }
-    }
-
-  cLog::log (LOGERROR, "couldn't guess delivery system");
-  return systems[0];
-  }
-//}}}
 
 //{{{
 void cDvb::frontendInfo (struct dvb_frontend_info& info, uint32_t version,
-                   fe_delivery_system_t* systems, int numSystems) {
+                         fe_delivery_system_t* systems, int numSystems) {
 
-  cLog::log (LOGINFO, "frontendInfo - frequency min:%d, max:%d, stepSize:%d, tolerance:%d",
-             info.frequency_min, info.frequency_max, info.frequency_stepsize, info.frequency_tolerance);
+  cLog::log (LOGINFO, format ("frontend - version {} min {} max {} stepSize {} tolerance {}",
+                              version, info.frequency_min, info.frequency_max,
+                              info.frequency_stepsize, info.frequency_tolerance));
 
+  // info
   string infoString = "has - ";
   //{{{  fec
   if (info.caps & FE_IS_STUPID)
@@ -500,63 +480,31 @@ void cDvb::frontendSetup() {
     }
     //}}}
 
-  int numSystems = 0;
-  fe_delivery_system_t systems[MAX_DELIVERY_SYSTEMS] = {SYS_UNDEFINED, SYS_UNDEFINED};
-  uint32_t version = 0x300;
   if (ioctl (mFrontend, FE_GET_PROPERTY, &info_cmdseq) < 0) {
-    //{{{  DVBv3 device
-    switch (info.type) {
-      case FE_OFDM:
-        systems[numSystems++] = SYS_DVBT;
-        if (info.caps & FE_CAN_2G_MODULATION)
-          systems[numSystems++] = SYS_DVBT2;
-        break;
-
-      case FE_QAM:
-        systems[numSystems++] = SYS_DVBC_ANNEX_A;
-        break;
-
-      case FE_QPSK:
-        systems[numSystems++] = SYS_DVBS;
-        if (info.caps & FE_CAN_2G_MODULATION)
-           systems[numSystems++] = SYS_DVBS2;
-        break;
-
-      case FE_ATSC:
-        if (info.caps & (FE_CAN_8VSB | FE_CAN_16VSB))
-          systems[numSystems++] = SYS_ATSC;
-        if (info.caps & (FE_CAN_QAM_64 | FE_CAN_QAM_256 | FE_CAN_QAM_AUTO))
-          systems[numSystems++] = SYS_DVBC_ANNEX_B;
-        break;
-
-      default:
-        cLog::log (LOGERROR, "unknown frontend type %d", info.type);
-        exit(1);
-      }
+    //{{{  error exit
+    cLog::log (LOGERROR, "frontend FE_GET_PROPERTY api version failed");
+    exit (1);
     }
     //}}}
-  else {
-     //{{{  no idea
-     version = info_cmdargs[0].u.data;
-     if (ioctl (mFrontend, FE_GET_PROPERTY, &enum_cmdseq) < 0) {
-       //{{{  error return
-       cLog::log (LOGERROR, "frontend FE_GET_PROPERTY failed");
-       exit (1);
-       }
-       //}}}
+  int version = info_cmdargs[0].u.data;
 
-     numSystems = enum_cmdargs[0].u.buffer.len;
-     if (numSystems < 1) {
-       //{{{  error return
-       cLog::log (LOGERROR, "no available delivery system");
-       exit(1);
-       }
-       //}}}
-     else
-       for (int i = 0; i < numSystems; i++)
-         systems[i] = (fe_delivery_system_t)enum_cmdargs[0].u.buffer.data[i];
-     }
-     //}}}
+  if (ioctl (mFrontend, FE_GET_PROPERTY, &enum_cmdseq) < 0) {
+    //{{{  error exit
+    cLog::log (LOGERROR, "frontend FE_GET_PROPERTY failed");
+    exit (1);
+    }
+    //}}}
+
+  fe_delivery_system_t systems[MAX_DELIVERY_SYSTEMS] = {SYS_UNDEFINED, SYS_UNDEFINED};
+  int numSystems = enum_cmdargs[0].u.buffer.len;
+  if (numSystems < 1) {
+    //{{{  error exit
+    cLog::log (LOGERROR, "no available delivery system");
+    exit(1);
+    }
+    //}}}
+  for (int i = 0; i < numSystems; i++)
+    systems[i] = (fe_delivery_system_t)enum_cmdargs[0].u.buffer.data[i];
 
   frontendInfo (info, version, systems, numSystems);
 
@@ -569,7 +517,7 @@ void cDvb::frontendSetup() {
     //}}}
 
   struct dtv_properties* p;
-  fe_delivery_system_t system = frontendGuessSystem (systems, numSystems);
+  fe_delivery_system_t system = mFrequency == 626000000 ? SYS_DVBT2 : SYS_DVBT;
   switch (system) {
     //{{{
     case SYS_DVBT:
@@ -615,13 +563,13 @@ void cDvb::frontendSetup() {
     }
 
   // empty the event queue
-  for (;;) {
+  while (true) {
     struct dvb_frontend_event event;
-    if (ioctl (mFrontend, FE_GET_EVENT, &event) < 0 && errno == EWOULDBLOCK)
+    if ((ioctl (mFrontend, FE_GET_EVENT, &event) < 0) && (errno == EWOULDBLOCK))
       break;
     }
 
-  // send it all to the frontend device
+  // send properties to frontend device
   if (ioctl (mFrontend, FE_SET_PROPERTY, p) < 0) {
     //{{{  error exit
     cLog::log (LOGERROR, "setting frontend failed %s", strerror(errno));
