@@ -15,9 +15,9 @@ public:
   ~cDvbRtp();
 
   uint64_t getNumPackets();
+  uint64_t getNumErrors();
   uint64_t getNumInvalids();
   uint64_t getNumDiscontinuities();
-  uint64_t getNumErrors();
 
   static bool setOutput (const std::string& outputString, int sid);
   static void processBlockList (cBlock* blockList);

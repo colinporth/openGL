@@ -110,27 +110,19 @@ public:
       add (new cTextBox (mDvb->mTuneStr, 12.f * cWidget::kBox));
       add (new cTextBox (mDvb->mSignalStr, 12.f * cWidget::kBox));
       addBelowLeft (new cDvbWidget(mDvb, 0.f, -cWidget::kBox));
-      }
 
-    if (fileName.empty()) {
-      #ifndef _WIN32
-        auto captureThread = thread ([=]() { mDvb->captureThread(); });
-        sched_param sch_params;
-        sch_params.sched_priority = sched_get_priority_max (SCHED_RR);
-        pthread_setschedparam (captureThread.native_handle(), SCHED_RR, &sch_params);
-        captureThread.detach();
-      #endif
+      if (fileName.empty())
+        thread ([=](){ mDvb->grabThread (all ? kRootName : "", multiplex.mName); } ).detach();
+      else
+        thread ([=](){ mDvb->readThread (fileName); } ).detach();
 
-      thread ([=](){ mDvb->grabThread (all ? kRootName : "", multiplex.mName); } ).detach();
-      }
-    else
-      thread ([=](){ mDvb->readThread (fileName); } ).detach();
-
-    if (gui)
       runGui (true);
-    else
-      while (true)
-        this_thread::sleep_for (1s);
+      }
+
+    else if (fileName.empty()) // run dvbGrab in this main thread
+      mDvb->grabThread (all ? kRootName : "", multiplex.mName);
+    else // run readFile in this main thread
+      mDvb->readThread (fileName);
 
     delete mDvb;
 

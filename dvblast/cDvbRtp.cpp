@@ -1806,6 +1806,7 @@ namespace {
     }
   //}}}
   //}}}
+
   //{{{  sections
   //{{{
   void deleteProgram (uint16_t sidNum, uint16_t pidNum) {
