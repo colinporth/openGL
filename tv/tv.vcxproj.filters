@@ -10,6 +10,7 @@
     <ClCompile Include="..\..\shared\vg\cGlWindow.cpp" />
     <ClCompile Include="..\..\shared\vg\cVg.cpp" />
     <ClCompile Include="..\..\shared\fmt\format.cpp" />
+    <ClCompile Include="..\..\shared\dvb\cTsDvb.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\utils\cLog.h">
@@ -79,6 +80,9 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\resources\FreeSansBold.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\dvb\cTsDvb.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>

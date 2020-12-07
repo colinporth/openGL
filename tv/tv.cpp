@@ -32,7 +32,7 @@
 #include "../../shared/utils/utils.h"
 #include "../../shared/utils/cLog.h"
 
-#include "../../shared/dvb/cDvb.h"
+#include "../../shared/dvb/cTsDvb.h"
 
 #include "../../shared/vg/cGlWindow.h"
 #include "../../shared/resources/FreeSansBold.h"
@@ -99,9 +99,9 @@ public:
   void run (const string& title, int width, int height, bool gui, bool all, bool decodeSubtitle,
             sMultiplex multiplex, const string& fileName) {
 
-    auto mDvb = new cDvb (multiplex.mFrequency, kRootName,
-                          multiplex.mSelectedChannels, multiplex.mSaveNames,
-                          gui && decodeSubtitle);
+    auto mDvb = new cTsDvb (multiplex.mFrequency, kRootName,
+                            multiplex.mSelectedChannels, multiplex.mSaveNames,
+                            gui && decodeSubtitle);
 
    if (gui) {
       initialiseGui (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
