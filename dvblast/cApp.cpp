@@ -81,13 +81,12 @@ public:
 
       runGui (true);
       }
-    else
+    else // run in this main thread
       dvblast();
 
     cLog::log (LOGINFO, "exit");
     }
   //}}}
-  bool mExit = false;
 protected:
   //{{{
   void onKey (int key, int scancode, int action, int mods) {
@@ -173,6 +172,8 @@ private:
     }
   //}}}
   //{{{  vars
+  bool mExit = false;
+
   int mBlocks = 0;
   string mString = "hello";
   //}}}
