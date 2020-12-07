@@ -2323,8 +2323,8 @@ namespace {
       // get and log info
       uint16_t sid = 0;
       const char* pidDesc = getPidDesc (pidNum, &sid);
-      int expected = (tsPid->mLastContinuity + 1) & 0x0f;
-      cLog::log (LOGERROR, format ("continuity sid:{} pid:{} {}:{}d {}", sid, pidNum, expected, continuity, pidDesc));
+      cLog::log (LOGERROR, format ("continuity sid:{} pid:{} {}:{} {}", 
+                            sid, pidNum, continuity, (tsPid->mLastContinuity + 1) & 0x0f, pidDesc));
       }
 
     if (ts_get_transporterror (block->mTs)) {
