@@ -190,9 +190,9 @@ namespace {
 
     // output config
     uint16_t mNetworkId = 0xffff;
-    string mNetworkName = "networkName";
-    string mServiceName = "serviceName";
-    string mProviderName = "providerName";
+    string mNetworkName = "";
+    string mServiceName = "";
+    string mProviderName = "";
 
     uint8_t mSsrc[4] = { 0 };
     int mTtl = 64;
@@ -1372,15 +1372,13 @@ namespace {
   //{{{
   void changeOutput (cOutput* output, const cOutputConfig* config) {
 
-    uint16_t sidNum = config->mSid;
-    uint16_t oldSidNum = output->mConfig.mSid;
-    bool sidChanged = sidNum != oldSidNum;
+    bool sidChanged = output->mConfig.mSid != config->mSid;
 
     bool dvbChanged = output->mConfig.mOutputDvb != config->mOutputDvb;
     bool epgChanged = output->mConfig.mOutputEpg != config->mOutputEpg;
 
-    bool networkChanged = (output->mConfig.mNetworkName != config->mNetworkName) ||
-                          (output->mConfig.mNetworkId != config->mNetworkId);
+    bool networkChanged = (output->mConfig.mNetworkId != config->mNetworkId) ||
+                          (output->mConfig.mNetworkName != config->mNetworkName);
     bool mServiceChanged = output->mConfig.mServiceName != config->mServiceName;
     bool mProviderChanged = output->mConfig.mProviderName != config->mProviderName;
 
@@ -1416,6 +1414,7 @@ namespace {
       uint16_t* wantedPids;
       int numWantedPids;
       uint16_t wantedPcrPid;
+      uint16_t sidNum = config->mSid;
       uint16_t* pids = config->mPids;
       int numPids = config->mNumPids;
       getPids (&wantedPids, &numWantedPids, &wantedPcrPid, sidNum, pids, numPids);
@@ -1423,6 +1422,7 @@ namespace {
       uint16_t* currentPids;
       int numCurrentPids;
       uint16_t currentPcrPid;
+      uint16_t oldSidNum = output->mConfig.mSid;
       uint16_t* oldPids = output->mConfig.mPids;
       int oldNumPids = output->mConfig.mNumPids;
       getPids (&currentPids, &numCurrentPids, &currentPcrPid, oldSidNum, oldPids, oldNumPids);
