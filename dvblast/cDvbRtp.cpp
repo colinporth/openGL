@@ -1374,15 +1374,15 @@ namespace {
 
     uint16_t sidNum = config->mSid;
     uint16_t oldSidNum = output->mConfig.mSid;
-    bool sidChange = sidNum != oldSidNum;
+    bool sidChanged = sidNum != oldSidNum;
 
-    bool dvbChange = output->mConfig.mOutputDvb != config->mOutputDvb;
-    bool epgChange = output->mConfig.mOutputEpg != config->mOutputEpg;
+    bool dvbChanged = output->mConfig.mOutputDvb != config->mOutputDvb;
+    bool epgChanged = output->mConfig.mOutputEpg != config->mOutputEpg;
 
-    bool networkChange = (output->mConfig.mNetworkName != config->mNetworkName) ||
-                         (output->mConfig.mNetworkId != config->mNetworkId);
-    bool mServiceNameChange = (output->mConfig.mServiceName != config->mServiceName) ||
-                              (output->mConfig.mProviderName != config->mProviderName);
+    bool networkChanged = (output->mConfig.mNetworkName != config->mNetworkName) ||
+                          (output->mConfig.mNetworkId != config->mNetworkId);
+    bool mServiceChanged = output->mConfig.mServiceName != config->mServiceName;
+    bool mProviderChanged = output->mConfig.mProviderName != config->mProviderName;
 
     output->mConfig.mOutputDvb = config->mOutputDvb;
     output->mConfig.mOutputEpg = config->mOutputEpg;
@@ -1395,24 +1395,24 @@ namespace {
     output->mConfig.mServiceName = config->mServiceName;
     output->mConfig.mProviderName = config->mProviderName;
 
-    bool tsidChange = false;
+    bool tsidChanged = false;
     if ((config->mTsId != -1) && (output->mConfig.mTsId != config->mTsId)) {
       output->mTsId = config->mTsId;
       output->mConfig.mTsId = config->mTsId;
-      tsidChange = true;
+      tsidChanged = true;
       }
     if ((config->mTsId == -1) && (output->mConfig.mTsId != -1)) {
       output->mConfig.mTsId = config->mTsId;
       if (psi_table_validate (mCurrentPatSections))
         output->mTsId = psi_table_get_tableidext (mCurrentPatSections);
-      tsidChange = true;
+      tsidChanged = true;
       }
 
-    bool pidChange = false;
-    if (!(!sidChange &&
+    bool pidChanged = false;
+    if (!(!sidChanged &&
          (config->mNumPids == output->mConfig.mNumPids) &&
          (!config->mNumPids || !memcmp (output->mConfig.mPids, config->mPids, config->mNumPids * sizeof(uint16_t))))) {
-      //{{{  pids change
+      //{{{  pids Changed
       uint16_t* wantedPids;
       int numWantedPids;
       uint16_t wantedPcrPid;
@@ -1427,7 +1427,7 @@ namespace {
       int oldNumPids = output->mConfig.mNumPids;
       getPids (&currentPids, &numCurrentPids, &currentPcrPid, oldSidNum, oldPids, oldNumPids);
 
-      if (sidChange && oldSidNum) {
+      if (sidChanged && oldSidNum) {
         sSid* oldSid = findSid (oldSidNum);
         output->mConfig.mSid = config->mSid;
         if (oldSid)
@@ -1438,14 +1438,14 @@ namespace {
       for (int i = 0; i < numCurrentPids; i++) {
         if (!isIn (wantedPids, numWantedPids, currentPids[i])) {
           stopPid (output, currentPids[i]);
-          pidChange = true;
+          pidChanged = true;
           }
         }
 
       for (int i = 0; i < numWantedPids; i++) {
         if (!isIn (currentPids, numCurrentPids, wantedPids[i])) {
           startPid (output, wantedPids[i]);
-          pidChange = true;
+          pidChanged = true;
           }
         }
 
@@ -1453,7 +1453,7 @@ namespace {
       free (currentPids);
       output->mPcrPid = wantedPcrPid;
 
-      if (sidChange && sidNum) {
+      if (sidChanged && sidNum) {
         sSid* sid = findSid (sidNum);
         output->mConfig.mSid = oldSidNum;
         if (sid)
@@ -1470,16 +1470,13 @@ namespace {
       }
       //}}}
 
-    if (sidChange || pidChange || tsidChange || dvbChange || networkChange || mServiceNameChange)
-      cLog::log (LOGINFO, "dvbRtpChange - %s%s%s%s%s%s changed",
-                 sidChange ? "sid " : "",
-                 pidChange ? "pid " : "",
-                 tsidChange ? "tsid " : "",
-                 dvbChange ? "dvb " : "",
-                 networkChange ? "network " : "",
-                 mServiceNameChange ? "serviceName " : "");
+    if (sidChanged || pidChanged || tsidChanged || dvbChanged || networkChanged || mServiceChanged || mProviderChanged)
+      cLog::log (LOGINFO, format ("changeOuput {}{}{}{}{}{}{}",
+        dvbChanged ? "dvb " : "",
+        sidChanged ? "sid " : "", pidChanged ? "pid " : "", tsidChanged ? "tsid " : "",
+        networkChanged ? "network " : "", mServiceChanged ? "service " : "", mProviderChanged ? "provider " : ""));
 
-    if (sidChange) {
+    if (sidChanged) {
        //{{{  new pat,pmt,sdt,nit
        newSDT (output);
        newNIT (output);
@@ -1488,24 +1485,24 @@ namespace {
        }
        //}}}
     else {
-      if (tsidChange) {
+      if (tsidChanged) {
         //{{{  new pat,sdt,nit
         newSDT (output);
         newNIT (output);
         newPAT (output);
         }
         //}}}
-      else if (dvbChange) {
+      else if (dvbChanged) {
         //{{{  new pat,nit
         newNIT (output);
         newPAT (output);
         }
         //}}}
-      else if (networkChange)
+      else if (networkChanged)
         newNIT (output);
-      if (!tsidChange && (mServiceNameChange || epgChange))
+      if (!tsidChanged && (mServiceChanged || mProviderChanged || epgChanged))
         newSDT (output);
-      if (pidChange)
+      if (pidChanged)
         newPMT (output);
       }
 
