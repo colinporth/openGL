@@ -1807,7 +1807,6 @@ namespace {
   //}}}
   //}}}
 
-  //{{{  sections
   //{{{
   void deleteProgram (uint16_t sidNum, uint16_t pidNum) {
 
@@ -1845,7 +1844,6 @@ namespace {
       }
     }
   //}}}
-
   //{{{
   void handlePAT (int64_t dts) {
 
@@ -1887,7 +1885,7 @@ namespace {
       uint8_t* section = psi_table_get_section (mCurrentPatSections, i);
       const uint8_t* program;
       while ((program = pat_get_program (section, j))) {
-        const uint8_t* p_old_program = NULL;
+        const uint8_t* oldProgram = NULL;
         uint16_t sid = patn_get_program (program);
         uint16_t pid = patn_get_pid (program);
         j++;
@@ -1899,13 +1897,13 @@ namespace {
           }
 
           if (!psi_table_validate (oldPatSections) ||
-              ((p_old_program = pat_table_find_program (oldPatSections, sid)) == NULL) ||
-              patn_get_pid (p_old_program) != pid ||
+              ((oldProgram = pat_table_find_program (oldPatSections, sid)) == NULL) ||
+              patn_get_pid (oldProgram) != pid ||
               change) {
             sSid* p_sid;
 
-          if (p_old_program)
-            deleteProgram (sid, patn_get_pid (p_old_program));
+          if (oldProgram)
+            deleteProgram (sid, patn_get_pid (oldProgram));
 
           selectPMT (sid, pid);
 
@@ -1971,7 +1969,6 @@ namespace {
     handlePAT (dts);
     }
   //}}}
-
   //{{{
   void handlePMT (uint16_t pid, uint8_t* pmt, int64_t dts) {
 
@@ -2044,7 +2041,6 @@ namespace {
     sendPMT (sid, dts);
     }
   //}}}
-
   //{{{
   void handleNIT (int64_t dts) {
 
@@ -2086,7 +2082,6 @@ namespace {
     sendNIT (dts);
     }
   //}}}
-
   //{{{
   void handleSDT (int64_t dts) {
 
@@ -2162,7 +2157,6 @@ namespace {
     handleSDT (dts);
     }
   //}}}
-
   //{{{
   void handleEIT (uint16_t pid, uint8_t* eit, int64_t dts) {
 
@@ -2219,7 +2213,6 @@ namespace {
     if (!epg)
       free (eit);
     }
-  //}}}
   //}}}
   //{{{
   void handleSection (uint16_t pid, uint8_t* section, int64_t dts) {
@@ -2323,7 +2316,7 @@ namespace {
       // get and log info
       uint16_t sid = 0;
       const char* pidDesc = getPidDesc (pidNum, &sid);
-      cLog::log (LOGERROR, format ("continuity sid:{} pid:{} {}:{} {}", 
+      cLog::log (LOGERROR, format ("continuity sid:{} pid:{} {}:{} {}",
                             sid, pidNum, continuity, (tsPid->mLastContinuity + 1) & 0x0f, pidDesc));
       }
 

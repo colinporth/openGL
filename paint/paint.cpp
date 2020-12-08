@@ -101,7 +101,7 @@ public:
       const string kRootName = "/home/pi/tv";
     #endif
 
-    auto mDvb = new cDvb (multiplex.mFrequency, kRootName, multiplex.mSelectedChannels, multiplex.mSaveNames, false);
+    auto mDvb = new cDvb (multiplex.mFrequency);
 
    if (!headless) {
       initialiseGui (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
@@ -119,10 +119,10 @@ public:
         captureThread.detach();
       #endif
 
-      thread ([=]() { mDvb->grabThread (all ? kRootName : "", multiplex.mName); } ).detach();
+      //thread ([=]() { mDvb->grabThread (all ? kRootName : "", multiplex.mName); } ).detach();
       }
-    else
-      thread ([=]() { mDvb->readThread (fileName); } ).detach();
+    //else
+      //thread ([=]() { mDvb->readThread (fileName); } ).detach();
 
     if (headless) {
       while (true)

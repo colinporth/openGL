@@ -45,7 +45,7 @@ $(BUILD_DIR)/%.c.o: %.c
 
 $(BUILD_DIR)/%.cpp.o: %.cpp
 	mkdir -p $(dir $@)
-	g++ -std=c++2a $(CFLAGS) -c $< -o $@
+	g++ -std=c++17 $(CFLAGS) -c $< -o $@
 
 $(TARGET): $(OBJS)
 	g++ $(OBJS) -o $@ $(LIBS)
