@@ -156,7 +156,7 @@ namespace {
 
       mNetworkId = 0xffff;
       mNetworkName = networkName;
-      mServiceName = "serviceName";
+      mServiceName = "";
       mProviderName = providerName;
 
       mSsrc[0] = 0;
@@ -191,8 +191,8 @@ namespace {
     // output config
     uint16_t mNetworkId = 0xffff;
     string mNetworkName = "networkName";
-    string mServiceName = "serviceName";;
-    string mProviderName = "providerName";;
+    string mServiceName = "serviceName";
+    string mProviderName = "providerName";
 
     uint8_t mSsrc[4] = { 0 };
     int mTtl = 64;
@@ -1120,7 +1120,7 @@ namespace {
     else
       sdtn_set_sid (service, output->mConfig.mSid);
 
-    // We always forward EITp/f
+    // We always forward EITpf
     if (sdtn_get_eitpresent (currentService))
       sdtn_set_eitpresent (service);
 
@@ -2481,7 +2481,7 @@ bool cDvbRtp::setOutput (const string& outputString, int sid) {
     return false;
 
   cOutputConfig outputConfig;
-  outputConfig.initialise ("dvbRtpHost", "dvbRtpProvider");
+  outputConfig.initialise ("", "");
   outputConfig.mDisplayName = outputString;
   outputConfig.mSid = sid;
   outputConfig.mOutputDvb = true;
