@@ -471,8 +471,7 @@ namespace {
     return ((int64_t)ts.tv_sec * (int64_t)1000000) + (int64_t)(ts.tv_nsec / 1000);
     }
   //}}}
-
-  //{{{  demux
+  //{{{  demux utils
   //{{{
   bool isIn (const uint16_t* pids, int numPids, uint16_t pidNum) {
 
@@ -899,6 +898,7 @@ namespace {
   void newPAT (cOutput* output) {
 
     free (output->mPatSection);
+
     output->mPatSection = NULL;
     output->mPatVersion++;
 
@@ -949,19 +949,20 @@ namespace {
   void newPMT (cOutput* output) {
 
     free (output->mPmtSection);
+
     output->mPmtSection = NULL;
     output->mPmtVersion++;
     if (!output->mConfig.mSid)
       return;
 
-    sSid* p_sid = findSid (output->mConfig.mSid);
-    if (p_sid == NULL)
+    sSid* sid = findSid (output->mConfig.mSid);
+    if (sid == NULL)
       return;
 
-    if (p_sid->mCurrentPmt == NULL)
+    if (sid->mCurrentPmt == NULL)
       return;
 
-    uint8_t* currentPmt = p_sid->mCurrentPmt;
+    uint8_t* currentPmt = sid->mCurrentPmt;
     uint8_t* p = output->mPmtSection = psi_allocate();
     pmt_init (p);
     psi_set_length (p, PSI_MAX_SIZE);
@@ -1027,21 +1028,22 @@ namespace {
   void newNIT (cOutput* output) {
 
     free (output->mNitSection);
-    output->mNitSection = NULL;
+
+    uint8_t* nitSection = psi_allocate();
+    output->mNitSection = nitSection;
     output->mNitVersion++;
 
-    uint8_t* p = output->mNitSection = psi_allocate();
-    nit_init (p, true);
-    nit_set_length (p, PSI_MAX_SIZE);
-    nit_set_nid (p, output->mConfig.mNetworkId);
-    psi_set_version (p, output->mNitVersion);
-    psi_set_current (p);
-    psi_set_section (p, 0);
-    psi_set_lastsection (p, 0);
+    nit_init (nitSection, true);
+    nit_set_length (nitSection, PSI_MAX_SIZE);
+    nit_set_nid (nitSection, output->mConfig.mNetworkId);
+    psi_set_version (nitSection, output->mNitVersion);
+    psi_set_current (nitSection);
+    psi_set_section (nitSection, 0);
+    psi_set_lastsection (nitSection, 0);
 
     if (output->mConfig.mNetworkName.size()) {
-      nit_set_desclength (p, DESCS_MAX_SIZE);
-      uint8_t* descs = nit_get_descs (p);
+      nit_set_desclength (nitSection, DESCS_MAX_SIZE);
+      uint8_t* descs = nit_get_descs (nitSection);
       uint8_t* desc = descs_get_desc (descs, 0);
       desc40_init (desc);
       desc40_set_networkname (desc, (const uint8_t*)output->mConfig.mNetworkName.c_str(),
@@ -1050,13 +1052,13 @@ namespace {
       descs_set_length (descs, desc - descs - DESCS_HEADER_SIZE);
       }
     else
-      nit_set_desclength (p, 0);
+      nit_set_desclength (nitSection, 0);
 
-    uint8_t* header2 = nit_get_header2 (p);
+    uint8_t* header2 = nit_get_header2 (nitSection);
     nith_init (header2);
     nith_set_tslength (header2, NIT_TS_SIZE);
 
-    uint8_t* ts = nit_get_ts (p, 0);
+    uint8_t* ts = nit_get_ts (nitSection, 0);
     nitn_init (ts);
     nitn_set_tsid (ts, output->mTsId);
     if (output->mConfig.mOnid)
@@ -1065,12 +1067,12 @@ namespace {
       nitn_set_onid (ts, output->mConfig.mNetworkId);
     nitn_set_desclength (ts, 0);
 
-    ts = nit_get_ts (p, 1);
+    ts = nit_get_ts (nitSection, 1);
     if (ts == NULL)
       // This shouldn't happen
-      nit_set_length (p, 0);
+      nit_set_length (nitSection, 0);
     else
-        nit_set_length (p, ts - p - NIT_HEADER_SIZE);
+      nit_set_length (nitSection, ts - nitSection - NIT_HEADER_SIZE);
 
     psi_set_crc (output->mNitSection);
     }
@@ -1079,9 +1081,9 @@ namespace {
   void newSDT (cOutput* output) {
 
     free (output->mSdtSection);
+
     output->mSdtSection = NULL;
     output->mSdtVersion++;
-
     if (!output->mConfig.mSid)
       return;
     if (!psi_table_validate (mCurrentSdtSections))
@@ -1098,20 +1100,21 @@ namespace {
       return;
       }
 
-    uint8_t* p = output->mSdtSection = psi_allocate();
-    sdt_init (p, true);
-    sdt_set_length (p, PSI_MAX_SIZE);
-    sdt_set_tsid (p, output->mTsId);
-    psi_set_version (p, output->mSdtVersion);
-    psi_set_current (p);
-    psi_set_section (p, 0);
-    psi_set_lastsection (p, 0);
+    uint8_t* sdtSection = psi_allocate();
+    output->mSdtSection = sdtSection;
+    sdt_init (sdtSection, true);
+    sdt_set_length (sdtSection, PSI_MAX_SIZE);
+    sdt_set_tsid (sdtSection, output->mTsId);
+    psi_set_version (sdtSection, output->mSdtVersion);
+    psi_set_current (sdtSection);
+    psi_set_section (sdtSection, 0);
+    psi_set_lastsection (sdtSection, 0);
     if (output->mConfig.mOnid)
-      sdt_set_onid (p, output->mConfig.mOnid);
+      sdt_set_onid (sdtSection, output->mConfig.mOnid);
     else
-      sdt_set_onid (p, sdt_get_onid (psi_table_get_section (mCurrentSdtSections, 0)));
+      sdt_set_onid (sdtSection, sdt_get_onid (psi_table_get_section (mCurrentSdtSections, 0)));
 
-    uint8_t* service = sdt_get_service (p, 0);
+    uint8_t* service = sdt_get_service (sdtSection, 0);
     sdtn_init (service);
     if (output->mConfig.mNewSid) {
       cLog::log (LOGINFO, "mapping sdt sid %d to %d", output->mConfig.mSid, output->mConfig.mNewSid);
@@ -1189,12 +1192,12 @@ namespace {
       sdtn_set_desclength (service, totalDescLen);
       }
 
-    service = sdt_get_service (p, 1);
+    service = sdt_get_service (sdtSection, 1);
     if (service)
-      sdt_set_length (p, service - p - SDT_HEADER_SIZE);
+      sdt_set_length (sdtSection, service - sdtSection - SDT_HEADER_SIZE);
     else
       // This shouldn't happen if the incoming SDT is valid
-      sdt_set_length (p, 0);
+      sdt_set_length (sdtSection, 0);
 
     psi_set_crc (output->mSdtSection);
     }
@@ -1257,10 +1260,11 @@ namespace {
     }
   //}}}
   //}}}
-  //{{{  setup output
+
+  //  setup output
   //{{{
   struct addrinfo* parseHost (const char* hostStr, uint16_t defaultPort) {
-  // should clean this up using string
+  // !!! clean this up !!!
 
     char* ppsz_end = (char*)hostStr;
     char* strCopy = strdup (hostStr);
@@ -1341,8 +1345,8 @@ namespace {
 
     for (auto output : mOutputs) {
       if (config.mFamily != output->mConfig.mFamily ||
-          memcmp (&config.mConnectAddr, &output->mConfig.mConnectAddr, sockaddrLen) ||
-          memcmp (&config.mBindAddr, &output->mConfig.mBindAddr, sockaddrLen))
+          memcmp (&config.mBindAddr, &output->mConfig.mBindAddr, sockaddrLen) ||
+          memcmp (&config.mConnectAddr, &output->mConfig.mConnectAddr, sockaddrLen))
         continue;
 
       if ((config.mFamily == AF_INET6) && config.mIndexV6 != output->mConfig.mIndexV6)
@@ -1354,7 +1358,6 @@ namespace {
     return NULL;
     }
   //}}}
-
   //{{{
   cOutput* createOutput (const cOutputConfig* config) {
 
@@ -1365,18 +1368,15 @@ namespace {
       }
 
     delete output;
-    return  NULL;
+    return NULL;
     }
   //}}}
-
   //{{{
   void changeOutput (cOutput* output, const cOutputConfig* config) {
 
     bool sidChanged = output->mConfig.mSid != config->mSid;
-
     bool dvbChanged = output->mConfig.mOutputDvb != config->mOutputDvb;
     bool epgChanged = output->mConfig.mOutputEpg != config->mOutputEpg;
-
     bool networkChanged = (output->mConfig.mNetworkId != config->mNetworkId) ||
                           (output->mConfig.mNetworkName != config->mNetworkName);
     bool mServiceChanged = output->mConfig.mServiceName != config->mServiceName;
@@ -1476,35 +1476,14 @@ namespace {
         sidChanged ? "sid " : "", pidChanged ? "pid " : "", tsidChanged ? "tsid " : "",
         networkChanged ? "network " : "", mServiceChanged ? "service " : "", mProviderChanged ? "provider " : ""));
 
-    if (sidChanged) {
-       //{{{  new pat,pmt,sdt,nit
-       newSDT (output);
-       newNIT (output);
-       newPAT (output);
-       newPMT (output);
-       }
-       //}}}
-    else {
-      if (tsidChanged) {
-        //{{{  new pat,sdt,nit
-        newSDT (output);
-        newNIT (output);
-        newPAT (output);
-        }
-        //}}}
-      else if (dvbChanged) {
-        //{{{  new pat,nit
-        newNIT (output);
-        newPAT (output);
-        }
-        //}}}
-      else if (networkChanged)
-        newNIT (output);
-      if (!tsidChanged && (mServiceChanged || mProviderChanged || epgChanged))
-        newSDT (output);
-      if (pidChanged)
-        newPMT (output);
-      }
+    if (sidChanged || tsidChanged || dvbChanged)
+      newPAT (output);
+    if (sidChanged || pidChanged)
+      newPMT (output);
+    if (sidChanged || tsidChanged ||mServiceChanged || mProviderChanged || epgChanged)
+      newSDT (output);
+    if (sidChanged || tsidChanged || dvbChanged || networkChanged)
+      newNIT (output);
 
     memcpy (output->mConfig.mSsrc, config->mSsrc, sizeof (config->mSsrc));
 
@@ -1523,6 +1502,7 @@ namespace {
           ret = setsockopt (output->mSocket, IPPROTO_IP, IP_MULTICAST_TTL,
                             (void*)&config->mTtl, sizeof(config->mTtl));
         }
+
       output->mConfig.mTtl = config->mTtl;
       }
       //}}}
@@ -1530,11 +1510,12 @@ namespace {
       //{{{  new tos
       if (output->mConfig.mFamily == AF_INET)
         ret = setsockopt (output->mSocket, IPPROTO_IP, IP_TOS, (void*)&config->mTos, sizeof(config->mTos));
+
       output->mConfig.mTos = config->mTos;
       }
       //}}}
     if (ret == -1)
-      cLog::log (LOGERROR, "couldn't change socket %s", strerror(errno));
+      cLog::log (LOGERROR, "socket change failed %s", strerror(errno));
 
     if (output->mConfig.mMtu != config->mMtu) {
       //{{{  new mtu
@@ -1551,8 +1532,8 @@ namespace {
       //}}}
     }
   //}}}
-  //}}}
-  //{{{  send output
+
+  // send output
   //{{{
   void outputPut (cOutput* output, cBlock* block) {
   // assemble ts block into tcp packets, not sure why there is more than one packet for each output, timestamp?
@@ -1691,23 +1672,23 @@ namespace {
       } while (sectionOffset < sectionLength);
     }
   //}}}
-
   //{{{
   void sendPAT (int64_t dts) {
 
     for (auto output : mOutputs) {
       if ((output->mPatSection == NULL) && psi_table_validate (mCurrentPatSections)) {
         // SID doesn't exist - build an empty PAT
+        uint8_t* patSection = psi_allocate();
+        output->mPatSection = patSection;
         output->mPatVersion++;
 
-        uint8_t* p = output->mPatSection = psi_allocate();
-        pat_init (p);
-        pat_set_length (p, 0);
-        pat_set_tsid (p, output->mTsId);
-        psi_set_version (p, output->mPatVersion);
-        psi_set_current (p);
-        psi_set_section (p, 0);
-        psi_set_lastsection (p, 0);
+        pat_init (patSection);
+        pat_set_length (patSection, 0);
+        pat_set_tsid (patSection, output->mTsId);
+        psi_set_version (patSection, output->mPatVersion);
+        psi_set_current (patSection);
+        psi_set_section (patSection, 0);
+        psi_set_lastsection (patSection, 0);
         psi_set_crc (output->mPatSection);
         }
 
@@ -1750,7 +1731,6 @@ namespace {
         outputPut (output, block);
     }
   //}}}
-
   //{{{
   bool handleEpg (int tableId) {
 
@@ -1802,8 +1782,8 @@ namespace {
     output->mEit_ts_buffer_offset = 0;
     }
   //}}}
-  //}}}
 
+  // demux
   //{{{
   void deleteProgram (uint16_t sidNum, uint16_t pidNum) {
 
@@ -1955,7 +1935,7 @@ namespace {
   void handlePATSection (uint16_t pid, uint8_t* section, int64_t dts) {
 
     if ((pid != PAT_PID) || !pat_validate (section)) {
-      cLog::log (LOGINFO, "invalid pat section received pid:%hu", pid);
+      cLog::log (LOGERROR, "invalid pat section pid:%hu", pid);
       free (section);
       return;
       }
@@ -1978,7 +1958,7 @@ namespace {
       }
 
     if (pid != sid->mPmtPid) {
-      cLog::log (LOGINFO, "invalid pmt section pid:%hu", pid);
+      cLog::log (LOGERROR, "invalid pmt section pid:%hu", pid);
       free (pmt);
       return;
       }
@@ -1991,7 +1971,7 @@ namespace {
       }
 
     if  (!pmt_validate (pmt)) {
-      cLog::log (LOGINFO, "invalid pmt section pid:%hu", pid);
+      cLog::log (LOGERROR, "invalid pmt section pid:%hu", pid);
       free (pmt);
       sendPMT (sid, dts);
       return;
@@ -2050,7 +2030,7 @@ namespace {
       }
 
     if (!nit_table_validate (mNexttNitSections)) {
-      cLog::log (LOGINFO, "invalid NIT received");
+      cLog::log (LOGERROR, "invalid NIT received");
       psi_table_free (mNexttNitSections);
       psi_table_init (mNexttNitSections);
       return;
@@ -2066,7 +2046,7 @@ namespace {
   void handleNITSection (uint16_t pid, uint8_t* section, int64_t dts) {
 
     if (pid != NIT_PID || !nit_validate (section)) {
-      cLog::log (LOGINFO, "invalid nit section received on pid:%hu", pid);
+      cLog::log (LOGERROR, "invalid nit section pid:%hu", pid);
       free (section);
       return;
       }
@@ -2143,7 +2123,7 @@ namespace {
   void handleSDTSection (uint16_t pid, uint8_t* section, int64_t dts) {
 
     if ((pid != SDT_PID) || !sdt_validate (section)) {
-      cLog::log (LOGINFO, "invalid sdt section received on pid:%hu", pid);
+      cLog::log (LOGERROR, "invalid SDT section pid:%hu", pid);
       free (section);
       return;
       }
@@ -2215,7 +2195,7 @@ namespace {
   void handleSection (uint16_t pid, uint8_t* section, int64_t dts) {
 
     if (!psi_validate (section)) {
-      cLog::log (LOGINFO, "invalid section pid:%hu", pid);
+      cLog::log (LOGERROR, "invalid section pid:%hu", pid);
       free (section);
       return;
       }
