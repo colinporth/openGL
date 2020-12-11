@@ -1,4 +1,4 @@
-// cApp.cpp - dvblast gui
+// cApp.cpp - dvblast console or gui app
 //{{{  includes
 #include "cTsBlockPool.h"
 #include "cDvbRtp.h"
@@ -12,13 +12,11 @@
 #include <chrono>
 #include <thread>
 
-#include "../../shared/vg/cGlWindow.h"
-#include "../../shared/resources/FreeSansBold.h"
-#include "../../shared/resources/DroidSansMono.h"
-
 #include "../../shared/fmt/core.h"
 #include "../../shared/utils/cLog.h"
-#include "../../shared/date/date.h"
+
+#include "../../shared/vg/cGlWindow.h"
+#include "../../shared/resources/DroidSansMono.h"
 
 #include "../../shared/vg/cGlWindow.h"
 #include "../../shared/widgets/cRootContainer.h"
@@ -28,60 +26,23 @@
 using namespace std;
 using namespace fmt;
 //}}}
-//{{{  const multiplexes
-struct sMultiplex {
-  string mName;
-  int mFrequency;
-  vector <string> mSelectedChannels;
-  vector <string> mSaveNames;
-  };
-
-const sMultiplex kHdMultiplex = {
-  "hd", 626,
-  { "BBC ONE HD", "BBC TWO HD", "ITV HD", "Channel 4 HD", "Channel 5 HD" },
-  { "bbc1hd",     "bbc2hd",     "itv1hd", "chn4hd",       "chn5hd" }
-  };
-
-const sMultiplex kItvMultiplex = {
-  "itv", 650,
-  { "ITV",  "ITV2", "ITV3", "ITV4", "Channel 4", "Channel 4+1", "More 4", "Film4" , "E4", "Channel 5" },
-  { "itv1", "itv2", "itv3", "itv4", "chn4"     , "c4+1",        "more4",  "film4",  "e4", "chn5" }
-  };
-
-const sMultiplex kBbcMultiplex = {
-  "bbc", 674,
-  { "BBC ONE S West", "BBC TWO", "BBC FOUR" },
-  { "bbc1",           "bbc2",    "bbc4" }
-  };
-
-const sMultiplex kAllMultiplex = {
-  "all", 0,
-  { "all" },
-  { "" }
-  };
-
-struct sMultiplexes {
-  vector <sMultiplex> mMultiplexes;
-  };
-const sMultiplexes kMultiplexes = { { kHdMultiplex, kItvMultiplex, kBbcMultiplex } };
-//}}}
 
 // cAppWindow
 class cApp : public cGlWindow {
 public:
   //{{{
-  void run (const string& title, int width, int height, bool gui, bool all, sMultiplex multiplex) {
+  void run (const string& title, int width, int height, bool gui, bool all, int frequency) {
 
     if (gui) {
       initialiseGui (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
       add (new cTextBox (mString, 0.f));
 
-      thread ([=](){ dvblast (false); } ).detach();
+      thread ([=](){ dvblast (frequency, false); } ).detach();
 
       runGui (true);
       }
     else // run in this main thread
-      dvblast (true);
+      dvblast (frequency, true);
 
     cLog::log (LOGINFO, "exit");
     }
@@ -132,7 +93,7 @@ protected:
   //}}}
 private:
   //{{{
-  void dvblast (bool console) {
+  void dvblast (int frequency, bool console) {
 
     // set thread realtime priority
     struct sched_param param;
@@ -145,7 +106,7 @@ private:
     cTsBlockPool blockPool (100);
 
     // init dvb
-    cDvb dvb (626000000, 0);
+    cDvb dvb (frequency, 0);
 
     // init dvbRtp
     cDvbRtp dvbRtp (&dvb, &blockPool);
@@ -186,45 +147,21 @@ int main (int numArgs, char* args[]) {
   bool all = false;
   bool gui = false;
   eLogLevel logLevel = LOGINFO;
-  sMultiplex multiplex = kHdMultiplex;
-  string fileName;
   //{{{  parse params to options
   for (size_t i = 0; i < params.size(); i++) {
-    // look for named multiplex
-    bool multiplexFound = false;
-    for (size_t j = 0; j < kMultiplexes.mMultiplexes.size() && !multiplexFound; j++) {
-      if (params[i] == kMultiplexes.mMultiplexes[j].mName) {
-        multiplex = kMultiplexes.mMultiplexes[j];
-        multiplexFound = true;
-        }
-      }
-    if (multiplexFound)
-      continue;
-
     if (params[i] == "all") all = true;
     else if (params[i] == "gui") gui = true;
     else if (params[i] == "log1") logLevel = LOGINFO1;
     else if (params[i] == "log2") logLevel = LOGINFO2;
     else if (params[i] == "log3") logLevel = LOGINFO3;
-    else if (params[i] == "freq") {
-      //  multiplex frequency all channels
-      multiplex = kAllMultiplex;
-      multiplex.mFrequency = stoi (params[i++]);
-      }
-
-    else if (!params[i].empty()) {
-      // fileName
-      multiplex.mFrequency = 0;
-      fileName = params[i];
-      }
     }
   //}}}
 
   cLog::init (logLevel);
-  cLog::log (LOGNOTICE, format ("dvblast - freq:{}", multiplex.mFrequency));
+  cLog::log (LOGNOTICE, "dvblast");
 
   cApp app;
-  app.run ("dvblast", 790, 450, gui, all, multiplex);
+  app.run ("dvblast", 790, 450, gui, all, 626000000);
 
   return 0;
   }
