@@ -1,6 +1,6 @@
-// cBlockPool.cpp
+// cTsBlockPool.cpp
 //{{{  includes
-#include "cBlockPool.h"
+#include "cTsBlockPool.h"
 
 #include "../../shared/fmt/core.h"
 #include "../../shared/utils/cLog.h"
@@ -11,16 +11,16 @@ using namespace fmt;
 
 // public
 //{{{
-cBlock* cBlockPool::newBlock() {
+cTsBlock* cTsBlockPool::newBlock() {
 
-  cBlock* block;
+  cTsBlock* block;
   if (mFreeBlockCount) {
     block = mBlockPool;
     mBlockPool = block->mNextBlock;
     mFreeBlockCount--;
     }
   else {
-    block = new cBlock();
+    block = new cTsBlock();
     mAllocatedBlockCount++;
     mMaxBlockCount = max (mMaxBlockCount, mAllocatedBlockCount);
     }
@@ -32,11 +32,11 @@ cBlock* cBlockPool::newBlock() {
   }
 //}}}
 //{{{
-cBlockPool::~cBlockPool() {
+cTsBlockPool::~cTsBlockPool() {
 
   // free blocks
   while (mFreeBlockCount) {
-    cBlock* block = mBlockPool;
+    cTsBlock* block = mBlockPool;
     mBlockPool = block->mNextBlock;
     delete block;
     mAllocatedBlockCount--;
@@ -46,7 +46,7 @@ cBlockPool::~cBlockPool() {
 //}}}
 
 //{{{
-void cBlockPool::freeBlock (cBlock* block) {
+void cTsBlockPool::freeBlock (cTsBlock* block) {
 // delte if too many blocks allocated else return to pool
 
   if (mFreeBlockCount >= mMaxBlocks) {
@@ -61,10 +61,10 @@ void cBlockPool::freeBlock (cBlock* block) {
   }
 //}}}
 //{{{
-void cBlockPool::unRefBlock (cBlock* block) {
+void cTsBlockPool::unRefBlock (cTsBlock* block) {
 
   block->mRefCount--;
   if (!block->mRefCount)
-    cBlockPool::freeBlock (block);
+    cTsBlockPool::freeBlock (block);
   }
 //}}}

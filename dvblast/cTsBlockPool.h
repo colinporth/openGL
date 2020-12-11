@@ -3,16 +3,16 @@
 //{{{  includes
 #include <cstdlib>
 #include <cstdint>
-class cBlockPool;
+class cTsBlockPool;
 //}}}
 
-class cBlock {
-friend cBlockPool;
+class cTsBlock {
+friend cTsBlockPool;
 public:
   void incRefCount() { mRefCount++; }
   void decRefCount() { mRefCount--; }
 
-  cBlock* mNextBlock = nullptr;
+  cTsBlock* mNextBlock = nullptr;
   int64_t mDts = 0;
   uint8_t mTs[188];
 
@@ -21,14 +21,14 @@ private:
   };
 
 
-class cBlockPool {
+class cTsBlockPool {
 public:
-  cBlockPool (int maxBlocks) : mMaxBlocks(maxBlocks) {}
-  ~cBlockPool();
+  cTsBlockPool (int maxBlocks) : mMaxBlocks(maxBlocks) {}
+  ~cTsBlockPool();
 
-  cBlock* newBlock();
-  void freeBlock (cBlock* block);
-  void unRefBlock (cBlock* block);
+  cTsBlock* newBlock();
+  void freeBlock (cTsBlock* block);
+  void unRefBlock (cTsBlock* block);
 
 private:
   const int mMaxBlocks = 0;
@@ -36,5 +36,5 @@ private:
   int mFreeBlockCount = 0;
   int mAllocatedBlockCount = 0;
   int mMaxBlockCount = 0;
-  cBlock* mBlockPool = NULL;
+  cTsBlock* mBlockPool = NULL;
   };

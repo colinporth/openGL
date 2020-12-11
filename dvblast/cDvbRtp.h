@@ -5,13 +5,13 @@
 #include <cstdint>
 #include <string>
 
-struct cBlock;
+struct cTsBlock;
 class cDvb;
 //}}}
 
 class cDvbRtp {
 public:
-  cDvbRtp (cDvb* dvb, cBlockPool* blockPool);
+  cDvbRtp (cDvb* dvb, cTsBlockPool* blockPool);
   ~cDvbRtp();
 
   uint64_t getNumPackets();
@@ -20,5 +20,5 @@ public:
   uint64_t getNumDiscontinuities();
 
   static bool setOutput (const std::string& outputString, int sid);
-  static void processBlockList (cBlock* blockList);
+  static void processBlockList (cTsBlock* blockList);
   };

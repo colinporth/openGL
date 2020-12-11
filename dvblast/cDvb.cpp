@@ -1,6 +1,6 @@
 // cDvb.c
 //{{{  includes
-#include "cBlockPool.h"
+#include "cTsBlockPool.h"
 #include "cDvb.h"
 
 #include <thread>
@@ -173,13 +173,13 @@ cDvb::~cDvb() {
 //}}}
 
 //{{{
-cBlock* cDvb::read (cBlockPool* blockPool) {
+cTsBlock* cDvb::read (cTsBlockPool* blockPool) {
 
   constexpr int kMaxRead = 50;
   struct iovec iovecs[kMaxRead];
 
-  cBlock* block = mBlockFreeList;
-  cBlock** current = &block;
+  cTsBlock* block = mBlockFreeList;
+  cTsBlock** current = &block;
 
   for (int i = 0; i < kMaxRead; i++) {
     if (!(*current))

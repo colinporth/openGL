@@ -8,7 +8,7 @@
 #include <poll.h>
 #include <linux/dvb/frontend.h>
 
-struct cBlock;
+struct cTsBlock;
 //}}}
 
 class cDvb {
@@ -16,7 +16,7 @@ public:
   cDvb (int frequency, int adapter);
   ~cDvb();
 
-  cBlock* read (cBlockPool* blockPool);
+  cTsBlock* read (cTsBlockPool* blockPool);
 
   void reset();
   int setFilter (uint16_t pid);
@@ -50,5 +50,5 @@ private:
   int mFrontend = -1;
   struct pollfd fds[1];
 
-  cBlock* mBlockFreeList = NULL;
+  cTsBlock* mBlockFreeList = NULL;
   };

@@ -1,6 +1,6 @@
 // cApp.cpp - dvblast gui
 //{{{  includes
-#include "cBlockPool.h"
+#include "cTsBlockPool.h"
 #include "cDvbRtp.h"
 #include "cDvb.h"
 
@@ -142,7 +142,7 @@ private:
       cLog::log (LOGERROR, "dvblast - pthread_setschedparam failed: %s", strerror (error));
 
     // init blockPool
-    cBlockPool blockPool (100);
+    cTsBlockPool blockPool (100);
 
     // init dvb
     cDvb dvb (626000000, 0);

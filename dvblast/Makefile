@@ -1,6 +1,6 @@
 TARGET    = app
 SRCS      = cApp.cpp \
-	    cBlockPool.cpp \
+	    cTsBlockPool.cpp \
 	    cDvb.cpp \
 	    cDvbRtp.cpp \
 	    ../../shared/glad/glad.c \
