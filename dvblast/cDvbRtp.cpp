@@ -53,10 +53,10 @@ constexpr int OUTPUT_EPG   = 0x02;
 namespace {
   //{{{  dvb bitstream utils
   //{{{  ts utils
-  #define TS_SIZE             188
-  #define TS_HEADER_SIZE      4
-  #define TS_HEADER_SIZE_AF   6
-  #define TS_HEADER_SIZE_PCR  12
+  #define TS_SIZE            188
+  #define TS_HEADER_SIZE     4
+  #define TS_HEADER_SIZE_AF  6
+  #define TS_HEADER_SIZE_PCR 12
 
   #define TS_DECLARE(ts) uint8_t ts[TS_SIZE]
 
@@ -69,126 +69,79 @@ namespace {
     }
   //}}}
 
-  bool ts_get_transporterror(const uint8_t* ts) { return !!(ts[1] & 0x80); }
+  bool ts_get_transporterror (const uint8_t* ts) { return !!(ts[1] & 0x80); }
 
-  void ts_set_unitstart(uint8_t* ts) { ts[1] |= 0x40; }
-  bool ts_get_unitstart(const uint8_t* ts) { return !!(ts[1] & 0x40); }
-
-  //{{{
-  void ts_set_pid(uint8_t* ts, uint16_t i_pid)
-  {
-      ts[1] &= ~0x1f;
-      ts[1] |= (i_pid >> 8) & 0x1f;
-      ts[2] = i_pid & 0xff;
-  }
-  //}}}
-  //{{{
-  uint16_t ts_get_pid(const uint8_t* ts)
-  {
-      return ((ts[1] & 0x1f) << 8) | ts[2];
-  }
-  //}}}
+  void ts_set_unitstart (uint8_t* ts) { ts[1] |= 0x40; }
+  bool ts_get_unitstart (const uint8_t* ts) { return !!(ts[1] & 0x40); }
 
   //{{{
-  void ts_set_cc(uint8_t* ts, uint8_t i_cc)
-  {
-      ts[3] &= ~0xf;
-      ts[3] |= (i_cc & 0xf);
-  }
+  void ts_set_pid (uint8_t* ts, uint16_t pid) {
+
+    ts[1] &= ~0x1f;
+    ts[1] |= (pid >> 8) & 0x1f;
+    ts[2] = pid & 0xff;
+    }
   //}}}
-  //{{{
-  uint8_t ts_get_cc(const uint8_t* ts)
-  {
-      return ts[3] & 0xf;
-  }
-  //}}}
+  uint16_t ts_get_pid (const uint8_t* ts) { return ((ts[1] & 0x1f) << 8) | ts[2]; }
 
   //{{{
-  void ts_set_payload(uint8_t* ts)
-  {
-      ts[3] |= 0x10;
-  }
+  void ts_set_cc (uint8_t* ts, uint8_t cc) {
+
+    ts[3] &= ~0xf;
+    ts[3] |= (cc & 0xf);
+    }
   //}}}
-  //{{{
-  bool ts_has_payload(const uint8_t* ts)
-  {
-      return !!(ts[3] & 0x10);
-  }
-  //}}}
+  uint8_t ts_get_cc (const uint8_t* ts) { return ts[3] & 0xf; }
+
+  void ts_set_payload (uint8_t* ts) { ts[3] |= 0x10; }
+  bool ts_has_payload (const uint8_t* ts) { return !!(ts[3] & 0x10); }
+
+  bool ts_has_adaptation (const uint8_t* ts) { return !!(ts[3] & 0x20); }
+  uint8_t ts_get_adaptation (const uint8_t* ts) { return ts[4]; }
+
+  bool ts_validate (const uint8_t* ts) { return ts[0] == 0x47; }
 
   //{{{
-  bool ts_has_adaptation(const uint8_t* ts)
-  {
-      return !!(ts[3] & 0x20);
-  }
+  uint8_t* ts_payload (uint8_t* ts) {
+
+    if (!ts_has_payload (ts))
+      return ts + TS_SIZE;
+
+    if (!ts_has_adaptation (ts))
+      return ts + TS_HEADER_SIZE;
+
+    return ts + TS_HEADER_SIZE + 1 + ts_get_adaptation(ts);
+    }
   //}}}
   //{{{
-  uint8_t ts_get_adaptation(const uint8_t* ts)
-  {
-      return ts[4];
-  }
+  uint8_t* ts_section (uint8_t* ts) {
+
+    if (!ts_get_unitstart(ts))
+      return ts_payload(ts);
+
+    return ts_payload(ts) + 1; /* pointer_field */
+    }
+  //}}}
+  //{{{
+  uint8_t* ts_next_section (uint8_t* ts) {
+
+    uint8_t *p_payload;
+
+    if (!ts_get_unitstart(ts))
+      return ts + TS_SIZE;
+
+    p_payload = ts_payload(ts);
+    if (p_payload >= ts + TS_SIZE)
+      return ts + TS_SIZE;
+
+    return p_payload + *p_payload + 1; /* pointer_field */
+    }
   //}}}
 
-  //{{{
-  bool ts_validate(const uint8_t* ts)
-  {
-      return ts[0] == 0x47;
-  }
-  //}}}
+  bool tsaf_has_pcr (const uint8_t* ts) { return !!(ts[5] & 0x10); }
 
-  //{{{
-  uint8_t *ts_payload(uint8_t* ts)
-  {
-      if (!ts_has_payload(ts))
-          return ts + TS_SIZE;
-      if (!ts_has_adaptation(ts))
-          return ts + TS_HEADER_SIZE;
-      return ts + TS_HEADER_SIZE + 1 + ts_get_adaptation(ts);
-  }
-  //}}}
-  //{{{
-  uint8_t *ts_section(uint8_t* ts)
-  {
-      if (!ts_get_unitstart(ts))
-          return ts_payload(ts);
-
-      return ts_payload(ts) + 1; /* pointer_field */
-  }
-  //}}}
-  //{{{
-  uint8_t *ts_next_section(uint8_t* ts)
-  {
-      uint8_t *p_payload;
-
-      if (!ts_get_unitstart(ts))
-          return ts + TS_SIZE;
-      p_payload = ts_payload(ts);
-      if (p_payload >= ts + TS_SIZE)
-          return ts + TS_SIZE;
-
-      return p_payload + *p_payload + 1; /* pointer_field */
-  }
-  //}}}
-
-  //{{{
-  bool tsaf_has_pcr(const uint8_t* ts)
-  {
-      return !!(ts[5] & 0x10);
-  }
-  //}}}
-
-  //{{{
-  bool ts_check_duplicate(uint8_t i_cc, uint8_t i_last_cc)
-  {
-      return i_last_cc == i_cc;
-  }
-  //}}}
-  //{{{
-  bool ts_check_discontinuity(uint8_t i_cc, uint8_t i_last_cc)
-  {
-      return (i_last_cc + 17 - i_cc) % 16;
-  }
-  //}}}
+  bool ts_check_duplicate (uint8_t cc, uint8_t last_cc) { return last_cc == cc; }
+  bool ts_check_discontinuity (uint8_t cc, uint8_t last_cc) { return (last_cc + 17 - cc) % 16; }
   //}}}
   //{{{  psi utils
   #define PSI_HEADER_SIZE         3
@@ -296,13 +249,13 @@ namespace {
   //}}}
 
   //{{{
-  uint8_t *psi_allocate()
+  uint8_t* psi_allocate()
   {
       return (uint8_t *)malloc((PSI_MAX_SIZE + PSI_HEADER_SIZE) * sizeof(uint8_t));
   }
   //}}}
   //{{{
-  uint8_t *psi_private_allocate()
+  uint8_t* psi_private_allocate()
   {
       return (uint8_t *)malloc((PSI_PRIVATE_MAX_SIZE + PSI_HEADER_SIZE) * sizeof(uint8_t));
   }
@@ -712,7 +665,7 @@ namespace {
           desc += DESC_HEADER_SIZE + desc_get_length (desc);
           n--;
       }
-      if (desc - descl >= i_length) 
+      if (desc - descl >= i_length)
         return NULL;
       return desc;
   }
@@ -1456,24 +1409,11 @@ namespace {
   //{{{  service descriptor
   #define DESC48_HEADER_SIZE      (DESC_HEADER_SIZE + 1)
 
-  //{{{
-  void desc48_init(uint8_t *p_desc)
-  {
-      desc_set_tag(p_desc, 0x48);
-  }
-  //}}}
-  //{{{
-  void desc48_set_type(uint8_t *p_desc, uint8_t i_type)
-  {
-      p_desc[2] = i_type;
-  }
-  //}}}
-  //{{{
-  uint8_t desc48_get_type(const uint8_t *p_desc)
-  {
-      return p_desc[2];
-  }
-  //}}}
+  void desc48_init(uint8_t *p_desc) { desc_set_tag(p_desc, 0x48); }
+
+  void desc48_set_type (uint8_t *p_desc, uint8_t i_type) { p_desc[2] = i_type; }
+  uint8_t desc48_get_type (const uint8_t *p_desc) { return p_desc[2]; }
+
   //{{{
   void desc48_set_provider(uint8_t *p_desc, const uint8_t *p_provider, uint8_t i_length)
   {
@@ -1490,6 +1430,7 @@ namespace {
       return p + 1;
   }
   //}}}
+
   //{{{
   void desc48_set_service(uint8_t *p_desc, const uint8_t *p_service, uint8_t i_length)
   {
@@ -1506,6 +1447,7 @@ namespace {
       return p + 1;
   }
   //}}}
+
   //{{{
   bool desc48_validate(const uint8_t *p_desc)
   {
@@ -1544,6 +1486,7 @@ namespace {
       p_nit[8] = 0xf0;
   }
   //}}}
+
   //{{{
   void nit_set_length(uint8_t *p_nit, uint16_t i_nit_length)
   {
@@ -1571,6 +1514,7 @@ namespace {
       return &p_nit[8];
   }
   //}}}
+
   //{{{
   void nith_init(uint8_t *p_nit_h)
   {
@@ -1597,6 +1541,7 @@ namespace {
       p_nit_n[4] = 0xf0;
   }
   //}}}
+
   //{{{
   void nitn_set_tsid(uint8_t *p_nit_n, uint16_t i_tsid)
   {
@@ -1610,6 +1555,7 @@ namespace {
       return (p_nit_n[0] << 8) | p_nit_n[1];
   }
   //}}}
+
   //{{{
   void nitn_set_onid(uint8_t *p_nit_n, uint16_t i_onid)
   {
@@ -1623,6 +1569,7 @@ namespace {
       return (p_nit_n[2] << 8) | p_nit_n[3];
   }
   //}}}
+
   //{{{
   void nitn_set_desclength(uint8_t *p_nit_n, uint16_t i_length)
   {
@@ -1637,6 +1584,7 @@ namespace {
       return ((p_nit_n[4] & 0xf) << 8) | p_nit_n[5];
   }
   //}}}
+
   //{{{
   uint8_t *nit_get_header2(uint8_t *p_nit)
   {
@@ -1661,6 +1609,7 @@ namespace {
       return p_nit_n;
   }
   //}}}
+
   //{{{
   bool nit_validate(const uint8_t *p_nit)
   {
@@ -1699,6 +1648,7 @@ namespace {
       return (p_nit_n - p_nit == i_section_size);
   }
   //}}}
+
   //{{{
   uint8_t *nit_table_find_ts(uint8_t **pp_sections, uint16_t i_tsid, uint16_t i_onid)
   {
@@ -1750,19 +1700,12 @@ namespace {
   //{{{  network name descriptor
   #define DESC40_HEADER_SIZE      DESC_HEADER_SIZE
 
-  //{{{
-  void desc40_init(uint8_t *p_desc)
-  {
-      desc_set_tag(p_desc, 0x40);
-  }
-  //}}}
-  //{{{
-  void desc40_set_networkname(uint8_t *p_desc, const uint8_t *p_network_name, uint8_t i_length)
-  {
-      desc_set_length(p_desc, i_length);
-      memcpy(p_desc + 2, p_network_name, i_length);
-  }
-  //}}}
+  void desc40_init(uint8_t* desc) { desc_set_tag (desc, 0x40); }
+
+  void desc40_set_networkname (uint8_t* desc, const uint8_t* network_name, uint8_t length) {
+    desc_set_length (desc, length);
+    memcpy (desc + 2, network_name, length);
+    }
   //}}}
 
   constexpr int PADDING_PID = 8191;
@@ -1774,7 +1717,7 @@ namespace {
   // EIT is carried in several separate tables, we need to track each table
   // separately, otherwise one table overwrites sections of another table
   constexpr int MAX_EIT_TABLES = EIT_TABLE_ID_SCHED_ACTUAL_LAST - EIT_TABLE_ID_PF_ACTUAL;
-  //}}}
+
   //{{{
   uint8_t kPadTs[188] = {
     0x47, 0x1f, 0xff, 0x10, 0xff, 0xff, 0xff, 0xff,
@@ -1794,6 +1737,7 @@ namespace {
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
     };
+  //}}}
   //}}}
   //{{{
   struct sRtpPacket {
