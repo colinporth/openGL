@@ -551,36 +551,28 @@ namespace {
   //}}}
 
   #define PSI_TABLE_MAX_SECTIONS         256
-  #define PSI_TABLE_DECLARE(pp_table) uint8_t *pp_table[PSI_TABLE_MAX_SECTIONS]
+  #define PSI_TABLE_DECLARE(pp_table) uint8_t* pp_table[PSI_TABLE_MAX_SECTIONS]
 
   //{{{
-  void psi_table_init (uint8_t **pp_sections)
-  {
-      int i;
-      for (i = 0; i < PSI_TABLE_MAX_SECTIONS; i++)
-          pp_sections[i] = NULL;
-  }
-  //}}}
-  //{{{
-  void psi_table_free (uint8_t **pp_sections)
-  {
-      int i;
-      for (i = 0; i < PSI_TABLE_MAX_SECTIONS; i++)
-          free(pp_sections[i]);
-  }
-  //}}}
-  //{{{
+  void psi_table_init (uint8_t **pp_sections) {
 
-  bool psi_table_validate (uint8_t * const *pp_sections)
-  {
-      return pp_sections[0] != NULL;
-  }
+    for (int i = 0; i < PSI_TABLE_MAX_SECTIONS; i++)
+      pp_sections[i] = NULL;
+    }
   //}}}
   //{{{
-  void psi_table_copy (uint8_t **pp_dest, uint8_t **pp_src)
-  {
-      memcpy(pp_dest, pp_src, PSI_TABLE_MAX_SECTIONS * sizeof(uint8_t *));
-  }
+  void psi_table_free (uint8_t **pp_sections) {
+
+    for (int i = 0; i < PSI_TABLE_MAX_SECTIONS; i++)
+      free(pp_sections[i]);
+    }
+  //}}}
+
+  bool psi_table_validate (uint8_t * const *pp_sections) { return pp_sections[0] != NULL; }
+  //{{{
+  void psi_table_copy (uint8_t** dest, uint8_t** src) {
+    memcpy (dest, src, PSI_TABLE_MAX_SECTIONS * sizeof(uint8_t*));
+    }
   //}}}
 
   #define psi_table_get_tableid(pp_sections) psi_get_tableid(pp_sections[0])
@@ -590,62 +582,56 @@ namespace {
   #define psi_table_get_tableidext(pp_sections) psi_get_tableidext(pp_sections[0])
 
   //{{{
-  bool psi_table_section (uint8_t **pp_sections, uint8_t *p_section)
-  {
-      uint8_t i_section = psi_get_section( p_section );
-      uint8_t i_last_section = psi_get_lastsection( p_section );
-      uint8_t i_version = psi_get_version( p_section );
-      uint16_t i_tableidext = psi_get_tableidext( p_section );
-      int i;
+  bool psi_table_section (uint8_t** pp_sections, uint8_t* p_section) {
 
-      free(pp_sections[i_section]);
-      pp_sections[i_section] = p_section;
+    uint8_t i_section = psi_get_section (p_section);
+    uint8_t i_last_section = psi_get_lastsection (p_section);
+    uint8_t i_version = psi_get_version (p_section);
+    uint16_t i_tableidext = psi_get_tableidext (p_section);
+    int i;
 
-      for (i = 0; i <= i_last_section; i++) {
-          uint8_t *p = pp_sections[i];
-          if (p == NULL)
-              return false;
-          if (psi_get_lastsection(p) != i_last_section
-               || psi_get_version(p) != i_version
-               || psi_get_tableidext(p) != i_tableidext)
-              return false;
+    free (pp_sections[i_section]);
+    pp_sections[i_section] = p_section;
+
+    for (i = 0; i <= i_last_section; i++) {
+      uint8_t *p = pp_sections[i];
+      if (p == NULL)
+        return false;
+      if (psi_get_lastsection(p) != i_last_section
+          || psi_get_version(p) != i_version
+          || psi_get_tableidext(p) != i_tableidext)
+        return false;
       }
 
-      /* free spurious, invalid sections */
-      for (; i < PSI_TABLE_MAX_SECTIONS; i++) {
-          free(pp_sections[i]);
-          pp_sections[i] = NULL;
+    // free spurious, invalid sections
+    for (; i < PSI_TABLE_MAX_SECTIONS; i++) {
+      free (pp_sections[i]);
+      pp_sections[i] = NULL;
       }
 
-      /* a new, full table is available */
-      return true;
-  }
+    // a new, full table is available
+    return true;
+    }
   //}}}
+  uint8_t* psi_table_get_section (uint8_t** pp_sections, uint8_t n) { return pp_sections[n]; }
   //{{{
-  uint8_t *psi_table_get_section (uint8_t **pp_sections, uint8_t n)
-  {
-      return pp_sections[n];
-  }
-  //}}}
-  //{{{
-  bool psi_table_compare (uint8_t **pp_sections1,
-                                       uint8_t **pp_sections2)
-  {
-      uint8_t i_last_section = psi_table_get_lastsection(pp_sections1);
-      uint8_t i;
+  bool psi_table_compare (uint8_t** pp_sections1, uint8_t** pp_sections2) {
 
-      if (i_last_section != psi_table_get_lastsection(pp_sections2))
-          return false;
+    uint8_t i_last_section = psi_table_get_lastsection(pp_sections1);
+    uint8_t i;
 
-      for (i = 0; i <= i_last_section; i++) {
-          const uint8_t *p_section1 = psi_table_get_section(pp_sections1, i);
-          const uint8_t *p_section2 = psi_table_get_section(pp_sections2, i);
-          if (!psi_compare(p_section1, p_section2))
-              return false;
+    if (i_last_section != psi_table_get_lastsection(pp_sections2))
+      return false;
+
+    for (i = 0; i <= i_last_section; i++) {
+      const uint8_t *p_section1 = psi_table_get_section(pp_sections1, i);
+      const uint8_t *p_section2 = psi_table_get_section(pp_sections2, i);
+      if (!psi_compare(p_section1, p_section2))
+        return false;
       }
 
-      return true;
-  }
+    return true;
+    }
   //}}}
   //}}}
   //{{{  descriptors
@@ -830,68 +816,51 @@ namespace {
   #define pmt_get_program psi_get_tableidext
 
   //{{{
-  void pmt_init (uint8_t *p_pmt)
-  {
-      psi_init(p_pmt, true);
-      psi_set_tableid(p_pmt, PMT_TABLE_ID);
-      p_pmt[1] &= ~0x40;
-      psi_set_section(p_pmt, 0);
-      psi_set_lastsection(p_pmt, 0);
-      p_pmt[8] = 0xe0;
-      p_pmt[10] = 0xf0;
-  }
+  void pmt_init (uint8_t* pmt) {
+
+    psi_init (pmt, true);
+    psi_set_tableid (pmt, PMT_TABLE_ID);
+    pmt[1] &= ~0x40;
+    psi_set_section (pmt, 0);
+    psi_set_lastsection (pmt, 0);
+    pmt[8] = 0xe0;
+    pmt[10] = 0xf0;
+    }
   //}}}
   //{{{
-  void pmt_set_length (uint8_t *p_pmt, uint16_t i_pmt_length)
-  {
-      psi_set_length(p_pmt, PMT_HEADER_SIZE + PSI_CRC_SIZE - PSI_HEADER_SIZE
-                      + i_pmt_length);
-  }
+  void pmt_set_length (uint8_t* pmt, uint16_t i_pmt_length) {
+    psi_set_length (pmt, PMT_HEADER_SIZE + PSI_CRC_SIZE - PSI_HEADER_SIZE + i_pmt_length);
+    }
   //}}}
 
   //{{{
-  void pmt_set_pcrpid (uint8_t *p_pmt, uint16_t i_pcr_pid)
-  {
-      p_pmt[8] &= ~0x1f;
-      p_pmt[8] |= i_pcr_pid >> 8;
-      p_pmt[9] = i_pcr_pid & 0xff;
-  }
+  void pmt_set_pcrpid (uint8_t* pmt, uint16_t i_pcr_pid) {
+
+    pmt[8] &= ~0x1f;
+    pmt[8] |= i_pcr_pid >> 8;
+    pmt[9] = i_pcr_pid & 0xff;
+    }
   //}}}
-  //{{{
-  uint16_t pmt_get_pcrpid (const uint8_t *p_pmt)
-  {
-      return ((p_pmt[8] & 0x1f) << 8) | p_pmt[9];
-  }
-  //}}}
+  uint16_t pmt_get_pcrpid (const uint8_t* pmt) { return ((pmt[8] & 0x1f) << 8) | pmt[9]; }
 
   //{{{
-  void pmt_set_desclength (uint8_t *p_pmt, uint16_t i_length)
-  {
-      p_pmt[10] &= ~0xf;
-      p_pmt[10] |= i_length >> 8;
-      p_pmt[11] = i_length & 0xff;
-  }
+  void pmt_set_desclength (uint8_t* pmt, uint16_t i_length) {
+
+    pmt[10] &= ~0xf;
+    pmt[10] |= i_length >> 8;
+    pmt[11] = i_length & 0xff;
+    }
   //}}}
-  //{{{
-  uint16_t pmt_get_desclength (const uint8_t *p_pmt)
-  {
-      return ((p_pmt[10] & 0xf) << 8) | p_pmt[11];
-  }
-  //}}}
+  uint16_t pmt_get_desclength (const uint8_t* pmt) { return ((pmt[10] & 0xf) << 8) | pmt[11]; }
+
+  uint8_t* pmt_get_descs (uint8_t* pmt) { return &pmt[10]; }
 
   //{{{
-  uint8_t* pmt_get_descs (uint8_t *p_pmt)
-  {
-      return &p_pmt[10];
-  }
-  //}}}
+  void pmtn_init (uint8_t* pmt_n) {
 
-  //{{{
-  void pmtn_init (uint8_t *p_pmt_n)
-  {
-      p_pmt_n[1] = 0xe0;
-      p_pmt_n[3] = 0xf0;
-  }
+    pmt_n[1] = 0xe0;
+    pmt_n[3] = 0xf0;
+    }
   //}}}
 
   //{{{  stream types
@@ -929,150 +898,125 @@ namespace {
   #define PMT_STREAMTYPE_SCTE_35          0x86
   #define PMT_STREAMTYPE_ATSC_A52E        0x87
   //}}}
+  void pmtn_set_streamtype (uint8_t* pmt_n, uint8_t i_stream_type) { pmt_n[0] = i_stream_type; }
+  uint8_t pmtn_get_streamtype (const uint8_t* pmt_n) { return pmt_n[0]; }
   //{{{
-  void pmtn_set_streamtype (uint8_t *p_pmt_n, uint8_t i_stream_type)
-  {
-      p_pmt_n[0] = i_stream_type;
-  }
-  //}}}
-  //{{{
-  uint8_t pmtn_get_streamtype (const uint8_t *p_pmt_n)
-  {
-      return p_pmt_n[0];
-  }
-  //}}}
-  //{{{
-  //string pmtGetStreamtypeString (uint8_t i_stream_type) {
-      ///* ISO/IEC 13818-1 | Table 2-36 - Stream type assignments */
-      //if (i_stream_type == 0)
-          //return "Reserved";
-      //switch (i_stream_type) {
-          //case 0x01: return "11172-2 video (MPEG-1)";
-          //case 0x02: return "13818-2 video (MPEG-2)";
-          //case 0x03: return "11172-3 audio (MPEG-1)";
-          //case 0x04: return "13818-3 audio (MPEG-2)";
-          //case 0x05: return "13818-1 private sections";
-          //case 0x06: return "13818-1 PES private data";
-          //case 0x07: return "13522 MHEG";
-          //case 0x08: return "H.222.0/13818-1 Annex A - DSM CC";
-          //case 0x09: return "H.222.1";
-          //case 0x0A: return "13818-6 type A";
-          //case 0x0B: return "13818-6 type B";
-          //case 0x0C: return "13818-6 type C";
-          //case 0x0D: return "13818-6 type D";
-          //case 0x0E: return "H.222.0/13818-1 auxiliary";
-          //case 0x0F: return "13818-7 Audio with ADTS transport syntax";
-          //case 0x10: return "14496-2 Visual (MPEG-4 part 2 video)";
-          //case 0x11: return "14496-3 Audio with LATM transport syntax (14496-3/AMD 1)";
-          //case 0x12: return "14496-1 SL-packetized or FlexMux stream in PES packets";
-          //case 0x13: return "14496-1 SL-packetized or FlexMux stream in 14496 sections";
-          //case 0x14: return "ISO/IEC 13818-6 Synchronized Download Protocol";
-          //case 0x15: return "Metadata in PES packets";
-          //case 0x16: return "Metadata in metadata_sections";
-          //case 0x17: return "Metadata in 13818-6 Data Carousel";
-          //case 0x18: return "Metadata in 13818-6 Object Carousel";
-          //case 0x19: return "Metadata in 13818-6 Synchronized Download Protocol";
-          //case 0x1A: return "13818-11 MPEG-2 IPMP stream";
-          //case 0x1B: return "H.264/14496-10 video (MPEG-4/AVC)";
-          //case 0x24: return "H.265 video (MPEG-H/HEVC)";
-          //case 0x42: return "AVS Video";
-          //case 0x7F: return "IPMP stream";
-          //case 0x81: return "ATSC A/52";
-          //case 0x86: return "SCTE 35 Splice Information Table";
-          //case 0x87: return "ATSC A/52e";
-          //default  : return "Unknown";
-      //}
-  //}
-  //}}}
+  string pmtGetStreamtypeString (uint8_t streamType) {
+  // ISO/IEC 13818-1 | Table 2-36 - Stream type assignments */
 
-  //{{{
-  void pmtn_set_pid (uint8_t *p_pmt_n, uint16_t i_pid)
-  {
-      p_pmt_n[1] &= ~0x1f;
-      p_pmt_n[1] |= i_pid >> 8;
-      p_pmt_n[2] = i_pid & 0xff;
-  }
-  //}}}
-  //{{{
-  uint16_t pmtn_get_pid (const uint8_t *p_pmt_n)
-  {
-      return ((p_pmt_n[1] & 0x1f) << 8) | p_pmt_n[2];
-  }
-  //}}}
-
-  //{{{
-  void pmtn_set_desclength (uint8_t *p_pmt_n, uint16_t i_length)
-  {
-      p_pmt_n[3] &= ~0xf;
-      p_pmt_n[3] |= i_length >> 8;
-      p_pmt_n[4] = i_length & 0xff;
-  }
-  //}}}
-  //{{{
-  uint16_t pmtn_get_desclength (const uint8_t *p_pmt_n)
-  {
-      return ((p_pmt_n[3] & 0xf) << 8) | p_pmt_n[4];
-  }
-  //}}}
-  //{{{
-  uint8_t* pmtn_get_descs (uint8_t *p_pmt_n)
-  {
-      return &p_pmt_n[3];
-  }
-  //}}}
-  //{{{
-  uint8_t* pmt_get_es (uint8_t *p_pmt, uint8_t n)
-  {
-      uint16_t i_section_size = psi_get_length(p_pmt) + PSI_HEADER_SIZE
-                                 - PSI_CRC_SIZE;
-      uint8_t *p_pmt_n = p_pmt + PMT_HEADER_SIZE + pmt_get_desclength(p_pmt);
-      if (p_pmt_n - p_pmt > i_section_size) return NULL;
-
-      while (n) {
-          if (p_pmt_n + PMT_ES_SIZE - p_pmt > i_section_size) return NULL;
-          p_pmt_n += PMT_ES_SIZE + pmtn_get_desclength(p_pmt_n);
-          n--;
+    switch (streamType) {
+      case 0x0: return "Reserved";
+      case 0x01: return "11172-2 video (MPEG-1)";
+      case 0x02: return "13818-2 video (MPEG-2)";
+      case 0x03: return "11172-3 audio (MPEG-1)";
+      case 0x04: return "13818-3 audio (MPEG-2)";
+      case 0x05: return "13818-1 private sections";
+      case 0x06: return "13818-1 PES private data";
+      case 0x07: return "13522 MHEG";
+      case 0x08: return "H.222.0/13818-1 Annex A - DSM CC";
+      case 0x09: return "H.222.1";
+      case 0x0A: return "13818-6 type A";
+      case 0x0B: return "13818-6 type B";
+      case 0x0C: return "13818-6 type C";
+      case 0x0D: return "13818-6 type D";
+      case 0x0E: return "H.222.0/13818-1 auxiliary";
+      case 0x0F: return "13818-7 Audio with ADTS transport syntax";
+      case 0x10: return "14496-2 Visual (MPEG-4 part 2 video)";
+      case 0x11: return "14496-3 Audio with LATM transport syntax (14496-3/AMD 1)";
+      case 0x12: return "14496-1 SL-packetized or FlexMux stream in PES packets";
+      case 0x13: return "14496-1 SL-packetized or FlexMux stream in 14496 sections";
+      case 0x14: return "ISO/IEC 13818-6 Synchronized Download Protocol";
+      case 0x15: return "Metadata in PES packets";
+      case 0x16: return "Metadata in metadata_sections";
+      case 0x17: return "Metadata in 13818-6 Data Carousel";
+      case 0x18: return "Metadata in 13818-6 Object Carousel";
+      case 0x19: return "Metadata in 13818-6 Synchronized Download Protocol";
+      case 0x1A: return "13818-11 MPEG-2 IPMP stream";
+      case 0x1B: return "H.264/14496-10 video (MPEG-4/AVC)";
+      case 0x24: return "H.265 video (MPEG-H/HEVC)";
+      case 0x42: return "AVS Video";
+      case 0x7F: return "IPMP stream";
+      case 0x81: return "ATSC A/52";
+      case 0x86: return "SCTE 35 Splice Information Table";
+      case 0x87: return "ATSC A/52e";
+      default  : return "Unknown";
       }
-      if (p_pmt_n - p_pmt >= i_section_size) return NULL;
-      return p_pmt_n;
-  }
+    }
   //}}}
 
   //{{{
-  bool pmt_validate (const uint8_t *p_pmt)
-  {
-      uint16_t i_section_size = psi_get_length(p_pmt) + PSI_HEADER_SIZE
-                                 - PSI_CRC_SIZE;
-      const uint8_t *p_pmt_n;
+  void pmtn_set_pid (uint8_t* pmt_n, uint16_t i_pid) {
 
-      if (!psi_get_syntax(p_pmt) || psi_get_section(p_pmt)
-           || psi_get_lastsection(p_pmt)
-           || psi_get_tableid(p_pmt) != PMT_TABLE_ID)
-          return false;
+    pmt_n[1] &= ~0x1f;
+    pmt_n[1] |= i_pid >> 8;
+    pmt_n[2] = i_pid & 0xff;
+    }
+  //}}}
+  uint16_t pmtn_get_pid (const uint8_t* pmt_n) { return ((pmt_n[1] & 0x1f) << 8) | pmt_n[2]; }
 
-      if (!psi_check_crc(p_pmt))
-          return false;
+  //{{{
+  void pmtn_set_desclength (uint8_t* pmt_n, uint16_t i_length) {
 
-      if (i_section_size < PMT_HEADER_SIZE
-           || i_section_size < PMT_HEADER_SIZE + pmt_get_desclength(p_pmt))
-          return false;
+    pmt_n[3] &= ~0xf;
+    pmt_n[3] |= i_length >> 8;
+    pmt_n[4] = i_length & 0xff;
+    }
+  //}}}
+  uint16_t pmtn_get_desclength (const uint8_t* pmt_n) { return ((pmt_n[3] & 0xf) << 8) | pmt_n[4]; }
+  uint8_t* pmtn_get_descs (uint8_t* pmt_n) { return &pmt_n[3]; }
+  //{{{
+  uint8_t* pmt_get_es (uint8_t* pmt, uint8_t n) {
 
-      if (!descs_validate(p_pmt + 10))
-          return false;
+    uint16_t i_section_size = psi_get_length(pmt) + PSI_HEADER_SIZE - PSI_CRC_SIZE;
+    uint8_t* pmt_n = pmt + PMT_HEADER_SIZE + pmt_get_desclength (pmt);
+    if (pmt_n - pmt > i_section_size)
+      return NULL;
 
-      p_pmt_n = p_pmt + PMT_HEADER_SIZE + pmt_get_desclength(p_pmt);
-
-      while (p_pmt_n + PMT_ES_SIZE - p_pmt <= i_section_size
-              && p_pmt_n + PMT_ES_SIZE + pmtn_get_desclength(p_pmt_n) - p_pmt
-                  <= i_section_size) {
-          if (!descs_validate(p_pmt_n + 3))
-              return false;
-
-          p_pmt_n += PMT_ES_SIZE + pmtn_get_desclength(p_pmt_n);
+    while (n) {
+      if (pmt_n + PMT_ES_SIZE - pmt > i_section_size)
+        return NULL;
+      pmt_n += PMT_ES_SIZE + pmtn_get_desclength (pmt_n);
+      n--;
       }
 
-      return (p_pmt_n - p_pmt == i_section_size);
-  }
+    if (pmt_n - pmt >= i_section_size)
+      return NULL;
+
+    return pmt_n;
+    }
+  //}}}
+
+  //{{{
+  bool pmt_validate (const uint8_t* pmt) {
+
+    uint16_t i_section_size = psi_get_length(pmt) + PSI_HEADER_SIZE - PSI_CRC_SIZE;
+
+    if (!psi_get_syntax(pmt) || psi_get_section (pmt) ||
+        psi_get_lastsection (pmt) || psi_get_tableid (pmt) != PMT_TABLE_ID)
+      return false;
+
+    if (!psi_check_crc (pmt))
+      return false;
+
+    if ((i_section_size < PMT_HEADER_SIZE) ||
+        (i_section_size < PMT_HEADER_SIZE + pmt_get_desclength (pmt)))
+      return false;
+
+    if (!descs_validate (pmt + 10))
+      return false;
+
+    const uint8_t* pmt_n = pmt + PMT_HEADER_SIZE + pmt_get_desclength (pmt);
+
+    while (pmt_n + PMT_ES_SIZE - pmt <= i_section_size
+           && pmt_n + PMT_ES_SIZE + pmtn_get_desclength (pmt_n) - pmt <= i_section_size) {
+      if (!descs_validate (pmt_n + 3))
+        return false;
+
+      pmt_n += PMT_ES_SIZE + pmtn_get_desclength (pmt_n);
+      }
+
+    return (pmt_n - pmt == i_section_size);
+    }
   //}}}
   //}}}
   //{{{  tdt
@@ -2190,49 +2134,8 @@ namespace {
     return false;
     }
   //}}}
-
   //{{{
-  const char* h222_stream_type_desc (uint8_t streamType) {
-  // See ISO/IEC 13818-1 : 2000 (E) | Table 2-29 - Stream type assignments, Page 66 (48)
-
-    switch (streamType) {
-      case 0x00: return "Reserved stream";
-      case 0x01: return "11172-2 video (MPEG-1)";
-      case 0x02: return "H.262/13818-2 video (MPEG-2) or 11172-2 constrained video";
-      case 0x03: return "11172-3 audio (MPEG-1)";
-      case 0x04: return "13818-3 audio (MPEG-2)";
-      case 0x05: return "H.222.0/13818-1  private sections";
-      case 0x06: return "H.222.0/13818-1 PES private data";
-      case 0x07: return "13522 MHEG";
-      case 0x08: return "H.222.0/13818-1 Annex A - DSM CC";
-      case 0x09: return "H.222.1";
-      case 0x0A: return "13818-6 type A";
-      case 0x0B: return "13818-6 type B";
-      case 0x0C: return "13818-6 type C";
-      case 0x0D: return "13818-6 type D";
-      case 0x0E: return "H.222.0/13818-1 auxiliary";
-      case 0x0F: return "13818-7 Audio with ADTS transport syntax";
-      case 0x10: return "14496-2 Visual (MPEG-4 part 2 video)";
-      case 0x11: return "14496-3 Audio with LATM transport syntax (14496-3/AMD 1)";
-      case 0x12: return "14496-1 SL-packetized or FlexMux stream in PES packets";
-      case 0x13: return "14496-1 SL-packetized or FlexMux stream in 14496 sections";
-      case 0x14: return "ISO/IEC 13818-6 Synchronized Download Protocol";
-      case 0x15: return "Metadata in PES packets";
-      case 0x16: return "Metadata in metadata sections";
-      case 0x17: return "Metadata in 13818-6 Data Carousel";
-      case 0x18: return "Metadata in 13818-6 Object Carousel";
-      case 0x19: return "Metadata in 13818-6 Synchronized Download Protocol";
-      case 0x1A: return "13818-11 MPEG-2 IPMP stream";
-      case 0x1B: return "H.264/14496-10 video (MPEG-4/AVC)";
-      case 0x24: return "H.265/23008-2 video (HEVC)";
-      case 0x42: return "AVS Video";
-      case 0x7F: return "IPMP stream";
-      default  : return "Unknown stream";
-      }
-    }
-  //}}}
-  //{{{
-  const char* getPidDesc (uint16_t pidNum, uint16_t* sidNum) {
+  string getPidDesc (uint16_t pidNum, uint16_t& sidNum) {
 
     // Simple cases
     switch (pidNum) {
@@ -2268,8 +2171,7 @@ namespace {
     for (int k = 0; k < mNumSids; k++) {
       sSid* sid = mSids[k];
       if (sid->mPmtPid == pidNum) {
-        if (sidNum)
-          *sidNum = sid->mSid;
+        sidNum = sid->mSid;
         return "PMT";
         }
 
@@ -2281,8 +2183,7 @@ namespace {
         // so just remember the pid and if it is alone it will be reported as PCR, otherwise
         // stream type of the PID will be reported
         if (pidNum == pmt_get_pcrpid (mCurrentPmt)) {
-          if (sidNum)
-            *sidNum = sid->mSid;
+         sidNum = sid->mSid;
           pcrPid = pmt_get_pcrpid (mCurrentPmt);
           }
 
@@ -2290,9 +2191,8 @@ namespace {
         j = 0;
         while ((p_current_es = pmt_get_es (mCurrentPmt, j++))) {
           if (pmtn_get_pid (p_current_es) == pidNum) {
-            if (sidNum)
-              *sidNum = sid->mSid;
-            return h222_stream_type_desc (pmtn_get_streamtype (p_current_es));
+            sidNum = sid->mSid;
+            return pmtGetStreamtypeString (pmtn_get_streamtype (p_current_es));
             }
           }
         }
@@ -2301,8 +2201,10 @@ namespace {
     // Are there any other PIDs?
     if (pidNum == nitPid)
       return "NIT";
+
     if (pidNum == pcrPid)
       return "PCR";
+
     return "...";
     }
   //}}}
@@ -3093,7 +2995,8 @@ namespace {
       //}}}
 
     if (sidChanged || pidChanged || tsidChanged || dvbChanged || networkChanged || mServiceChanged || mProviderChanged)
-      cLog::log (LOGINFO, format ("changeOuput {}{}{}{}{}{}{}",
+      cLog::log (LOGINFO, format ("changeOuput {} {}{}{}{}{}{}{}",
+        output->mConfig.mDisplayName,
         dvbChanged ? "dvb " : "",
         sidChanged ? "sid " : "", pidChanged ? "pid " : "", tsidChanged ? "tsid " : "",
         networkChanged ? "network " : "", mServiceChanged ? "service " : "", mProviderChanged ? "provider " : ""));
@@ -3164,7 +3067,7 @@ namespace {
     int blockCount = output->getBlockCount();
 
     if (output->mLastPacket && (output->mLastPacket->mDepth < blockCount)) {
-      // add ts block to partial rtp packet
+      // add tsBlock to partial rtp packet
       sRtpPacket* packet = output->mLastPacket;
       if (ts_has_adaptation (block->mTs) && ts_get_adaptation (block->mTs) && tsaf_has_pcr (block->mTs))
         packet->mDts = block->mDts;
@@ -3395,7 +3298,7 @@ namespace {
     bool epg = handleEpg (psi_get_tableid (eit));
     uint16_t onid = eit_get_onid (eit);
 
-    for (auto output: mOutputs) {
+    for (auto output : mOutputs) {
       if (output->mConfig.mOutputDvb &&
           (!epg || output->mConfig.mOutputEpg) && (output->mConfig.mSid == sid->mSid)) {
         eit_set_tsid (eit, output->mTsId);
@@ -3799,7 +3702,7 @@ namespace {
       }
 
     if ((pid != EIT_PID) || !eit_validate (eit)) {
-      cLog::log (LOGINFO, "invalid eit section pid:%hu", pid);
+      cLog::log (LOGERROR, "invalid eit section pid:%hu", pid);
       free (eit);
       return;
       }
@@ -3824,7 +3727,7 @@ namespace {
       }
 
     if (sid->mEitTables[eitTableId].data[iSection] &&
-      psi_compare (sid->mEitTables[eitTableId].data[iSection], eit)) {
+        psi_compare (sid->mEitTables[eitTableId].data[iSection], eit)) {
       // Identical section Shortcut
       free (sid->mEitTables[eitTableId].data[iSection]);
       sid->mEitTables[eitTableId].data[iSection] = eit;
@@ -3943,15 +3846,15 @@ namespace {
 
       // get and log info
       uint16_t sid = 0;
-      const char* pidDesc = getPidDesc (pidNum, &sid);
+      string pidDesc = getPidDesc (pidNum, sid);
       cLog::log (LOGERROR, format ("continuity sid:{} pid:{} {}:{} {}",
-                            sid, pidNum, continuity, (tsPid->mLastContinuity + 1) & 0x0f, pidDesc));
+                                   sid, pidNum, continuity, (tsPid->mLastContinuity + 1) & 0x0f, pidDesc));
       }
 
     if (ts_get_transporterror (block->mTs)) {
       // get and log info
       uint16_t sid = 0;
-      const char* desc = getPidDesc (pidNum, &sid);
+      string desc = getPidDesc (pidNum, sid);
       cLog::log (LOGERROR, format ("transportErorIndicator pid:{} {} sid:{}", pidNum, desc, sid));
 
       // inc error counts

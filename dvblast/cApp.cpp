@@ -31,18 +31,18 @@ using namespace fmt;
 class cApp : public cGlWindow {
 public:
   //{{{
-  void run (const string& title, int width, int height, bool gui, bool all, int frequency) {
+  void run (const string& title, int width, int height, int frequency, bool gui, bool multicast) {
 
     if (gui) {
       initialiseGui (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
       add (new cTextBox (mString, 0.f));
 
-      thread ([=](){ dvblast (frequency, false); } ).detach();
+      thread ([=](){ dvblast (frequency, multicast, false); } ).detach();
 
       runGui (true);
       }
     else // run in this main thread
-      dvblast (frequency, true);
+      dvblast (frequency, multicast, true);
 
     cLog::log (LOGINFO, "exit");
     }
@@ -93,7 +93,7 @@ protected:
   //}}}
 private:
   //{{{
-  void dvblast (int frequency, bool console) {
+  void dvblast (int frequency, bool multicast, bool console) {
 
     // set thread realtime priority
     struct sched_param param;
@@ -110,12 +110,20 @@ private:
 
     // init dvbRtp
     cDvbRtp dvbRtp (&dvb, &blockPool);
-    dvbRtp.setOutput ("192.168.1.109:5002", 17540);
-    dvbRtp.setOutput ("192.168.1.109:5004", 17472);
-    dvbRtp.setOutput ("192.168.1.109:5006", 17662);
-    dvbRtp.setOutput ("192.168.1.109:5008", 17664);
-    dvbRtp.setOutput ("192.168.1.109:5010", 17728);
-
+    if (multicast) {
+      dvbRtp.setOutput ("239.255.1.1:5002", 17540);
+      dvbRtp.setOutput ("239.255.1.2:5002", 17472);
+      dvbRtp.setOutput ("239.255.1.3:5002", 17662);
+      dvbRtp.setOutput ("239.255.1.4:5002", 17664);
+      dvbRtp.setOutput ("239.255.1.5:5002", 17728);
+      }
+    else {
+      dvbRtp.setOutput ("192.168.1.109:5002", 17540);
+      dvbRtp.setOutput ("192.168.1.109:5004", 17472);
+      dvbRtp.setOutput ("192.168.1.109:5006", 17662);
+      dvbRtp.setOutput ("192.168.1.109:5008", 17664);
+      dvbRtp.setOutput ("192.168.1.109:5010", 17728);
+      }
     while (!mExit) {
       mBlocks++;
       dvbRtp.processBlockList (dvb.read (&blockPool));
@@ -144,13 +152,13 @@ int main (int numArgs, char* args[]) {
   //}}}
 
   // options
-  bool all = false;
   bool gui = false;
+  bool multicast = false;
   eLogLevel logLevel = LOGINFO;
   //{{{  parse params to options
   for (size_t i = 0; i < params.size(); i++) {
-    if (params[i] == "all") all = true;
-    else if (params[i] == "gui") gui = true;
+    if (params[i] == "gui") gui = true;
+    else if (params[i] == "m") multicast = true;
     else if (params[i] == "log1") logLevel = LOGINFO1;
     else if (params[i] == "log2") logLevel = LOGINFO2;
     else if (params[i] == "log3") logLevel = LOGINFO3;
@@ -161,7 +169,7 @@ int main (int numArgs, char* args[]) {
   cLog::log (LOGNOTICE, "dvblast");
 
   cApp app;
-  app.run ("dvblast", 790, 450, gui, all, 626000000);
+  app.run ("dvblast", 790, 450, 626000000, gui, multicast);
 
   return 0;
   }
