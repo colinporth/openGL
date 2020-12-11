@@ -314,8 +314,7 @@ namespace {
     uint32_t i_crc = 0xffffffff;
     uint16_t i_end = (((section[1] & 0xf) << 8) | section[2]) + PSI_HEADER_SIZE - PSI_CRC_SIZE;
 
-    uint16_t i;
-    for (i = 0; i < i_end; i++)
+    for (uint16_t i = 0; i < i_end; i++)
       i_crc = (i_crc << 8) ^ p_psi_crc_table[(i_crc >> 24) ^ (section[i])];
 
     section[i_end] = i_crc >> 24;
@@ -330,8 +329,7 @@ namespace {
     uint32_t i_crc = 0xffffffff;
     uint16_t i_end = (((section[1] & 0xf) << 8) | section[2]) + PSI_HEADER_SIZE - PSI_CRC_SIZE;
 
-    uint16_t i;
-    for (i = 0; i < i_end; i++)
+    for (uint16_t i = 0; i < i_end; i++)
       i_crc = (i_crc << 8) ^ p_psi_crc_table[(i_crc >> 24) ^ (section[i])];
 
     return section[i_end] == (i_crc >> 24)
@@ -1010,7 +1008,7 @@ namespace {
   //}}}
   //{{{  rst
   // Running Status Table
-  #define RST_PID         x13
+  #define RST_PID         0x13
   #define RST_TABLE_ID    0x71
   #define RST_HEADER_SIZE PSI_HEADER_SIZE
   #define RST_STATUS_SIZE 9
@@ -1176,12 +1174,12 @@ namespace {
   //}}}
   //}}}
   //{{{  service descriptor
-  #define DESC48_HEADER_SIZE      (DESC_HEADER_SIZE + 1)
+  #define DESC48_HEADER_SIZE (DESC_HEADER_SIZE + 1)
 
-  void desc48_init (uint8_t *p_desc) { desc_set_tag (p_desc, 0x48); }
+  void desc48_init (uint8_t* desc) { desc_set_tag (desc, 0x48); }
 
-  void desc48_set_type (uint8_t *p_desc, uint8_t i_type) { p_desc[2] = i_type; }
-  uint8_t desc48_get_type (const uint8_t *p_desc) { return p_desc[2]; }
+  void desc48_set_type (uint8_t* desc, uint8_t type) { desc[2] = type; }
+  uint8_t desc48_get_type (const uint8_t* desc) { return desc[2]; }
 
   //{{{
   void desc48_set_provider (uint8_t* desc, const uint8_t* provider, uint8_t length) {
@@ -1221,11 +1219,10 @@ namespace {
   bool desc48_validate (const uint8_t* desc) {
 
     uint8_t length = desc_get_length (desc);
-    const uint8_t* p = desc + DESC48_HEADER_SIZE;
 
+    const uint8_t* p = desc + DESC48_HEADER_SIZE;
     p += *p + 1;
-    if ((DESC48_HEADER_SIZE + 2 > length + DESC_HEADER_SIZE) ||
-        (p + 1 - desc > length + DESC_HEADER_SIZE))
+    if ((DESC48_HEADER_SIZE + 2 > length + DESC_HEADER_SIZE) || (p + 1 - desc > length + DESC_HEADER_SIZE))
       return false;
 
     p += *p + 1;
@@ -1380,57 +1377,52 @@ namespace {
   //}}}
 
   //{{{
-  bool nit_validate (const uint8_t *p_nit)
-  {
-      uint16_t i_section_size = psi_get_length(p_nit) + PSI_HEADER_SIZE
-                                 - PSI_CRC_SIZE;
-      const uint8_t *p_nit_n;
+  bool nit_validate (const uint8_t *p_nit) {
 
-      if (!psi_get_syntax(p_nit)
-           || (psi_get_tableid(p_nit) != NIT_TABLE_ID_ACTUAL
-                && psi_get_tableid(p_nit) != NIT_TABLE_ID_OTHER))
-          return false;
+    uint16_t i_section_size = psi_get_length(p_nit) + PSI_HEADER_SIZE - PSI_CRC_SIZE;
 
-      if (i_section_size < NIT_HEADER_SIZE
-           || i_section_size < NIT_HEADER_SIZE + nit_get_desclength(p_nit))
-          return false;
+    if (!psi_get_syntax (p_nit)
+         || (psi_get_tableid (p_nit) != NIT_TABLE_ID_ACTUAL && psi_get_tableid (p_nit) != NIT_TABLE_ID_OTHER))
+      return false;
 
-      if (!descs_validate(p_nit + 8))
-          return false;
+    if ((i_section_size < NIT_HEADER_SIZE) || (i_section_size < NIT_HEADER_SIZE + nit_get_desclength (p_nit)))
+      return false;
 
-      p_nit_n = p_nit + NIT_HEADER_SIZE + nit_get_desclength(p_nit);
+    if (!descs_validate (p_nit + 8))
+      return false;
 
-      if (nith_get_tslength(p_nit_n) != p_nit + i_section_size - p_nit_n
-           - NIT_HEADER2_SIZE)
-          return false;
-      p_nit_n += NIT_HEADER2_SIZE;
+    const uint8_t* p_nit_n = p_nit + NIT_HEADER_SIZE + nit_get_desclength (p_nit);
 
-      while (p_nit_n + NIT_TS_SIZE - p_nit <= i_section_size
-              && p_nit_n + NIT_TS_SIZE + nitn_get_desclength(p_nit_n) - p_nit
-                  <= i_section_size) {
-          if (!descs_validate(p_nit_n + 4))
-              return false;
+    if (nith_get_tslength (p_nit_n) != p_nit + i_section_size - p_nit_n - NIT_HEADER2_SIZE)
+      return false;
 
-          p_nit_n += NIT_TS_SIZE + nitn_get_desclength(p_nit_n);
+    p_nit_n += NIT_HEADER2_SIZE;
+
+    while (p_nit_n + NIT_TS_SIZE - p_nit <= i_section_size
+           && p_nit_n + NIT_TS_SIZE + nitn_get_desclength (p_nit_n) - p_nit <= i_section_size) {
+      if (!descs_validate (p_nit_n + 4))
+        return false;
+
+      p_nit_n += NIT_TS_SIZE + nitn_get_desclength (p_nit_n);
       }
 
-      return (p_nit_n - p_nit == i_section_size);
-  }
+    return (p_nit_n - p_nit == i_section_size);
+    }
   //}}}
 
   //{{{
   uint8_t* nit_table_find_ts (uint8_t** sections, uint16_t i_tsid, uint16_t i_onid) {
 
     uint8_t i_last_section = psi_table_get_lastsection (sections);
-    uint8_t i;
-    for (i = 0; i <= i_last_section; i++) {
-      uint8_t *section = psi_table_get_section (sections, i);
-      uint8_t *p_ts;
+    for (uint8_t i = 0; i <= i_last_section; i++) {
+      uint8_t* section = psi_table_get_section (sections, i);
+
       int j = 0;
-      while ((p_ts = nit_get_ts (section, j)) != NULL) {
+      uint8_t* ts;
+      while ((ts = nit_get_ts (section, j)) != NULL) {
         j++;
-        if (nitn_get_tsid (p_ts) == i_tsid && nitn_get_onid(p_ts) == i_onid)
-          return p_ts;
+        if (nitn_get_tsid (ts) == i_tsid && nitn_get_onid (ts) == i_onid)
+          return ts;
         }
       }
 
@@ -1441,19 +1433,18 @@ namespace {
   bool nit_table_validate (uint8_t** sections) {
 
     uint8_t i_last_section = psi_table_get_lastsection (sections);
-    uint8_t i;
-    for (i = 0; i <= i_last_section; i++) {
+    for (uint8_t i = 0; i <= i_last_section; i++) {
       uint8_t* section = psi_table_get_section (sections, i);
-      uint8_t* p_ts;
+      uint8_t* ts;
       int j = 0;
 
-      if (!psi_check_crc(section))
+      if (!psi_check_crc (section))
         return false;
 
-      while ((p_ts = nit_get_ts (section, j)) != NULL) {
+      while ((ts = nit_get_ts (section, j)) != NULL) {
         j++;
-        // check that the TS is not already in the table */
-        if (nit_table_find_ts (sections, nitn_get_tsid(p_ts), nitn_get_onid(p_ts)) != p_ts)
+        // check that the TS is not already in the table
+        if (nit_table_find_ts (sections, nitn_get_tsid (ts), nitn_get_onid (ts)) != ts)
           return false;
         }
       }
@@ -1463,9 +1454,9 @@ namespace {
   //}}}
   //}}}
   //{{{  network name descriptor
-  #define DESC40_HEADER_SIZE      DESC_HEADER_SIZE
+  #define DESC40_HEADER_SIZE  DESC_HEADER_SIZE
 
-  void desc40_init(uint8_t* desc) { desc_set_tag (desc, 0x40); }
+  void desc40_init (uint8_t* desc) { desc_set_tag (desc, 0x40); }
 
   void desc40_set_networkname (uint8_t* desc, const uint8_t* network_name, uint8_t length) {
     desc_set_length (desc, length);
