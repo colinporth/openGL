@@ -110,31 +110,31 @@ namespace {
     if (!ts_has_adaptation (ts))
       return ts + TS_HEADER_SIZE;
 
-    return ts + TS_HEADER_SIZE + 1 + ts_get_adaptation(ts);
+    return ts + TS_HEADER_SIZE + 1 + ts_get_adaptation (ts);
     }
   //}}}
   //{{{
   uint8_t* ts_section (uint8_t* ts) {
 
-    if (!ts_get_unitstart(ts))
-      return ts_payload(ts);
+    if (!ts_get_unitstart (ts))
+      return ts_payload (ts);
 
-    return ts_payload(ts) + 1; /* pointer_field */
+    return ts_payload (ts) + 1; /* pointer_field */
     }
   //}}}
   //{{{
   uint8_t* ts_next_section (uint8_t* ts) {
 
-    uint8_t *p_payload;
+    uint8_t* payload;
 
-    if (!ts_get_unitstart(ts))
+    if (!ts_get_unitstart (ts))
       return ts + TS_SIZE;
 
-    p_payload = ts_payload(ts);
-    if (p_payload >= ts + TS_SIZE)
+    payload = ts_payload (ts);
+    if (payload >= ts + TS_SIZE)
       return ts + TS_SIZE;
 
-    return p_payload + *p_payload + 1; /* pointer_field */
+    return payload + *payload + 1; /* pointer_field */
     }
   //}}}
 
@@ -716,128 +716,108 @@ namespace {
   #define pat_get_tsid psi_get_tableidext
 
   //{{{
-  void pat_init(uint8_t *p_pat)
-  {
-      psi_init(p_pat, true);
-      psi_set_tableid(p_pat, PAT_TABLE_ID);
-      p_pat[1] &= ~0x40;
-  }
+  void pat_init (uint8_t* p_pat) {
+
+    psi_init (p_pat, true);
+    psi_set_tableid (p_pat, PAT_TABLE_ID);
+    p_pat[1] &= ~0x40;
+    }
   //}}}
   //{{{
-  void pat_set_length(uint8_t *p_pat, uint16_t i_pat_length)
-  {
-      psi_set_length(p_pat, PAT_HEADER_SIZE + PSI_CRC_SIZE - PSI_HEADER_SIZE
-                      + i_pat_length);
-  }
+  void pat_set_length (uint8_t* p_pat, uint16_t i_pat_length) {
+    psi_set_length (p_pat, PAT_HEADER_SIZE + PSI_CRC_SIZE - PSI_HEADER_SIZE + i_pat_length);
+    }
   //}}}
-  //{{{
-  void patn_init(uint8_t *p_pat_n)
-  {
-      p_pat_n[2] = 0xe0;
-  }
-  //}}}
+  void patn_init (uint8_t* p_pat_n) { p_pat_n[2] = 0xe0; }
 
   //{{{
-  void patn_set_program(uint8_t *p_pat_n, uint16_t i_program)
-  {
-      p_pat_n[0] = i_program >> 8;
-      p_pat_n[1] = i_program & 0xff;
-  }
+  void patn_set_program (uint8_t* p_pat_n, uint16_t i_program) {
+    p_pat_n[0] = i_program >> 8;
+    p_pat_n[1] = i_program & 0xff;
+    }
   //}}}
-  //{{{
-  uint16_t patn_get_program(const uint8_t *p_pat_n)
-  {
-      return (p_pat_n[0] << 8) | p_pat_n[1];
-  }
-  //}}}
+  uint16_t patn_get_program (const uint8_t* p_pat_n) { return (p_pat_n[0] << 8) | p_pat_n[1]; }
 
   //{{{
-  void patn_set_pid(uint8_t *p_pat_n, uint16_t i_pid)
-  {
-      p_pat_n[2] &= ~0x1f;
-      p_pat_n[2] |= i_pid >> 8;
-      p_pat_n[3] = i_pid & 0xff;
-  }
+  void patn_set_pid (uint8_t* p_pat_n, uint16_t i_pid) {
+
+    p_pat_n[2] &= ~0x1f;
+    p_pat_n[2] |= i_pid >> 8;
+    p_pat_n[3] = i_pid & 0xff;
+    }
   //}}}
-  //{{{
-  uint16_t patn_get_pid(const uint8_t *p_pat_n)
-  {
-      return ((p_pat_n[2] & 0x1f) << 8) | p_pat_n[3];
-  }
-  //}}}
+  uint16_t patn_get_pid (const uint8_t* p_pat_n) { return ((p_pat_n[2] & 0x1f) << 8) | p_pat_n[3]; }
 
   //{{{
-  uint8_t *pat_get_program(uint8_t *p_pat, uint8_t n)
-  {
-      uint8_t *p_pat_n = p_pat + PAT_HEADER_SIZE + n * PAT_PROGRAM_SIZE;
-      if (p_pat_n + PAT_PROGRAM_SIZE - p_pat
-           > psi_get_length(p_pat) + PSI_HEADER_SIZE - PSI_CRC_SIZE)
-          return NULL;
-      return p_pat_n;
-  }
-  //}}}
+  uint8_t* pat_get_program (uint8_t* p_pat, uint8_t n) {
 
-  //{{{
-  bool pat_validate(const uint8_t *p_pat)
-  {
-      if (!psi_get_syntax(p_pat) || psi_get_tableid(p_pat) != PAT_TABLE_ID)
-          return false;
-      if ((psi_get_length(p_pat) - PAT_HEADER_SIZE + PSI_HEADER_SIZE
-           - PSI_CRC_SIZE) % PAT_PROGRAM_SIZE)
-          return false;
-
-      return true;
-  }
-  //}}}
-
-  //{{{
-  uint8_t *pat_table_find_program(uint8_t **pp_sections, uint16_t i_program)
-  {
-      uint8_t i_last_section = psi_table_get_lastsection(pp_sections);
-      uint8_t i;
-
-      for (i = 0; i <= i_last_section; i++) {
-          uint8_t *p_section = psi_table_get_section(pp_sections, i);
-          uint8_t *p_program;
-          int j = 0;
-
-          while ((p_program = pat_get_program(p_section, j)) != NULL) {
-              j++;
-              if (patn_get_program(p_program) == i_program)
-                  return p_program;
-          }
-      }
-
+    uint8_t *p_pat_n = p_pat + PAT_HEADER_SIZE + n * PAT_PROGRAM_SIZE;
+    if (p_pat_n + PAT_PROGRAM_SIZE - p_pat > psi_get_length(p_pat) + PSI_HEADER_SIZE - PSI_CRC_SIZE)
       return NULL;
-  }
+
+    return p_pat_n;
+    }
   //}}}
+
   //{{{
-  bool pat_table_validate(uint8_t **pp_sections)
-  {
-      uint8_t i_last_section = psi_table_get_lastsection(pp_sections);
-      uint8_t i;
+  bool pat_validate (const uint8_t* p_pat) {
 
-      for (i = 0; i <= i_last_section; i++) {
-          uint8_t *p_section = psi_table_get_section(pp_sections, i);
-          uint8_t *p_program;
-          int j = 0;
+    if (!psi_get_syntax (p_pat) || psi_get_tableid (p_pat) != PAT_TABLE_ID)
+      return false;
 
-          if (!psi_check_crc(p_section))
-              return false;
+    if ((psi_get_length (p_pat) - PAT_HEADER_SIZE + PSI_HEADER_SIZE - PSI_CRC_SIZE) % PAT_PROGRAM_SIZE)
+      return false;
 
-          while ((p_program = pat_get_program(p_section, j)) != NULL) {
-              uint8_t *p_program2 = pat_table_find_program(pp_sections,
-                                        patn_get_program(p_program));
-              j++;
-              /* check that the program number is not already in the table
-               * with another PID */
-              if (patn_get_pid(p_program) != patn_get_pid(p_program2))
-                  return false;
-          }
+    return true;
+    }
+  //}}}
+
+  //{{{
+  uint8_t* pat_table_find_program (uint8_t** pp_sections, uint16_t i_program) {
+
+    uint8_t i_last_section = psi_table_get_lastsection(pp_sections);
+    uint8_t i;
+
+    for (i = 0; i <= i_last_section; i++) {
+      uint8_t* p_section = psi_table_get_section(pp_sections, i);
+      uint8_t* p_program;
+      int j = 0;
+
+      while ((p_program = pat_get_program(p_section, j)) != NULL) {
+        j++;
+        if (patn_get_program(p_program) == i_program)
+          return p_program;
+        }
       }
 
-      return true;
-  }
+    return NULL;
+    }
+  //}}}
+  //{{{
+  bool pat_table_validate (uint8_t** pp_sections) {
+
+    uint8_t i_last_section = psi_table_get_lastsection (pp_sections);
+
+    uint8_t i;
+    for (i = 0; i <= i_last_section; i++) {
+      uint8_t* p_section = psi_table_get_section (pp_sections, i);
+      uint8_t* p_program;
+      int j = 0;
+
+      if (!psi_check_crc(p_section))
+        return false;
+
+      while ((p_program = pat_get_program (p_section, j)) != NULL) {
+        uint8_t *p_program2 = pat_table_find_program(pp_sections, patn_get_program (p_program));
+        j++;
+        // check that the program number is not already in the table * with another PID
+        if (patn_get_pid(p_program) != patn_get_pid (p_program2))
+          return false;
+        }
+      }
+
+    return true;
+    }
   //}}}
   //}}}
   //{{{  pmt
@@ -1409,62 +1389,62 @@ namespace {
   //{{{  service descriptor
   #define DESC48_HEADER_SIZE      (DESC_HEADER_SIZE + 1)
 
-  void desc48_init(uint8_t *p_desc) { desc_set_tag(p_desc, 0x48); }
+  void desc48_init (uint8_t *p_desc) { desc_set_tag (p_desc, 0x48); }
 
   void desc48_set_type (uint8_t *p_desc, uint8_t i_type) { p_desc[2] = i_type; }
   uint8_t desc48_get_type (const uint8_t *p_desc) { return p_desc[2]; }
 
   //{{{
-  void desc48_set_provider(uint8_t *p_desc, const uint8_t *p_provider, uint8_t i_length)
-  {
-      uint8_t *p = p_desc + DESC48_HEADER_SIZE;
-      p[0] = i_length;
-      memcpy(p + 1, p_provider, i_length);
-  }
-  //}}}
-  //{{{
-  uint8_t *desc48_get_provider(const uint8_t *p_desc, uint8_t *pi_length)
-  {
-      uint8_t *p = (uint8_t *)p_desc + DESC48_HEADER_SIZE;
-      *pi_length = p[0];
-      return p + 1;
-  }
-  //}}}
+  void desc48_set_provider (uint8_t* desc, const uint8_t* provider, uint8_t length) {
 
-  //{{{
-  void desc48_set_service(uint8_t *p_desc, const uint8_t *p_service, uint8_t i_length)
-  {
-      uint8_t *p = p_desc + DESC48_HEADER_SIZE + 1 + p_desc[3];
-      p[0] = i_length;
-      memcpy(p + 1, p_service, i_length);
-  }
+    uint8_t* p = desc + DESC48_HEADER_SIZE;
+    p[0] = length;
+    memcpy (p + 1, provider, length);
+    }
   //}}}
   //{{{
-  uint8_t *desc48_get_service(const uint8_t *p_desc, uint8_t *pi_length)
-  {
-      uint8_t *p = (uint8_t *)p_desc + DESC48_HEADER_SIZE + 1 + p_desc[3];
-      *pi_length = p[0];
-      return p + 1;
-  }
+  uint8_t* desc48_get_provider (const uint8_t* desc, uint8_t* length) {
+
+    uint8_t* p = (uint8_t*)desc + DESC48_HEADER_SIZE;
+    *length = p[0];
+    return p + 1;
+    }
   //}}}
 
   //{{{
-  bool desc48_validate(const uint8_t *p_desc)
-  {
-      uint8_t i_length = desc_get_length(p_desc);
-      const uint8_t *p = p_desc + DESC48_HEADER_SIZE;
+  void desc48_set_service (uint8_t* desc, const uint8_t* service, uint8_t length) {
 
-      p += *p + 1;
-      if (DESC48_HEADER_SIZE + 2 > i_length + DESC_HEADER_SIZE ||
-          p + 1 - p_desc > i_length + DESC_HEADER_SIZE)
-          return false;
+    uint8_t* p = desc + DESC48_HEADER_SIZE + 1 + desc[3];
+    p[0] = length;
+    memcpy (p + 1, service, length);
+    }
+  //}}}
+  //{{{
+  uint8_t* desc48_get_service (const uint8_t* desc, uint8_t* length) {
 
-      p += *p + 1;
-      if (p - p_desc > i_length + DESC_HEADER_SIZE)
-          return false;
+    uint8_t* p = (uint8_t*)desc + DESC48_HEADER_SIZE + 1 + desc[3];
+    *length = p[0];
+    return p + 1;
+    }
+  //}}}
 
-      return true;
-  }
+  //{{{
+  bool desc48_validate (const uint8_t* desc) {
+
+    uint8_t length = desc_get_length (desc);
+    const uint8_t* p = desc + DESC48_HEADER_SIZE;
+
+    p += *p + 1;
+    if ((DESC48_HEADER_SIZE + 2 > length + DESC_HEADER_SIZE) ||
+        (p + 1 - desc > length + DESC_HEADER_SIZE))
+      return false;
+
+    p += *p + 1;
+    if (p - desc > length + DESC_HEADER_SIZE)
+      return false;
+
+    return true;
+    }
   //}}}
   //}}}
   //{{{  nit
@@ -1479,7 +1459,7 @@ namespace {
   #define nit_get_nid psi_get_tableidext
 
   //{{{
-  void nit_init(uint8_t *p_nit, bool b_actual)
+  void nit_init (uint8_t *p_nit, bool b_actual)
   {
       psi_init(p_nit, true);
       psi_set_tableid(p_nit, b_actual ? NIT_TABLE_ID_ACTUAL : NIT_TABLE_ID_OTHER);
@@ -1488,14 +1468,14 @@ namespace {
   //}}}
 
   //{{{
-  void nit_set_length(uint8_t *p_nit, uint16_t i_nit_length)
+  void nit_set_length (uint8_t *p_nit, uint16_t i_nit_length)
   {
       psi_set_length(p_nit, NIT_HEADER_SIZE + PSI_CRC_SIZE - PSI_HEADER_SIZE
                       + i_nit_length);
   }
   //}}}
   //{{{
-  void nit_set_desclength(uint8_t *p_nit, uint16_t i_length)
+  void nit_set_desclength (uint8_t *p_nit, uint16_t i_length)
   {
       p_nit[8] &= ~0xf;
       p_nit[8] |= i_length >> 8;
@@ -1503,26 +1483,26 @@ namespace {
   }
   //}}}
   //{{{
-  uint16_t nit_get_desclength(const uint8_t *p_nit)
+  uint16_t nit_get_desclength (const uint8_t *p_nit)
   {
       return ((p_nit[8] & 0xf) << 8) | p_nit[9];
   }
   //}}}
   //{{{
-  uint8_t *nit_get_descs(uint8_t *p_nit)
+  uint8_t* nit_get_descs (uint8_t *p_nit)
   {
       return &p_nit[8];
   }
   //}}}
 
   //{{{
-  void nith_init(uint8_t *p_nit_h)
+  void nith_init (uint8_t *p_nit_h)
   {
       p_nit_h[0] = 0xf0;
   }
   //}}}
   //{{{
-  void nith_set_tslength(uint8_t *p_nit_h, uint16_t i_length)
+  void nith_set_tslength (uint8_t *p_nit_h, uint16_t i_length)
   {
       p_nit_h[0] &= ~0xf;
       p_nit_h[0] |= i_length >> 8;
@@ -1530,48 +1510,48 @@ namespace {
   }
   //}}}
   //{{{
-  uint16_t nith_get_tslength(const uint8_t *p_nit_h)
+  uint16_t nith_get_tslength (const uint8_t *p_nit_h)
   {
       return ((p_nit_h[0] & 0xf) << 8) | p_nit_h[1];
   }
   //}}}
   //{{{
-  void nitn_init(uint8_t *p_nit_n)
+  void nitn_init (uint8_t *p_nit_n)
   {
       p_nit_n[4] = 0xf0;
   }
   //}}}
 
   //{{{
-  void nitn_set_tsid(uint8_t *p_nit_n, uint16_t i_tsid)
+  void nitn_set_tsid (uint8_t *p_nit_n, uint16_t i_tsid)
   {
       p_nit_n[0] = i_tsid >> 8;
       p_nit_n[1] = i_tsid & 0xff;
   }
   //}}}
   //{{{
-  uint16_t nitn_get_tsid(const uint8_t *p_nit_n)
+  uint16_t nitn_get_tsid (const uint8_t *p_nit_n)
   {
       return (p_nit_n[0] << 8) | p_nit_n[1];
   }
   //}}}
 
   //{{{
-  void nitn_set_onid(uint8_t *p_nit_n, uint16_t i_onid)
+  void nitn_set_onid (uint8_t *p_nit_n, uint16_t i_onid)
   {
       p_nit_n[2] = i_onid >> 8;
       p_nit_n[3] = i_onid & 0xff;
   }
   //}}}
   //{{{
-  uint16_t nitn_get_onid(const uint8_t *p_nit_n)
+  uint16_t nitn_get_onid (const uint8_t *p_nit_n)
   {
       return (p_nit_n[2] << 8) | p_nit_n[3];
   }
   //}}}
 
   //{{{
-  void nitn_set_desclength(uint8_t *p_nit_n, uint16_t i_length)
+  void nitn_set_desclength (uint8_t *p_nit_n, uint16_t i_length)
   {
       p_nit_n[4] &= ~0xf;
       p_nit_n[4] |= i_length >> 8;
@@ -1579,20 +1559,20 @@ namespace {
   }
   //}}}
   //{{{
-  uint16_t nitn_get_desclength(const uint8_t *p_nit_n)
+  uint16_t nitn_get_desclength (const uint8_t *p_nit_n)
   {
       return ((p_nit_n[4] & 0xf) << 8) | p_nit_n[5];
   }
   //}}}
 
   //{{{
-  uint8_t *nit_get_header2(uint8_t *p_nit)
+  uint8_t* nit_get_header2 (uint8_t *p_nit)
   {
       return p_nit + NIT_HEADER_SIZE + nit_get_desclength(p_nit);
   }
   //}}}
   //{{{
-  uint8_t *nit_get_ts(uint8_t *p_nit, uint8_t n)
+  uint8_t* nit_get_ts (uint8_t *p_nit, uint8_t n)
   {
       uint16_t i_section_size = psi_get_length(p_nit) + PSI_HEADER_SIZE
                                  - PSI_CRC_SIZE;
@@ -1611,7 +1591,7 @@ namespace {
   //}}}
 
   //{{{
-  bool nit_validate(const uint8_t *p_nit)
+  bool nit_validate (const uint8_t *p_nit)
   {
       uint16_t i_section_size = psi_get_length(p_nit) + PSI_HEADER_SIZE
                                  - PSI_CRC_SIZE;
@@ -1650,7 +1630,7 @@ namespace {
   //}}}
 
   //{{{
-  uint8_t *nit_table_find_ts(uint8_t **pp_sections, uint16_t i_tsid, uint16_t i_onid)
+  uint8_t* nit_table_find_ts (uint8_t **pp_sections, uint16_t i_tsid, uint16_t i_onid)
   {
       uint8_t i_last_section = psi_table_get_lastsection(pp_sections);
       uint8_t i;
@@ -1671,7 +1651,7 @@ namespace {
   }
   //}}}
   //{{{
-  bool nit_table_validate(uint8_t **pp_sections)
+  bool nit_table_validate (uint8_t **pp_sections)
   {
       uint8_t i_last_section = psi_table_get_lastsection(pp_sections);
       uint8_t i;

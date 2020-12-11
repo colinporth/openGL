@@ -76,12 +76,12 @@ public:
       initialiseGui (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
       add (new cTextBox (mString, 0.f));
 
-      thread ([=](){ dvblast(); } ).detach();
+      thread ([=](){ dvblast (false); } ).detach();
 
       runGui (true);
       }
     else // run in this main thread
-      dvblast();
+      dvblast (true);
 
     cLog::log (LOGINFO, "exit");
     }
@@ -132,7 +132,7 @@ protected:
   //}}}
 private:
   //{{{
-  void dvblast() {
+  void dvblast (bool console) {
 
     // set thread realtime priority
     struct sched_param param;
@@ -161,6 +161,8 @@ private:
       mString = format ("dvblast blocks {} packets {} errors:{}:{}:{}",
                         mBlocks, dvbRtp.getNumPackets(),
                         dvbRtp.getNumInvalids(), dvbRtp.getNumDiscontinuities(), dvbRtp.getNumErrors());
+      if (console)
+        printf ("\r%s", mString.c_str());
       }
     }
   //}}}
