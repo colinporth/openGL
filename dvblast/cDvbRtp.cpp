@@ -2722,7 +2722,7 @@ namespace {
     }
   //}}}
   //{{{
-  void changeOutput (cOutput* output, const cOutputConfig* config) {
+  void setOutput (cOutput* output, const cOutputConfig* config) {
 
     bool sidChanged = output->mConfig.mSid != config->mSid;
     bool dvbChanged = output->mConfig.mOutputDvb != config->mOutputDvb;
@@ -2821,7 +2821,7 @@ namespace {
       //}}}
 
     if (sidChanged || pidChanged || tsidChanged || dvbChanged || networkChanged || mServiceChanged || mProviderChanged)
-      cLog::log (LOGINFO, format ("changeOuput {} {}{}{}{}{}{}{}",
+      cLog::log (LOGINFO, format ("select {} {}{}{}{}{}{}{} changed",
         output->mConfig.mDisplayName,
         dvbChanged ? "dvb " : "",
         sidChanged ? "sid " : "", pidChanged ? "pid " : "", tsidChanged ? "tsid " : "",
@@ -3829,15 +3829,15 @@ uint64_t cDvbRtp::getNumInvalids() { return mNumInvalids; }
 uint64_t cDvbRtp::getNumDiscontinuities() { return mNumDiscontinuities; }
 //}}}
 //{{{
-bool cDvbRtp::setOutput (const string& outputString, int sid) {
+bool cDvbRtp::selectOutput (const string& serverAddressString, int sid) {
 
-  struct addrinfo* addr = parseHost (outputString.c_str(), DEFAULT_PORT);
+  struct addrinfo* addr = parseHost (serverAddressString.c_str(), DEFAULT_PORT);
   if (!addr)
     return false;
 
   cOutputConfig outputConfig;
   outputConfig.initialise ("", "");
-  outputConfig.mDisplayName = outputString;
+  outputConfig.mDisplayName = serverAddressString;
   outputConfig.mSid = sid;
   outputConfig.mOutputDvb = true;
   outputConfig.mOutputEpg = true;
@@ -3861,7 +3861,7 @@ bool cDvbRtp::setOutput (const string& outputString, int sid) {
 
   if (output) {
     output->mConfig.mDisplayName = outputConfig.mDisplayName;
-    changeOutput (output, &outputConfig);
+    setOutput (output, &outputConfig);
     free (outputConfig.mPids);
     return true;
     }

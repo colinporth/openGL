@@ -111,18 +111,18 @@ private:
     // init dvbRtp
     cDvbRtp dvbRtp (&dvb, &blockPool);
     if (multicast) {
-      dvbRtp.setOutput ("239.255.1.1:5002", 17540);
-      dvbRtp.setOutput ("239.255.1.2:5002", 17472);
-      dvbRtp.setOutput ("239.255.1.3:5002", 17662);
-      dvbRtp.setOutput ("239.255.1.4:5002", 17664);
-      dvbRtp.setOutput ("239.255.1.5:5002", 17728);
+      dvbRtp.selectOutput ("239.255.1.1:5002", 17540);
+      dvbRtp.selectOutput ("239.255.1.2:5002", 17472);
+      dvbRtp.selectOutput ("239.255.1.3:5002", 17662);
+      dvbRtp.selectOutput ("239.255.1.4:5002", 17664);
+      dvbRtp.selectOutput ("239.255.1.5:5002", 17728);
       }
     else {
-      dvbRtp.setOutput ("192.168.1.109:5002", 17540);
-      dvbRtp.setOutput ("192.168.1.109:5004", 17472);
-      dvbRtp.setOutput ("192.168.1.109:5006", 17662);
-      dvbRtp.setOutput ("192.168.1.109:5008", 17664);
-      dvbRtp.setOutput ("192.168.1.109:5010", 17728);
+      dvbRtp.selectOutput ("192.168.1.109:5002", 17540);
+      dvbRtp.selectOutput ("192.168.1.109:5004", 17472);
+      dvbRtp.selectOutput ("192.168.1.109:5006", 17662);
+      dvbRtp.selectOutput ("192.168.1.109:5008", 17664);
+      dvbRtp.selectOutput ("192.168.1.109:5010", 17728);
       }
     while (!mExit) {
       mBlocks++;
