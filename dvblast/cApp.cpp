@@ -162,7 +162,7 @@ private:
                         mBlocks, dvbRtp.getNumPackets(),
                         dvbRtp.getNumInvalids(), dvbRtp.getNumDiscontinuities(), dvbRtp.getNumErrors());
       if (console)
-        printf ("\r%s", mString.c_str());
+        printf ("%s\r", mString.c_str());
       }
     }
   //}}}
