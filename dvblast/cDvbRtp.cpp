@@ -2738,7 +2738,6 @@ namespace {
     output->mConfig.mNewSid = config->mNewSid;
     output->mConfig.mOnid = config->mOnid;
 
-    // change output settings related to names
     output->mConfig.mNetworkName = config->mNetworkName;
     output->mConfig.mServiceName = config->mServiceName;
     output->mConfig.mProviderName = config->mProviderName;
@@ -2821,7 +2820,7 @@ namespace {
       //}}}
 
     if (sidChanged || pidChanged || tsidChanged || dvbChanged || networkChanged || mServiceChanged || mProviderChanged)
-      cLog::log (LOGINFO, format ("select {} {}{}{}{}{}{}{} changed",
+      cLog::log (LOGINFO, format ("{} {}{}{}{}{}{}{}changed",
         output->mConfig.mDisplayName,
         dvbChanged ? "dvb " : "",
         sidChanged ? "sid " : "", pidChanged ? "pid " : "", tsidChanged ? "tsid " : "",
