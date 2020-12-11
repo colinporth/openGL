@@ -52,13 +52,17 @@ constexpr int OUTPUT_EPG   = 0x02;
 
 namespace {
   //{{{  dvb bitstream utils
+  constexpr int kTsSize = 188;
+  constexpr int PADDING_PID = 8191;
+  constexpr int MAX_PIDS = 8192;
+  constexpr int UNUSED_PID = MAX_PIDS + 1;
+
   //{{{  ts utils
-  #define TS_SIZE            188
   #define TS_HEADER_SIZE     4
   #define TS_HEADER_SIZE_AF  6
   #define TS_HEADER_SIZE_PCR 12
 
-  #define TS_DECLARE(ts) uint8_t ts[TS_SIZE]
+  #define TS_DECLARE(ts) uint8_t ts[kTsSize]
 
   //{{{
   void ts_init (uint8_t* ts) {
@@ -105,7 +109,7 @@ namespace {
   uint8_t* ts_payload (uint8_t* ts) {
 
     if (!ts_has_payload (ts))
-      return ts + TS_SIZE;
+      return ts + kTsSize;
 
     if (!ts_has_adaptation (ts))
       return ts + TS_HEADER_SIZE;
@@ -128,11 +132,11 @@ namespace {
     uint8_t* payload;
 
     if (!ts_get_unitstart (ts))
-      return ts + TS_SIZE;
+      return ts + kTsSize;
 
     payload = ts_payload (ts);
-    if (payload >= ts + TS_SIZE)
-      return ts + TS_SIZE;
+    if (payload >= ts + kTsSize)
+      return ts + kTsSize;
 
     return payload + *payload + 1; /* pointer_field */
     }
@@ -249,326 +253,237 @@ namespace {
   //}}}
 
   //{{{
-  uint8_t* psi_allocate()
-  {
-      return (uint8_t *)malloc((PSI_MAX_SIZE + PSI_HEADER_SIZE) * sizeof(uint8_t));
-  }
+  uint8_t* psi_allocate() {
+    return (uint8_t*)malloc ((PSI_MAX_SIZE + PSI_HEADER_SIZE) * sizeof(uint8_t));
+    }
   //}}}
   //{{{
-  uint8_t* psi_private_allocate()
-  {
-      return (uint8_t *)malloc((PSI_PRIVATE_MAX_SIZE + PSI_HEADER_SIZE) * sizeof(uint8_t));
-  }
+  uint8_t* psi_private_allocate() {
+    return (uint8_t*) malloc ((PSI_PRIVATE_MAX_SIZE + PSI_HEADER_SIZE) * sizeof(uint8_t));
+    }
   //}}}
 
-  //{{{
-  void psi_set_tableid (uint8_t *p_section, uint8_t i_table_id)
-  {
-      p_section[0] = i_table_id;
-  }
-  //}}}
-  //{{{
-  uint8_t psi_get_tableid (const uint8_t *p_section)
-  {
-      return p_section[0];
-  }
-  //}}}
+  void psi_set_tableid (uint8_t* p_section, uint8_t i_table_id) { p_section[0] = i_table_id; }
+  uint8_t psi_get_tableid (const uint8_t* p_section) { return p_section[0]; }
+
+  void psi_set_syntax (uint8_t* p_section) { p_section[1] |= 0x80; }
+  bool psi_get_syntax (const uint8_t* p_section) { return !!(p_section[1] & 0x80); }
 
   //{{{
-  void psi_set_syntax (uint8_t *p_section)
-  {
-      p_section[1] |= 0x80;
-  }
-  //}}}
-  //{{{
-  bool psi_get_syntax (const uint8_t *p_section)
-  {
-      return !!(p_section[1] & 0x80);
-  }
-  //}}}
+  void psi_init (uint8_t* p_section, bool b_syntax) {
 
-  //{{{
-  void psi_init (uint8_t *p_section, bool b_syntax)
-  {
-      /* set reserved bits */
-      p_section[1] = 0x70;
-      if (b_syntax) {
-          psi_set_syntax(p_section);
-          p_section[5] = 0xc0;
+    /* set reserved bits */
+    p_section[1] = 0x70;
+    if (b_syntax) {
+      psi_set_syntax(p_section);
+      p_section[5] = 0xc0;
       }
-  }
+    }
   //}}}
   //{{{
-  void psi_set_length (uint8_t *p_section, uint16_t i_length)
-  {
-      p_section[1] &= ~0xf;
-      p_section[1] |= (i_length >> 8) & 0xf;
-      p_section[2] = i_length & 0xff;
-  }
+  void psi_set_length (uint8_t* p_section, uint16_t i_length) {
+
+    p_section[1] &= ~0xf;
+    p_section[1] |= (i_length >> 8) & 0xf;
+    p_section[2] = i_length & 0xff;
+    }
+  //}}}
+  uint16_t psi_get_length (const uint8_t* p_section) { return ((p_section[1] & 0xf) << 8) | p_section[2]; }
+
+  //{{{
+  void psi_set_tableidext (uint8_t* p_section, uint16_t i_table_id_ext) {
+    p_section[3] = i_table_id_ext >> 8;
+    p_section[4] = i_table_id_ext & 0xff;
+    }
+  //}}}
+  uint16_t psi_get_tableidext (const uint8_t* p_section) { return (p_section[3] << 8) | p_section[4]; }
+
+  void psi_set_version (uint8_t* p_section, uint8_t i_version) { p_section[5] = (i_version << 1) | 0xc0; }
+  uint8_t psi_get_version (const uint8_t* p_section) { return (p_section[5] & 0x3e) >> 1; }
+
+  void psi_set_current (uint8_t* p_section) { p_section[5] |= 0x1; }
+  bool psi_get_current (const uint8_t* p_section) { return !!(p_section[5] & 0x1); }
+
+  void psi_set_section (uint8_t* p_section, uint8_t i_section) { p_section[6] = i_section; }
+  uint8_t psi_get_section (const uint8_t* p_section) { return p_section[6]; }
+
+  void psi_set_lastsection (uint8_t* p_section, uint8_t i_last_section) { p_section[7] = i_last_section; }
+  uint8_t psi_get_lastsection (const uint8_t* p_section) { return p_section[7]; }
+
+  //{{{
+  void psi_set_crc (uint8_t* p_section) {
+
+    uint32_t i_crc = 0xffffffff;
+    uint16_t i_end = (((p_section[1] & 0xf) << 8) | p_section[2]) + PSI_HEADER_SIZE - PSI_CRC_SIZE;
+
+    uint16_t i;
+    for (i = 0; i < i_end; i++)
+      i_crc = (i_crc << 8) ^ p_psi_crc_table[(i_crc >> 24) ^ (p_section[i])];
+
+    p_section[i_end] = i_crc >> 24;
+    p_section[i_end + 1] = (i_crc >> 16) & 0xff;
+    p_section[i_end + 2] = (i_crc >> 8) & 0xff;
+    p_section[i_end + 3] = i_crc & 0xff;
+    }
   //}}}
   //{{{
-  uint16_t psi_get_length (const uint8_t *p_section)
-  {
-      return ((p_section[1] & 0xf) << 8) | p_section[2];
-  }
+  bool psi_check_crc (const uint8_t* p_section) {
+
+    uint32_t i_crc = 0xffffffff;
+    uint16_t i_end = (((p_section[1] & 0xf) << 8) | p_section[2]) + PSI_HEADER_SIZE - PSI_CRC_SIZE;
+
+    uint16_t i;
+    for (i = 0; i < i_end; i++)
+      i_crc = (i_crc << 8) ^ p_psi_crc_table[(i_crc >> 24) ^ (p_section[i])];
+
+    return p_section[i_end] == (i_crc >> 24)
+           && p_section[i_end + 1] == ((i_crc >> 16) & 0xff)
+           && p_section[i_end + 2] == ((i_crc >> 8) & 0xff)
+           && p_section[i_end + 3] == (i_crc & 0xff);
+    }
+  //}}}
+  //{{{
+  bool psi_validate (const uint8_t* p_section) {
+
+    if (psi_get_syntax(p_section)
+        && (psi_get_length(p_section) < PSI_HEADER_SIZE_SYNTAX1 - PSI_HEADER_SIZE + PSI_CRC_SIZE))
+      return false;
+
+    // only do the CRC check when it is strictly necessary */
+    return true;
+    }
+  //}}}
+  //{{{
+  bool psi_compare (const uint8_t* p_section1, const uint8_t* p_section2) {
+
+    return psi_get_version(p_section1) == psi_get_version(p_section2)
+           && psi_get_length(p_section1) == psi_get_length(p_section2)
+           && !memcmp (p_section1, p_section2, psi_get_length(p_section1) + PSI_HEADER_SIZE);
+    }
   //}}}
 
   //{{{
-  void psi_set_tableidext (uint8_t *p_section, uint16_t i_table_id_ext)
-  {
-      p_section[3] = i_table_id_ext >> 8;
-      p_section[4] = i_table_id_ext & 0xff;
-  }
+  void psi_assemble_init (uint8_t** pp_psi_buffer, uint16_t* pi_psi_buffer_used) {
+    *pp_psi_buffer = NULL;
+    *pi_psi_buffer_used = 0;
+    }
   //}}}
   //{{{
-  uint16_t psi_get_tableidext (const uint8_t *p_section)
-  {
-      return (p_section[3] << 8) | p_section[4];
-  }
+  void psi_assemble_reset (uint8_t** pp_psi_buffer, uint16_t* pi_psi_buffer_used) {
+    free (*pp_psi_buffer);
+    psi_assemble_init (pp_psi_buffer, pi_psi_buffer_used);
+    }
   //}}}
+  //{{{
+  bool psi_assemble_empty (uint8_t** pp_psi_buffer, uint16_t* pi_psi_buffer_used) {
+    return *pp_psi_buffer == NULL;
+    }
+  //}}}
+  //{{{
+  uint8_t* psi_assemble_payload (uint8_t** pp_psi_buffer, uint16_t* pi_psi_buffer_used,
+                                 const uint8_t** pp_payload, uint8_t* pi_length) {
 
-  //{{{
-  void psi_set_version (uint8_t *p_section, uint8_t i_version)
-  {
-      p_section[5] = (i_version << 1) | 0xc0;
-  }
-  //}}}
-  //{{{
-  uint8_t psi_get_version (const uint8_t *p_section)
-  {
-      return (p_section[5] & 0x3e) >> 1;
-  }
-  //}}}
+    uint16_t i_remaining_size = PSI_PRIVATE_MAX_SIZE + PSI_HEADER_SIZE - *pi_psi_buffer_used;
+    uint16_t i_copy_size = *pi_length < i_remaining_size ? *pi_length : i_remaining_size;
+    uint8_t* p_section = NULL;
 
-  //{{{
-  void psi_set_current (uint8_t *p_section)
-  {
-      p_section[5] |= 0x1;
-  }
-  //}}}
-  //{{{
-  bool psi_get_current (const uint8_t *p_section)
-  {
-      return !!(p_section[5] & 0x1);
-  }
-  //}}}
-
-  //{{{
-  void psi_set_section (uint8_t *p_section, uint8_t i_section)
-  {
-      p_section[6] = i_section;
-  }
-  //}}}
-  //{{{
-  uint8_t psi_get_section (const uint8_t *p_section)
-  {
-      return p_section[6];
-  }
-  //}}}
-
-  //{{{
-  void psi_set_lastsection (uint8_t *p_section, uint8_t i_last_section)
-  {
-      p_section[7] = i_last_section;
-  }
-  //}}}
-  //{{{
-  uint8_t psi_get_lastsection (const uint8_t *p_section)
-  {
-      return p_section[7];
-  }
-  //}}}
-
-  //{{{
-  void psi_set_crc (uint8_t *p_section)
-  {
-      uint32_t i_crc = 0xffffffff;
-      uint16_t i_end = (((p_section[1] & 0xf) << 8) | p_section[2])
-                        + PSI_HEADER_SIZE - PSI_CRC_SIZE;
-      uint16_t i;
-
-      for (i = 0; i < i_end; i++)
-          i_crc = (i_crc << 8) ^ p_psi_crc_table[(i_crc >> 24) ^ (p_section[i])];
-
-      p_section[i_end] = i_crc >> 24;
-      p_section[i_end + 1] = (i_crc >> 16) & 0xff;
-      p_section[i_end + 2] = (i_crc >> 8) & 0xff;
-      p_section[i_end + 3] = i_crc & 0xff;
-  }
-  //}}}
-  //{{{
-  bool psi_check_crc (const uint8_t *p_section)
-  {
-      uint32_t i_crc = 0xffffffff;
-      uint16_t i_end = (((p_section[1] & 0xf) << 8) | p_section[2])
-                        + PSI_HEADER_SIZE - PSI_CRC_SIZE;
-      uint16_t i;
-
-      for (i = 0; i < i_end; i++)
-          i_crc = (i_crc << 8) ^ p_psi_crc_table[(i_crc >> 24) ^ (p_section[i])];
-
-      return p_section[i_end] == (i_crc >> 24)
-              && p_section[i_end + 1] == ((i_crc >> 16) & 0xff)
-              && p_section[i_end + 2] == ((i_crc >> 8) & 0xff)
-              && p_section[i_end + 3] == (i_crc & 0xff);
-  }
-  //}}}
-  //{{{
-  bool psi_validate (const uint8_t *p_section)
-  {
-      if (psi_get_syntax(p_section)
-           && (psi_get_length(p_section) < PSI_HEADER_SIZE_SYNTAX1
-                                              - PSI_HEADER_SIZE + PSI_CRC_SIZE))
-          return false;
-
-      /* only do the CRC check when it is strictly necessary */
-
-      return true;
-  }
-  //}}}
-
-  //{{{
-  bool psi_compare (const uint8_t *p_section1, const uint8_t *p_section2)
-  {
-      return psi_get_version(p_section1) == psi_get_version(p_section2)
-          && psi_get_length(p_section1) == psi_get_length(p_section2)
-          && !memcmp(p_section1, p_section2,
-                     psi_get_length(p_section1) + PSI_HEADER_SIZE);
-  }
-
-  //}}}
-  //{{{
-  void psi_assemble_init (uint8_t **pp_psi_buffer, uint16_t *pi_psi_buffer_used)
-  {
-      *pp_psi_buffer = NULL;
-      *pi_psi_buffer_used = 0;
-  }
-  //}}}
-  //{{{
-  void psi_assemble_reset (uint8_t **pp_psi_buffer, uint16_t *pi_psi_buffer_used)
-  {
-      free(*pp_psi_buffer);
-      psi_assemble_init(pp_psi_buffer, pi_psi_buffer_used);
-  }
-  //}}}
-  //{{{
-  bool psi_assemble_empty (uint8_t **pp_psi_buffer, uint16_t *pi_psi_buffer_used) {
-      return *pp_psi_buffer == NULL;
-  }
-  //}}}
-  //{{{
-  uint8_t *psi_assemble_payload (uint8_t **pp_psi_buffer, uint16_t *pi_psi_buffer_used,
-                                              const uint8_t **pp_payload, uint8_t *pi_length)
-  {
-      uint16_t i_remaining_size = PSI_PRIVATE_MAX_SIZE + PSI_HEADER_SIZE
-                                   - *pi_psi_buffer_used;
-      uint16_t i_copy_size = *pi_length < i_remaining_size ? *pi_length :
-                             i_remaining_size;
-      uint8_t *p_section = NULL;
-
-      if (*pp_psi_buffer == NULL) {
-          if (**pp_payload == 0xff) {
-              /* padding table to the end of buffer */
-              *pi_length = 0;
-              return NULL;
-          }
-          *pp_psi_buffer = psi_private_allocate();
+    if (*pp_psi_buffer == NULL) {
+      if (**pp_payload == 0xff) {
+        // padding table to the end of buffer
+        *pi_length = 0;
+        return NULL;
+        }
+      *pp_psi_buffer = psi_private_allocate();
       }
 
-      memcpy(*pp_psi_buffer + *pi_psi_buffer_used, *pp_payload, i_copy_size);
-      *pi_psi_buffer_used += i_copy_size;
+    memcpy (*pp_psi_buffer + *pi_psi_buffer_used, *pp_payload, i_copy_size);
+    *pi_psi_buffer_used += i_copy_size;
 
-      if (*pi_psi_buffer_used >= PSI_HEADER_SIZE) {
-          uint16_t i_section_size = psi_get_length(*pp_psi_buffer)
-                                     + PSI_HEADER_SIZE;
+    if (*pi_psi_buffer_used >= PSI_HEADER_SIZE) {
+      uint16_t i_section_size = psi_get_length(*pp_psi_buffer) + PSI_HEADER_SIZE;
+      if (i_section_size > PSI_PRIVATE_MAX_SIZE) {
+        // invalid section
+        psi_assemble_reset (pp_psi_buffer, pi_psi_buffer_used);
+        *pi_length = 0;
+        return NULL;
+        }
 
-          if (i_section_size > PSI_PRIVATE_MAX_SIZE) {
-              /* invalid section */
-              psi_assemble_reset(pp_psi_buffer, pi_psi_buffer_used);
-              *pi_length = 0;
-              return NULL;
-          }
-          if (i_section_size <= *pi_psi_buffer_used) {
-              p_section = *pp_psi_buffer;
-              i_copy_size -= (*pi_psi_buffer_used - i_section_size);
-              *pp_psi_buffer = NULL;
-              *pi_psi_buffer_used = 0;
-          }
+      if (i_section_size <= *pi_psi_buffer_used) {
+        p_section = *pp_psi_buffer;
+        i_copy_size -= (*pi_psi_buffer_used - i_section_size);
+        *pp_psi_buffer = NULL;
+        *pi_psi_buffer_used = 0;
+        }
       }
 
-      *pp_payload += i_copy_size;
-      *pi_length -= i_copy_size;
-      return p_section;
-  }
+    *pp_payload += i_copy_size;
+    *pi_length -= i_copy_size;
+    return p_section;
+    }
   //}}}
   //{{{
-  void psi_split_end (uint8_t *p_ts, uint8_t *pi_ts_offset)
-  {
-      if (*pi_ts_offset != TS_SIZE) {
-          memset(p_ts + *pi_ts_offset, 0xff, TS_SIZE - *pi_ts_offset);
-          *pi_ts_offset = TS_SIZE;
+  void psi_split_end (uint8_t* p_ts, uint8_t* pi_ts_offset) {
+
+    if (*pi_ts_offset != kTsSize) {
+      memset (p_ts + *pi_ts_offset, 0xff, kTsSize - *pi_ts_offset);
+      *pi_ts_offset = kTsSize;
       }
-  }
+    }
   //}}}
   //{{{
-  void psi_split_section (uint8_t *p_ts, uint8_t *pi_ts_offset,
-                                       const uint8_t *p_section,
-                                       uint16_t *pi_section_offset)
-  {
-      uint16_t i_section_length = psi_get_length(p_section) + PSI_HEADER_SIZE
-                                   - *pi_section_offset;
-      uint8_t i_ts_length, i_copy;
+  void psi_split_section (uint8_t* p_ts, uint8_t* pi_ts_offset, const uint8_t* p_section, uint16_t* pi_section_offset) {
 
-      if (!*pi_ts_offset) {
-          ts_init(p_ts);
-          ts_set_payload(p_ts);
-          *pi_ts_offset = ts_payload(p_ts) - p_ts;
+    uint16_t i_section_length = psi_get_length (p_section) + PSI_HEADER_SIZE - *pi_section_offset;
+    uint8_t i_ts_length, i_copy;
+
+    if (!*pi_ts_offset) {
+      ts_init(p_ts);
+      ts_set_payload (p_ts);
+      *pi_ts_offset = ts_payload (p_ts) - p_ts;
       }
 
-      if (!*pi_section_offset) {
-          if (TS_SIZE - *pi_ts_offset < 2) {
-              psi_split_end(p_ts, pi_ts_offset);
-              return;
-          }
-          if (!ts_get_unitstart(p_ts)) {
-              uint8_t *p_payload = ts_payload(p_ts);
-              uint8_t i_payload_length = *pi_ts_offset - (p_payload - p_ts);
-              if (i_payload_length)
-                  memmove(p_payload + 1, p_payload, i_payload_length);
-              (*pi_ts_offset)++;
-              *p_payload = i_payload_length; /* pointer_field */
-              ts_set_unitstart(p_ts);
-          }
+    if (!*pi_section_offset) {
+      if (kTsSize - *pi_ts_offset < 2) {
+        psi_split_end (p_ts, pi_ts_offset);
+        return;
+        }
+      if (!ts_get_unitstart (p_ts)) {
+        uint8_t *p_payload = ts_payload (p_ts);
+        uint8_t i_payload_length = *pi_ts_offset - (p_payload - p_ts);
+        if (i_payload_length)
+          memmove(p_payload + 1, p_payload, i_payload_length);
+        (*pi_ts_offset)++;
+        *p_payload = i_payload_length; /* pointer_field */
+        ts_set_unitstart (p_ts);
+        }
       }
-      i_ts_length = TS_SIZE - *pi_ts_offset;
+    i_ts_length = kTsSize - *pi_ts_offset;
 
-      i_copy = i_ts_length < i_section_length ?
-               i_ts_length : i_section_length;
-      memcpy(p_ts + *pi_ts_offset, p_section + *pi_section_offset, i_copy);
-      *pi_ts_offset += i_copy;
-      *pi_section_offset += i_copy;
-  }
+    i_copy = i_ts_length < i_section_length ? i_ts_length : i_section_length;
+    memcpy (p_ts + *pi_ts_offset, p_section + *pi_section_offset, i_copy);
+    *pi_ts_offset += i_copy;
+    *pi_section_offset += i_copy;
+    }
   //}}}
 
-  #define PSI_TABLE_MAX_SECTIONS         256
+  #define PSI_TABLE_MAX_SECTIONS  256
   #define PSI_TABLE_DECLARE(pp_table) uint8_t* pp_table[PSI_TABLE_MAX_SECTIONS]
-
   //{{{
-  void psi_table_init (uint8_t **pp_sections) {
+  void psi_table_init (uint8_t** pp_sections) {
 
     for (int i = 0; i < PSI_TABLE_MAX_SECTIONS; i++)
       pp_sections[i] = NULL;
     }
   //}}}
   //{{{
-  void psi_table_free (uint8_t **pp_sections) {
+  void psi_table_free (uint8_t** pp_sections) {
 
     for (int i = 0; i < PSI_TABLE_MAX_SECTIONS; i++)
-      free(pp_sections[i]);
+      free (pp_sections[i]);
     }
   //}}}
 
-  bool psi_table_validate (uint8_t * const *pp_sections) { return pp_sections[0] != NULL; }
+  bool psi_table_validate (uint8_t* const *pp_sections) { return pp_sections[0] != NULL; }
   //{{{
   void psi_table_copy (uint8_t** dest, uint8_t** src) {
     memcpy (dest, src, PSI_TABLE_MAX_SECTIONS * sizeof(uint8_t*));
@@ -1066,38 +981,33 @@ namespace {
   }
   //}}}
   //{{{
-  bool eit_validate(const uint8_t *p_eit)
-  {
-      uint16_t i_section_size = psi_get_length(p_eit) + PSI_HEADER_SIZE
-                                 - PSI_CRC_SIZE;
-      uint8_t i_tid = psi_get_tableid(p_eit);
-      const uint8_t *p_eit_n;
+  bool eit_validate (const uint8_t *p_eit) {
 
-      if (!psi_get_syntax(p_eit)
-           || (i_tid != EIT_TABLE_ID_PF_ACTUAL
-                && i_tid != EIT_TABLE_ID_PF_OTHER
-                && !(i_tid >= EIT_TABLE_ID_SCHED_ACTUAL_FIRST
-                      && i_tid <= EIT_TABLE_ID_SCHED_ACTUAL_LAST)
-                && !(i_tid >= EIT_TABLE_ID_SCHED_OTHER_FIRST
-                      && i_tid <= EIT_TABLE_ID_SCHED_OTHER_LAST)))
-          return false;
+    uint16_t i_section_size = psi_get_length(p_eit) + PSI_HEADER_SIZE - PSI_CRC_SIZE;
+    uint8_t i_tid = psi_get_tableid (p_eit);
 
-      if (!psi_check_crc(p_eit))
-          return false;
+    const uint8_t *p_eit_n;
 
-      p_eit_n = p_eit + EIT_HEADER_SIZE;
+    if (!psi_get_syntax(p_eit) ||
+        (i_tid != EIT_TABLE_ID_PF_ACTUAL && i_tid != EIT_TABLE_ID_PF_OTHER
+         && !(i_tid >= EIT_TABLE_ID_SCHED_ACTUAL_FIRST && i_tid <= EIT_TABLE_ID_SCHED_ACTUAL_LAST)
+         && !(i_tid >= EIT_TABLE_ID_SCHED_OTHER_FIRST && i_tid <= EIT_TABLE_ID_SCHED_OTHER_LAST)))
+      return false;
 
-      while (p_eit_n + EIT_EVENT_SIZE - p_eit <= i_section_size
-              && p_eit_n + EIT_EVENT_SIZE + eitn_get_desclength(p_eit_n) - p_eit
-                  <= i_section_size) {
-          if (!descs_validate(p_eit_n + 10))
-              return false;
+    if (!psi_check_crc(p_eit))
+      return false;
 
-          p_eit_n += EIT_EVENT_SIZE + eitn_get_desclength(p_eit_n);
+    p_eit_n = p_eit + EIT_HEADER_SIZE;
+    while (p_eit_n + EIT_EVENT_SIZE - p_eit <= i_section_size
+           && p_eit_n + EIT_EVENT_SIZE + eitn_get_desclength(p_eit_n) - p_eit <= i_section_size) {
+      if (!descs_validate(p_eit_n + 10))
+        return false;
+
+      p_eit_n += EIT_EVENT_SIZE + eitn_get_desclength (p_eit_n);
       }
 
-      return (p_eit_n - p_eit == i_section_size);
-  }
+    return (p_eit_n - p_eit == i_section_size);
+    }
   //}}}
   //}}}
   //{{{  rst
@@ -1632,9 +1542,6 @@ namespace {
     }
   //}}}
 
-  constexpr int PADDING_PID = 8191;
-  constexpr int MAX_PIDS = 8192;
-  constexpr int UNUSED_PID = MAX_PIDS + 1;
 
   constexpr int MIN_SECTION_FRAGMENT = PSI_HEADER_SIZE_SYNTAX1;
 
@@ -1643,7 +1550,7 @@ namespace {
   constexpr int MAX_EIT_TABLES = EIT_TABLE_ID_SCHED_ACTUAL_LAST - EIT_TABLE_ID_PF_ACTUAL;
 
   //{{{
-  uint8_t kPadTs[188] = {
+  uint8_t kPadTs[kTsSize] = {
     0x47, 0x1f, 0xff, 0x10, 0xff, 0xff, 0xff, 0xff,
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -1886,7 +1793,7 @@ namespace {
       }
     //}}}
 
-    int getBlockCount() { return (mConfig.mMtu - kRtpHeaderSize) / 188; }
+    int getBlockCount() { return (mConfig.mMtu - kRtpHeaderSize) / kTsSize; }
 
     //{{{
     sRtpPacket* packetNew() {
@@ -3126,14 +3033,14 @@ namespace {
         int blockNum;
         for (blockNum = 0; blockNum < packet->mDepth; blockNum++) {
           iovecs[numIov].iov_base = packet->mBlocks[blockNum]->mTs;
-          iovecs[numIov].iov_len = 188;
+          iovecs[numIov].iov_len = kTsSize;
           numIov++;
           }
 
         // rtp padding
         for (; blockNum < blockCount; blockNum++) {
           iovecs[numIov].iov_base = kPadTs;
-          iovecs[numIov].iov_len = 188;
+          iovecs[numIov].iov_len = kTsSize;
           numIov++;
           }
         //}}}
@@ -3206,7 +3113,7 @@ namespace {
         }
 
       if (sectionOffset == sectionLength) {
-        if (tsOffset < 188 - MIN_SECTION_FRAGMENT && tsBuffer) {
+        if (tsOffset < kTsSize - MIN_SECTION_FRAGMENT && tsBuffer) {
           *tsBuffer = block;
           *tsBufferOffset = tsOffset;
           break;
@@ -3382,8 +3289,7 @@ namespace {
     PSI_TABLE_DECLARE(oldPatSections);
     uint8_t lastSection = psi_table_get_lastsection (mNextPatSections);
 
-    if (psi_table_validate (mCurrentPatSections) &&
-        psi_table_compare (mCurrentPatSections, mNextPatSections)) {
+    if (psi_table_validate (mCurrentPatSections) && psi_table_compare (mCurrentPatSections, mNextPatSections)) {
       // identical PAT
       psi_table_free (mNextPatSections);
       psi_table_init (mNextPatSections);
@@ -3619,8 +3525,7 @@ namespace {
     PSI_TABLE_DECLARE(oldSdtSections);
     uint8_t lastSection = psi_table_get_lastsection (mNextSdtSections);
 
-    if (psi_table_validate (mCurrentSdtSections) &&
-        psi_table_compare (mCurrentSdtSections, mNextSdtSections)) {
+    if (psi_table_validate (mCurrentSdtSections) && psi_table_compare (mCurrentSdtSections, mNextSdtSections)) {
       // identical SDT. Shortcut
       psi_table_free (mNextSdtSections);
       psi_table_init (mNextSdtSections);
@@ -3692,8 +3597,8 @@ namespace {
   void handleEIT (uint16_t pid, uint8_t* eit, int64_t dts) {
 
     uint8_t tableId = psi_get_tableid (eit);
-
     uint16_t sidNum = eit_get_sid (eit);
+
     sSid* sid = findSid (sidNum);
     if (!sid) {
       // Not a selected program
@@ -3728,7 +3633,7 @@ namespace {
 
     if (sid->mEitTables[eitTableId].data[iSection] &&
         psi_compare (sid->mEitTables[eitTableId].data[iSection], eit)) {
-      // Identical section Shortcut
+      // Identical section
       free (sid->mEitTables[eitTableId].data[iSection]);
       sid->mEitTables[eitTableId].data[iSection] = eit;
       sendEIT (sid, dts, eit);
@@ -3803,7 +3708,7 @@ namespace {
       psi_assemble_reset (&tsPid->mPsiBuffer, &tsPid->mPsiBufferUsed);
 
     const uint8_t* payload = ts_section (ts);
-    uint8_t length = ts + 188 - payload;
+    uint8_t length = ts + kTsSize - payload;
     if (!psi_assemble_empty (&tsPid->mPsiBuffer, &tsPid->mPsiBufferUsed)) {
       uint8_t* section = psi_assemble_payload (&tsPid->mPsiBuffer, &tsPid->mPsiBufferUsed, &payload, &length);
       if (section)
@@ -3811,7 +3716,7 @@ namespace {
       }
 
     payload = ts_next_section (ts);
-    length = ts + 188 - payload;
+    length = ts + kTsSize - payload;
     while (length) {
       uint8_t* section = psi_assemble_payload (&tsPid->mPsiBuffer, &tsPid->mPsiBufferUsed, &payload, &length);
       if (section)
@@ -4027,7 +3932,7 @@ bool cDvbRtp::setOutput (const string& outputString, int sid) {
     cLog::log (LOGERROR, "invalid MTU %d, setting %d", outputConfig.mMtu, mtu);
     outputConfig.mMtu = mtu;
     }
-  else if (outputConfig.mMtu < 188 + kRtpHeaderSize)
+  else if (outputConfig.mMtu < kTsSize + kRtpHeaderSize)
     outputConfig.mMtu = mtu;
 
   // find output matching this address
