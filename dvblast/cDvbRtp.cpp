@@ -51,274 +51,140 @@ constexpr int OUTPUT_EPG   = 0x02;
 //}}}
 
 namespace {
-  //{{{  bitstream utils
+  //{{{  dvb bitstream utils
   //{{{  ts utils
   #define TS_SIZE             188
   #define TS_HEADER_SIZE      4
   #define TS_HEADER_SIZE_AF   6
   #define TS_HEADER_SIZE_PCR  12
 
-  #define TS_DECLARE(p_ts) uint8_t p_ts[TS_SIZE]
+  #define TS_DECLARE(ts) uint8_t ts[TS_SIZE]
 
   //{{{
-  inline uint8_t *ts_allocate()
-  {
-      return (uint8_t *)malloc(TS_SIZE * sizeof(uint8_t));
-  }
-  //}}}
-  //{{{
-  inline void ts_init(uint8_t *p_ts)
-  {
-      p_ts[0] = 0x47;
-      p_ts[1] = 0x0;
-      p_ts[2] = 0x0;
-      p_ts[3] = 0x0;
-  }
+  void ts_init (uint8_t* ts) {
+    ts[0] = 0x47;
+    ts[1] = 0x0;
+    ts[2] = 0x0;
+    ts[3] = 0x0;
+    }
   //}}}
 
-  //{{{
-  inline void ts_set_transporterror(uint8_t *p_ts)
-  {
-      p_ts[1] |= 0x80;
-  }
-  //}}}
-  //{{{
-  inline bool ts_get_transporterror(const uint8_t *p_ts)
-  {
-      return !!(p_ts[1] & 0x80);
-  }
-  //}}}
+  bool ts_get_transporterror(const uint8_t* ts) { return !!(ts[1] & 0x80); }
+
+  void ts_set_unitstart(uint8_t* ts) { ts[1] |= 0x40; }
+  bool ts_get_unitstart(const uint8_t* ts) { return !!(ts[1] & 0x40); }
 
   //{{{
-  inline void ts_set_unitstart(uint8_t *p_ts)
+  void ts_set_pid(uint8_t* ts, uint16_t i_pid)
   {
-      p_ts[1] |= 0x40;
+      ts[1] &= ~0x1f;
+      ts[1] |= (i_pid >> 8) & 0x1f;
+      ts[2] = i_pid & 0xff;
   }
   //}}}
   //{{{
-  inline bool ts_get_unitstart(const uint8_t *p_ts)
+  uint16_t ts_get_pid(const uint8_t* ts)
   {
-      return !!(p_ts[1] & 0x40);
+      return ((ts[1] & 0x1f) << 8) | ts[2];
   }
   //}}}
 
   //{{{
-  inline void ts_set_transportpriority(uint8_t *p_ts)
+  void ts_set_cc(uint8_t* ts, uint8_t i_cc)
   {
-      p_ts[1] |= 0x20;
+      ts[3] &= ~0xf;
+      ts[3] |= (i_cc & 0xf);
   }
   //}}}
   //{{{
-  inline bool ts_get_transportpriority(const uint8_t *p_ts)
+  uint8_t ts_get_cc(const uint8_t* ts)
   {
-      return !!(p_ts[1] & 0x20);
-  }
-  //}}}
-
-  //{{{
-  inline void ts_set_pid(uint8_t *p_ts, uint16_t i_pid)
-  {
-      p_ts[1] &= ~0x1f;
-      p_ts[1] |= (i_pid >> 8) & 0x1f;
-      p_ts[2] = i_pid & 0xff;
-  }
-  //}}}
-  //{{{
-  inline uint16_t ts_get_pid(const uint8_t *p_ts)
-  {
-      return ((p_ts[1] & 0x1f) << 8) | p_ts[2];
+      return ts[3] & 0xf;
   }
   //}}}
 
   //{{{
-  inline void ts_set_cc(uint8_t *p_ts, uint8_t i_cc)
+  void ts_set_payload(uint8_t* ts)
   {
-      p_ts[3] &= ~0xf;
-      p_ts[3] |= (i_cc & 0xf);
+      ts[3] |= 0x10;
   }
   //}}}
   //{{{
-  inline uint8_t ts_get_cc(const uint8_t *p_ts)
+  bool ts_has_payload(const uint8_t* ts)
   {
-      return p_ts[3] & 0xf;
-  }
-  //}}}
-
-  //{{{
-  inline void ts_set_payload(uint8_t *p_ts)
-  {
-      p_ts[3] |= 0x10;
-  }
-  //}}}
-  //{{{
-  inline bool ts_has_payload(const uint8_t *p_ts)
-  {
-      return !!(p_ts[3] & 0x10);
+      return !!(ts[3] & 0x10);
   }
   //}}}
 
   //{{{
-  inline void ts_set_adaptation(uint8_t *p_ts, uint8_t i_length)
+  bool ts_has_adaptation(const uint8_t* ts)
   {
-      p_ts[3] |= 0x20;
-      p_ts[4] = i_length;
-      if (i_length)
-          p_ts[5] = 0x0;
-      if (i_length > 1)
-          memset(&p_ts[6], 0xff, i_length - 1); /* stuffing */
+      return !!(ts[3] & 0x20);
   }
   //}}}
   //{{{
-  inline bool ts_has_adaptation(const uint8_t *p_ts)
+  uint8_t ts_get_adaptation(const uint8_t* ts)
   {
-      return !!(p_ts[3] & 0x20);
-  }
-  //}}}
-  //{{{
-  inline uint8_t ts_get_adaptation(const uint8_t *p_ts)
-  {
-      return p_ts[4];
+      return ts[4];
   }
   //}}}
 
   //{{{
-  inline bool ts_validate(const uint8_t *p_ts)
+  bool ts_validate(const uint8_t* ts)
   {
-      return p_ts[0] == 0x47;
-  }
-  //}}}
-  //{{{
-  inline void ts_pad(uint8_t *p_ts)
-  {
-      ts_init(p_ts);
-      ts_set_pid(p_ts, 0x1fff);
-      ts_set_cc(p_ts, 0);
-      ts_set_payload(p_ts);
-      memset(p_ts + 4, 0xff, TS_SIZE - 4);
+      return ts[0] == 0x47;
   }
   //}}}
 
   //{{{
-  inline uint8_t *ts_payload(uint8_t *p_ts)
+  uint8_t *ts_payload(uint8_t* ts)
   {
-      if (!ts_has_payload(p_ts))
-          return p_ts + TS_SIZE;
-      if (!ts_has_adaptation(p_ts))
-          return p_ts + TS_HEADER_SIZE;
-      return p_ts + TS_HEADER_SIZE + 1 + ts_get_adaptation(p_ts);
+      if (!ts_has_payload(ts))
+          return ts + TS_SIZE;
+      if (!ts_has_adaptation(ts))
+          return ts + TS_HEADER_SIZE;
+      return ts + TS_HEADER_SIZE + 1 + ts_get_adaptation(ts);
   }
   //}}}
   //{{{
-  inline uint8_t *ts_section(uint8_t *p_ts)
+  uint8_t *ts_section(uint8_t* ts)
   {
-      if (!ts_get_unitstart(p_ts))
-          return ts_payload(p_ts);
+      if (!ts_get_unitstart(ts))
+          return ts_payload(ts);
 
-      return ts_payload(p_ts) + 1; /* pointer_field */
+      return ts_payload(ts) + 1; /* pointer_field */
   }
   //}}}
   //{{{
-  inline uint8_t *ts_next_section(uint8_t *p_ts)
+  uint8_t *ts_next_section(uint8_t* ts)
   {
       uint8_t *p_payload;
 
-      if (!ts_get_unitstart(p_ts))
-          return p_ts + TS_SIZE;
-      p_payload = ts_payload(p_ts);
-      if (p_payload >= p_ts + TS_SIZE)
-          return p_ts + TS_SIZE;
+      if (!ts_get_unitstart(ts))
+          return ts + TS_SIZE;
+      p_payload = ts_payload(ts);
+      if (p_payload >= ts + TS_SIZE)
+          return ts + TS_SIZE;
 
       return p_payload + *p_payload + 1; /* pointer_field */
   }
   //}}}
 
   //{{{
-  inline void tsaf_set_discontinuity(uint8_t *p_ts)
+  bool tsaf_has_pcr(const uint8_t* ts)
   {
-      p_ts[5] |= 0x80;
-  }
-  //}}}
-  //{{{
-  inline void tsaf_clear_discontinuity(uint8_t *p_ts)
-  {
-      p_ts[5] &= ~0x80;
-  }
-  //}}}
-  //{{{
-  inline bool tsaf_has_discontinuity(const uint8_t *p_ts)
-  {
-      return !!(p_ts[5] & 0x80);
+      return !!(ts[5] & 0x10);
   }
   //}}}
 
   //{{{
-  inline void tsaf_set_randomaccess(uint8_t *p_ts)
-  {
-      p_ts[5] |= 0x40;
-  }
-  //}}}
-  //{{{
-  inline bool tsaf_has_randomaccess(const uint8_t *p_ts)
-  {
-      return !!(p_ts[5] & 0x40);
-  }
-  //}}}
-
-  //{{{
-  inline void tsaf_set_streampriority(uint8_t *p_ts)
-  {
-      p_ts[5] |= 0x20;
-  }
-  //}}}
-
-  //{{{
-  inline void tsaf_set_pcr(uint8_t *p_ts, uint64_t i_pcr)
-  {
-      p_ts[5] |= 0x10;
-      p_ts[6] = (i_pcr >> 25) & 0xff;
-      p_ts[7] = (i_pcr >> 17) & 0xff;
-      p_ts[8] = (i_pcr >> 9) & 0xff;
-      p_ts[9] = (i_pcr >> 1) & 0xff;
-      p_ts[10] = 0x7e | ((i_pcr << 7) & 0x80);
-      p_ts[11] = 0;
-  }
-  //}}}
-  //{{{
-  inline void tsaf_set_pcrext(uint8_t *p_ts, uint16_t i_pcr_ext)
-  {
-      p_ts[10] |= (i_pcr_ext >> 8) & 0x1;
-      p_ts[11] = i_pcr_ext & 0xff;
-  }
-  //}}}
-  //{{{
-  inline bool tsaf_has_pcr(const uint8_t *p_ts)
-  {
-      return !!(p_ts[5] & 0x10);
-  }
-  //}}}
-  //{{{
-  inline uint64_t tsaf_get_pcr(const uint8_t *p_ts)
-  {
-      return ((uint64_t) p_ts[6] << 25) | (p_ts[7] << 17) | (p_ts[8] << 9) | (p_ts[9] << 1) |
-             (p_ts[10] >> 7);
-  }
-  //}}}
-  //{{{
-  inline uint64_t tsaf_get_pcrext(const uint8_t *p_ts)
-  {
-      return ((p_ts[10] & 1) << 8) | p_ts[11];
-  }
-  //}}}
-
-  //{{{
-
-  inline bool ts_check_duplicate(uint8_t i_cc, uint8_t i_last_cc)
+  bool ts_check_duplicate(uint8_t i_cc, uint8_t i_last_cc)
   {
       return i_last_cc == i_cc;
   }
   //}}}
   //{{{
-  inline bool ts_check_discontinuity(uint8_t i_cc, uint8_t i_last_cc)
+  bool ts_check_discontinuity(uint8_t i_cc, uint8_t i_last_cc)
   {
       return (i_last_cc + 17 - i_cc) % 16;
   }
@@ -430,46 +296,46 @@ namespace {
   //}}}
 
   //{{{
-  inline uint8_t *psi_allocate()
+  uint8_t *psi_allocate()
   {
       return (uint8_t *)malloc((PSI_MAX_SIZE + PSI_HEADER_SIZE) * sizeof(uint8_t));
   }
   //}}}
   //{{{
-  inline uint8_t *psi_private_allocate()
+  uint8_t *psi_private_allocate()
   {
       return (uint8_t *)malloc((PSI_PRIVATE_MAX_SIZE + PSI_HEADER_SIZE) * sizeof(uint8_t));
   }
   //}}}
 
   //{{{
-  inline void psi_set_tableid(uint8_t *p_section, uint8_t i_table_id)
+  void psi_set_tableid (uint8_t *p_section, uint8_t i_table_id)
   {
       p_section[0] = i_table_id;
   }
   //}}}
   //{{{
-  inline uint8_t psi_get_tableid(const uint8_t *p_section)
+  uint8_t psi_get_tableid (const uint8_t *p_section)
   {
       return p_section[0];
   }
   //}}}
 
   //{{{
-  inline void psi_set_syntax(uint8_t *p_section)
+  void psi_set_syntax (uint8_t *p_section)
   {
       p_section[1] |= 0x80;
   }
   //}}}
   //{{{
-  inline bool psi_get_syntax(const uint8_t *p_section)
+  bool psi_get_syntax (const uint8_t *p_section)
   {
       return !!(p_section[1] & 0x80);
   }
   //}}}
 
   //{{{
-  inline void psi_init(uint8_t *p_section, bool b_syntax)
+  void psi_init (uint8_t *p_section, bool b_syntax)
   {
       /* set reserved bits */
       p_section[1] = 0x70;
@@ -480,7 +346,7 @@ namespace {
   }
   //}}}
   //{{{
-  inline void psi_set_length(uint8_t *p_section, uint16_t i_length)
+  void psi_set_length (uint8_t *p_section, uint16_t i_length)
   {
       p_section[1] &= ~0xf;
       p_section[1] |= (i_length >> 8) & 0xf;
@@ -488,80 +354,80 @@ namespace {
   }
   //}}}
   //{{{
-  inline uint16_t psi_get_length(const uint8_t *p_section)
+  uint16_t psi_get_length (const uint8_t *p_section)
   {
       return ((p_section[1] & 0xf) << 8) | p_section[2];
   }
   //}}}
 
   //{{{
-  inline void psi_set_tableidext(uint8_t *p_section, uint16_t i_table_id_ext)
+  void psi_set_tableidext (uint8_t *p_section, uint16_t i_table_id_ext)
   {
       p_section[3] = i_table_id_ext >> 8;
       p_section[4] = i_table_id_ext & 0xff;
   }
   //}}}
   //{{{
-  inline uint16_t psi_get_tableidext(const uint8_t *p_section)
+  uint16_t psi_get_tableidext (const uint8_t *p_section)
   {
       return (p_section[3] << 8) | p_section[4];
   }
   //}}}
 
   //{{{
-  inline void psi_set_version(uint8_t *p_section, uint8_t i_version)
+  void psi_set_version (uint8_t *p_section, uint8_t i_version)
   {
       p_section[5] = (i_version << 1) | 0xc0;
   }
   //}}}
   //{{{
-  inline uint8_t psi_get_version(const uint8_t *p_section)
+  uint8_t psi_get_version (const uint8_t *p_section)
   {
       return (p_section[5] & 0x3e) >> 1;
   }
   //}}}
 
   //{{{
-  inline void psi_set_current(uint8_t *p_section)
+  void psi_set_current (uint8_t *p_section)
   {
       p_section[5] |= 0x1;
   }
   //}}}
   //{{{
-  inline bool psi_get_current(const uint8_t *p_section)
+  bool psi_get_current (const uint8_t *p_section)
   {
       return !!(p_section[5] & 0x1);
   }
   //}}}
 
   //{{{
-  inline void psi_set_section(uint8_t *p_section, uint8_t i_section)
+  void psi_set_section (uint8_t *p_section, uint8_t i_section)
   {
       p_section[6] = i_section;
   }
   //}}}
   //{{{
-  inline uint8_t psi_get_section(const uint8_t *p_section)
+  uint8_t psi_get_section (const uint8_t *p_section)
   {
       return p_section[6];
   }
   //}}}
 
   //{{{
-  inline void psi_set_lastsection(uint8_t *p_section, uint8_t i_last_section)
+  void psi_set_lastsection (uint8_t *p_section, uint8_t i_last_section)
   {
       p_section[7] = i_last_section;
   }
   //}}}
   //{{{
-  inline uint8_t psi_get_lastsection(const uint8_t *p_section)
+  uint8_t psi_get_lastsection (const uint8_t *p_section)
   {
       return p_section[7];
   }
   //}}}
 
   //{{{
-  inline void psi_set_crc(uint8_t *p_section)
+  void psi_set_crc (uint8_t *p_section)
   {
       uint32_t i_crc = 0xffffffff;
       uint16_t i_end = (((p_section[1] & 0xf) << 8) | p_section[2])
@@ -578,7 +444,7 @@ namespace {
   }
   //}}}
   //{{{
-  inline bool psi_check_crc(const uint8_t *p_section)
+  bool psi_check_crc (const uint8_t *p_section)
   {
       uint32_t i_crc = 0xffffffff;
       uint16_t i_end = (((p_section[1] & 0xf) << 8) | p_section[2])
@@ -595,7 +461,7 @@ namespace {
   }
   //}}}
   //{{{
-  inline bool psi_validate(const uint8_t *p_section)
+  bool psi_validate (const uint8_t *p_section)
   {
       if (psi_get_syntax(p_section)
            && (psi_get_length(p_section) < PSI_HEADER_SIZE_SYNTAX1
@@ -609,7 +475,7 @@ namespace {
   //}}}
 
   //{{{
-  inline bool psi_compare(const uint8_t *p_section1, const uint8_t *p_section2)
+  bool psi_compare (const uint8_t *p_section1, const uint8_t *p_section2)
   {
       return psi_get_version(p_section1) == psi_get_version(p_section2)
           && psi_get_length(p_section1) == psi_get_length(p_section2)
@@ -619,26 +485,26 @@ namespace {
 
   //}}}
   //{{{
-  inline void psi_assemble_init(uint8_t **pp_psi_buffer, uint16_t *pi_psi_buffer_used)
+  void psi_assemble_init (uint8_t **pp_psi_buffer, uint16_t *pi_psi_buffer_used)
   {
       *pp_psi_buffer = NULL;
       *pi_psi_buffer_used = 0;
   }
   //}}}
   //{{{
-  inline void psi_assemble_reset(uint8_t **pp_psi_buffer, uint16_t *pi_psi_buffer_used)
+  void psi_assemble_reset (uint8_t **pp_psi_buffer, uint16_t *pi_psi_buffer_used)
   {
       free(*pp_psi_buffer);
       psi_assemble_init(pp_psi_buffer, pi_psi_buffer_used);
   }
   //}}}
   //{{{
-  inline bool psi_assemble_empty(uint8_t **pp_psi_buffer, uint16_t *pi_psi_buffer_used) {
+  bool psi_assemble_empty (uint8_t **pp_psi_buffer, uint16_t *pi_psi_buffer_used) {
       return *pp_psi_buffer == NULL;
   }
   //}}}
   //{{{
-  inline uint8_t *psi_assemble_payload(uint8_t **pp_psi_buffer, uint16_t *pi_psi_buffer_used,
+  uint8_t *psi_assemble_payload (uint8_t **pp_psi_buffer, uint16_t *pi_psi_buffer_used,
                                               const uint8_t **pp_payload, uint8_t *pi_length)
   {
       uint16_t i_remaining_size = PSI_PRIVATE_MAX_SIZE + PSI_HEADER_SIZE
@@ -683,7 +549,7 @@ namespace {
   }
   //}}}
   //{{{
-  inline void psi_split_end(uint8_t *p_ts, uint8_t *pi_ts_offset)
+  void psi_split_end (uint8_t *p_ts, uint8_t *pi_ts_offset)
   {
       if (*pi_ts_offset != TS_SIZE) {
           memset(p_ts + *pi_ts_offset, 0xff, TS_SIZE - *pi_ts_offset);
@@ -692,7 +558,7 @@ namespace {
   }
   //}}}
   //{{{
-  inline void psi_split_section(uint8_t *p_ts, uint8_t *pi_ts_offset,
+  void psi_split_section (uint8_t *p_ts, uint8_t *pi_ts_offset,
                                        const uint8_t *p_section,
                                        uint16_t *pi_section_offset)
   {
@@ -735,13 +601,7 @@ namespace {
   #define PSI_TABLE_DECLARE(pp_table) uint8_t *pp_table[PSI_TABLE_MAX_SECTIONS]
 
   //{{{
-  inline uint8_t **psi_table_allocate()
-  {
-      return (uint8_t **)malloc(PSI_TABLE_MAX_SECTIONS * sizeof(uint8_t *));
-  }
-  //}}}
-  //{{{
-  inline void psi_table_init(uint8_t **pp_sections)
+  void psi_table_init (uint8_t **pp_sections)
   {
       int i;
       for (i = 0; i < PSI_TABLE_MAX_SECTIONS; i++)
@@ -749,7 +609,7 @@ namespace {
   }
   //}}}
   //{{{
-  inline void psi_table_free(uint8_t **pp_sections)
+  void psi_table_free (uint8_t **pp_sections)
   {
       int i;
       for (i = 0; i < PSI_TABLE_MAX_SECTIONS; i++)
@@ -758,13 +618,13 @@ namespace {
   //}}}
   //{{{
 
-  inline bool psi_table_validate(uint8_t * const *pp_sections)
+  bool psi_table_validate (uint8_t * const *pp_sections)
   {
       return pp_sections[0] != NULL;
   }
   //}}}
   //{{{
-  inline void psi_table_copy(uint8_t **pp_dest, uint8_t **pp_src)
+  void psi_table_copy (uint8_t **pp_dest, uint8_t **pp_src)
   {
       memcpy(pp_dest, pp_src, PSI_TABLE_MAX_SECTIONS * sizeof(uint8_t *));
   }
@@ -777,7 +637,7 @@ namespace {
   #define psi_table_get_tableidext(pp_sections) psi_get_tableidext(pp_sections[0])
 
   //{{{
-  inline bool psi_table_section(uint8_t **pp_sections, uint8_t *p_section)
+  bool psi_table_section (uint8_t **pp_sections, uint8_t *p_section)
   {
       uint8_t i_section = psi_get_section( p_section );
       uint8_t i_last_section = psi_get_lastsection( p_section );
@@ -809,13 +669,13 @@ namespace {
   }
   //}}}
   //{{{
-  inline uint8_t *psi_table_get_section(uint8_t **pp_sections, uint8_t n)
+  uint8_t *psi_table_get_section (uint8_t **pp_sections, uint8_t n)
   {
       return pp_sections[n];
   }
   //}}}
   //{{{
-  inline bool psi_table_compare(uint8_t **pp_sections1,
+  bool psi_table_compare (uint8_t **pp_sections1,
                                        uint8_t **pp_sections2)
   {
       uint8_t i_last_section = psi_table_get_lastsection(pp_sections1);
@@ -836,112 +696,74 @@ namespace {
   //}}}
   //}}}
   //{{{  descriptors
-  #define DESC_HEADER_SIZE        2
-  //{{{
-  inline void desc_set_tag(uint8_t *p_desc, uint8_t i_tag)
-  {
-      p_desc[0] = i_tag;
-  }
-  //}}}
-  //{{{
-  inline uint8_t desc_get_tag(const uint8_t *p_desc)
-  {
-      return p_desc[0];
-  }
-  //}}}
-  //{{{
-  inline void desc_set_length(uint8_t *p_desc, uint8_t i_length)
-  {
-      p_desc[1] = i_length;
-  }
-  //}}}
-  //{{{
-  inline uint8_t desc_get_length(const uint8_t *p_desc)
-  {
-      return p_desc[1];
-  }
+  #define DESC_HEADER_SIZE 2
 
-  //}}}
-
+  void desc_set_tag (uint8_t* desc, uint8_t i_tag) { desc[0] = i_tag; }
+  uint8_t desc_get_tag (const uint8_t* desc) { return desc[0]; }
+  void desc_set_length (uint8_t* desc, uint8_t i_length) { desc[1] = i_length; }
+  uint8_t desc_get_length (const uint8_t* desc) { return desc[1]; }
   //{{{
-  inline uint8_t *descl_get_desc(uint8_t *p_descl, uint16_t i_length,
-                                        uint16_t n)
+  uint8_t* descl_get_desc (uint8_t* descl, uint16_t i_length, uint16_t n)
   {
-      uint8_t *p_desc = p_descl;
+      uint8_t* desc = descl;
 
       while (n) {
-          if (p_desc + DESC_HEADER_SIZE - p_descl > i_length) return NULL;
-          p_desc += DESC_HEADER_SIZE + desc_get_length(p_desc);
+          if (desc + DESC_HEADER_SIZE - descl > i_length) return NULL;
+          desc += DESC_HEADER_SIZE + desc_get_length (desc);
           n--;
       }
-      if (p_desc - p_descl >= i_length) return NULL;
-      return p_desc;
+      if (desc - descl >= i_length) 
+        return NULL;
+      return desc;
   }
   //}}}
   //{{{
-  inline bool descl_validate(const uint8_t *p_descl, uint16_t i_length)
+  bool descl_validate (const uint8_t* descl, uint16_t i_length)
   {
-      const uint8_t *p_desc = p_descl;
+      const uint8_t* desc = descl;
 
-      while (p_desc + DESC_HEADER_SIZE - p_descl <= i_length)
-          p_desc += DESC_HEADER_SIZE + desc_get_length(p_desc);
+      while (desc + DESC_HEADER_SIZE - descl <= i_length)
+        desc += DESC_HEADER_SIZE + desc_get_length (desc);
 
-      return (p_desc - p_descl == i_length);
-  }
-  //}}}
-
-  #define DESCS_HEADER_SIZE       2
-  #define DESCS_MAX_SIZE          4095
-  //{{{
-  inline void descs_set_length(uint8_t *p_descs, uint16_t i_length)
-  {
-      p_descs[0] &= 0xf0;
-      p_descs[0] |= (i_length >> 8) & 0xf;
-      p_descs[1] = i_length & 0xff;
-  }
-  //}}}
-  //{{{
-  inline uint16_t descs_get_length(const uint8_t *p_descs)
-  {
-      return ((p_descs[0] & 0xf) << 8) | p_descs[1];
+      return (desc - descl == i_length);
   }
   //}}}
 
-  //{{{
-  inline uint8_t *descs_get_desc(uint8_t *p_descs, uint16_t n)
-  {
-      return descl_get_desc(p_descs + DESCS_HEADER_SIZE,
-                            descs_get_length(p_descs), n);
-  }
-  //}}}
-  //{{{
-  inline bool descs_validate_desc(const uint8_t *p_descs, const uint8_t *p_desc, uint8_t i_desclength)
-  {
-      uint16_t i_descs_length = descs_get_length(p_descs);
-      return (p_desc + i_desclength <= p_descs + i_descs_length);
-  }
-  //}}}
+  #define DESCS_HEADER_SIZE 2
+  #define DESCS_MAX_SIZE 4095
 
   //{{{
-  inline bool descs_validate(const uint8_t *p_descs)
+  void descs_set_length (uint8_t* descs, uint16_t i_length)
   {
-      return descl_validate(p_descs + DESCS_HEADER_SIZE,
-                            descs_get_length(p_descs));
+      descs[0] &= 0xf0;
+      descs[0] |= (i_length >> 8) & 0xf;
+      descs[1] = i_length & 0xff;
+  }
+  //}}}
+  uint16_t descs_get_length (const uint8_t* descs) { return ((descs[0] & 0xf) << 8) | descs[1]; }
+  //{{{
+  uint8_t* descs_get_desc (uint8_t* descs, uint16_t n) {
+    return descl_get_desc (descs + DESCS_HEADER_SIZE, descs_get_length (descs), n);
+    }
+  //}}}
+  //{{{
+  bool descs_validate (const uint8_t* descs) {
+    return descl_validate (descs + DESCS_HEADER_SIZE, descs_get_length (descs));
   }
   //}}}
   //}}}
 
   //{{{  pat
-  #define PAT_PID                 0x0
-  #define PAT_TABLE_ID            0x0
-  #define PAT_HEADER_SIZE         PSI_HEADER_SIZE_SYNTAX1
-  #define PAT_PROGRAM_SIZE        4
+  #define PAT_PID          0x0
+  #define PAT_TABLE_ID     0x0
+  #define PAT_HEADER_SIZE  PSI_HEADER_SIZE_SYNTAX1
+  #define PAT_PROGRAM_SIZE 4
 
   #define pat_set_tsid psi_set_tableidext
   #define pat_get_tsid psi_get_tableidext
 
   //{{{
-  inline void pat_init(uint8_t *p_pat)
+  void pat_init(uint8_t *p_pat)
   {
       psi_init(p_pat, true);
       psi_set_tableid(p_pat, PAT_TABLE_ID);
@@ -949,35 +771,35 @@ namespace {
   }
   //}}}
   //{{{
-  inline void pat_set_length(uint8_t *p_pat, uint16_t i_pat_length)
+  void pat_set_length(uint8_t *p_pat, uint16_t i_pat_length)
   {
       psi_set_length(p_pat, PAT_HEADER_SIZE + PSI_CRC_SIZE - PSI_HEADER_SIZE
                       + i_pat_length);
   }
   //}}}
   //{{{
-  inline void patn_init(uint8_t *p_pat_n)
+  void patn_init(uint8_t *p_pat_n)
   {
       p_pat_n[2] = 0xe0;
   }
   //}}}
 
   //{{{
-  inline void patn_set_program(uint8_t *p_pat_n, uint16_t i_program)
+  void patn_set_program(uint8_t *p_pat_n, uint16_t i_program)
   {
       p_pat_n[0] = i_program >> 8;
       p_pat_n[1] = i_program & 0xff;
   }
   //}}}
   //{{{
-  inline uint16_t patn_get_program(const uint8_t *p_pat_n)
+  uint16_t patn_get_program(const uint8_t *p_pat_n)
   {
       return (p_pat_n[0] << 8) | p_pat_n[1];
   }
   //}}}
 
   //{{{
-  inline void patn_set_pid(uint8_t *p_pat_n, uint16_t i_pid)
+  void patn_set_pid(uint8_t *p_pat_n, uint16_t i_pid)
   {
       p_pat_n[2] &= ~0x1f;
       p_pat_n[2] |= i_pid >> 8;
@@ -985,14 +807,14 @@ namespace {
   }
   //}}}
   //{{{
-  inline uint16_t patn_get_pid(const uint8_t *p_pat_n)
+  uint16_t patn_get_pid(const uint8_t *p_pat_n)
   {
       return ((p_pat_n[2] & 0x1f) << 8) | p_pat_n[3];
   }
   //}}}
 
   //{{{
-  inline uint8_t *pat_get_program(uint8_t *p_pat, uint8_t n)
+  uint8_t *pat_get_program(uint8_t *p_pat, uint8_t n)
   {
       uint8_t *p_pat_n = p_pat + PAT_HEADER_SIZE + n * PAT_PROGRAM_SIZE;
       if (p_pat_n + PAT_PROGRAM_SIZE - p_pat
@@ -1003,7 +825,7 @@ namespace {
   //}}}
 
   //{{{
-  inline bool pat_validate(const uint8_t *p_pat)
+  bool pat_validate(const uint8_t *p_pat)
   {
       if (!psi_get_syntax(p_pat) || psi_get_tableid(p_pat) != PAT_TABLE_ID)
           return false;
@@ -1016,7 +838,7 @@ namespace {
   //}}}
 
   //{{{
-  inline uint8_t *pat_table_find_program(uint8_t **pp_sections, uint16_t i_program)
+  uint8_t *pat_table_find_program(uint8_t **pp_sections, uint16_t i_program)
   {
       uint8_t i_last_section = psi_table_get_lastsection(pp_sections);
       uint8_t i;
@@ -1037,7 +859,7 @@ namespace {
   }
   //}}}
   //{{{
-  inline bool pat_table_validate(uint8_t **pp_sections)
+  bool pat_table_validate(uint8_t **pp_sections)
   {
       uint8_t i_last_section = psi_table_get_lastsection(pp_sections);
       uint8_t i;
@@ -1065,14 +887,80 @@ namespace {
   }
   //}}}
   //}}}
-
   //{{{  pmt
   // Program Map Table
-  #define PMT_TABLE_ID            0x2
-  #define PMT_HEADER_SIZE         (PSI_HEADER_SIZE_SYNTAX1 + 4)
-  #define PMT_ES_SIZE             5
+  #define PMT_TABLE_ID    0x2
+  #define PMT_HEADER_SIZE (PSI_HEADER_SIZE_SYNTAX1 + 4)
+  #define PMT_ES_SIZE     5
+
   #define pmt_set_program psi_set_tableidext
   #define pmt_get_program psi_get_tableidext
+
+  //{{{
+  void pmt_init (uint8_t *p_pmt)
+  {
+      psi_init(p_pmt, true);
+      psi_set_tableid(p_pmt, PMT_TABLE_ID);
+      p_pmt[1] &= ~0x40;
+      psi_set_section(p_pmt, 0);
+      psi_set_lastsection(p_pmt, 0);
+      p_pmt[8] = 0xe0;
+      p_pmt[10] = 0xf0;
+  }
+  //}}}
+  //{{{
+  void pmt_set_length (uint8_t *p_pmt, uint16_t i_pmt_length)
+  {
+      psi_set_length(p_pmt, PMT_HEADER_SIZE + PSI_CRC_SIZE - PSI_HEADER_SIZE
+                      + i_pmt_length);
+  }
+  //}}}
+
+  //{{{
+  void pmt_set_pcrpid (uint8_t *p_pmt, uint16_t i_pcr_pid)
+  {
+      p_pmt[8] &= ~0x1f;
+      p_pmt[8] |= i_pcr_pid >> 8;
+      p_pmt[9] = i_pcr_pid & 0xff;
+  }
+  //}}}
+  //{{{
+  uint16_t pmt_get_pcrpid (const uint8_t *p_pmt)
+  {
+      return ((p_pmt[8] & 0x1f) << 8) | p_pmt[9];
+  }
+  //}}}
+
+  //{{{
+  void pmt_set_desclength (uint8_t *p_pmt, uint16_t i_length)
+  {
+      p_pmt[10] &= ~0xf;
+      p_pmt[10] |= i_length >> 8;
+      p_pmt[11] = i_length & 0xff;
+  }
+  //}}}
+  //{{{
+  uint16_t pmt_get_desclength (const uint8_t *p_pmt)
+  {
+      return ((p_pmt[10] & 0xf) << 8) | p_pmt[11];
+  }
+  //}}}
+
+  //{{{
+  uint8_t* pmt_get_descs (uint8_t *p_pmt)
+  {
+      return &p_pmt[10];
+  }
+  //}}}
+
+  //{{{
+  void pmtn_init (uint8_t *p_pmt_n)
+  {
+      p_pmt_n[1] = 0xe0;
+      p_pmt_n[3] = 0xf0;
+  }
+  //}}}
+
   //{{{  stream types
   #define PMT_STREAMTYPE_VIDEO_MPEG1      0x1
   #define PMT_STREAMTYPE_VIDEO_MPEG2      0x2
@@ -1108,130 +996,64 @@ namespace {
   #define PMT_STREAMTYPE_SCTE_35          0x86
   #define PMT_STREAMTYPE_ATSC_A52E        0x87
   //}}}
-
   //{{{
-  inline void pmt_init(uint8_t *p_pmt)
-  {
-      psi_init(p_pmt, true);
-      psi_set_tableid(p_pmt, PMT_TABLE_ID);
-      p_pmt[1] &= ~0x40;
-      psi_set_section(p_pmt, 0);
-      psi_set_lastsection(p_pmt, 0);
-      p_pmt[8] = 0xe0;
-      p_pmt[10] = 0xf0;
-  }
-  //}}}
-  //{{{
-  inline void pmt_set_length(uint8_t *p_pmt, uint16_t i_pmt_length)
-  {
-      psi_set_length(p_pmt, PMT_HEADER_SIZE + PSI_CRC_SIZE - PSI_HEADER_SIZE
-                      + i_pmt_length);
-  }
-  //}}}
-
-  //{{{
-  inline void pmt_set_pcrpid(uint8_t *p_pmt, uint16_t i_pcr_pid)
-  {
-      p_pmt[8] &= ~0x1f;
-      p_pmt[8] |= i_pcr_pid >> 8;
-      p_pmt[9] = i_pcr_pid & 0xff;
-  }
-  //}}}
-  //{{{
-  inline uint16_t pmt_get_pcrpid(const uint8_t *p_pmt)
-  {
-      return ((p_pmt[8] & 0x1f) << 8) | p_pmt[9];
-  }
-  //}}}
-
-  //{{{
-  inline void pmt_set_desclength(uint8_t *p_pmt, uint16_t i_length)
-  {
-      p_pmt[10] &= ~0xf;
-      p_pmt[10] |= i_length >> 8;
-      p_pmt[11] = i_length & 0xff;
-  }
-  //}}}
-  //{{{
-  inline uint16_t pmt_get_desclength(const uint8_t *p_pmt)
-  {
-      return ((p_pmt[10] & 0xf) << 8) | p_pmt[11];
-  }
-  //}}}
-
-  //{{{
-  inline uint8_t *pmt_get_descs(uint8_t *p_pmt)
-  {
-      return &p_pmt[10];
-  }
-  //}}}
-
-  //{{{
-  inline void pmtn_init(uint8_t *p_pmt_n)
-  {
-      p_pmt_n[1] = 0xe0;
-      p_pmt_n[3] = 0xf0;
-  }
-  //}}}
-
-  //{{{
-  inline void pmtn_set_streamtype(uint8_t *p_pmt_n, uint8_t i_stream_type)
+  void pmtn_set_streamtype (uint8_t *p_pmt_n, uint8_t i_stream_type)
   {
       p_pmt_n[0] = i_stream_type;
   }
   //}}}
   //{{{
-  inline uint8_t pmtn_get_streamtype(const uint8_t *p_pmt_n)
+  uint8_t pmtn_get_streamtype (const uint8_t *p_pmt_n)
   {
       return p_pmt_n[0];
   }
   //}}}
   //{{{
-  inline const char *pmt_get_streamtype_txt(uint8_t i_stream_type) {
-      /* ISO/IEC 13818-1 | Table 2-36 - Stream type assignments */
-      if (i_stream_type == 0)
-          return "Reserved";
-      switch (i_stream_type) {
-          case 0x01: return "11172-2 video (MPEG-1)";
-          case 0x02: return "13818-2 video (MPEG-2)";
-          case 0x03: return "11172-3 audio (MPEG-1)";
-          case 0x04: return "13818-3 audio (MPEG-2)";
-          case 0x05: return "13818-1 private sections";
-          case 0x06: return "13818-1 PES private data";
-          case 0x07: return "13522 MHEG";
-          case 0x08: return "H.222.0/13818-1 Annex A - DSM CC";
-          case 0x09: return "H.222.1";
-          case 0x0A: return "13818-6 type A";
-          case 0x0B: return "13818-6 type B";
-          case 0x0C: return "13818-6 type C";
-          case 0x0D: return "13818-6 type D";
-          case 0x0E: return "H.222.0/13818-1 auxiliary";
-          case 0x0F: return "13818-7 Audio with ADTS transport syntax";
-          case 0x10: return "14496-2 Visual (MPEG-4 part 2 video)";
-          case 0x11: return "14496-3 Audio with LATM transport syntax (14496-3/AMD 1)";
-          case 0x12: return "14496-1 SL-packetized or FlexMux stream in PES packets";
-          case 0x13: return "14496-1 SL-packetized or FlexMux stream in 14496 sections";
-          case 0x14: return "ISO/IEC 13818-6 Synchronized Download Protocol";
-          case 0x15: return "Metadata in PES packets";
-          case 0x16: return "Metadata in metadata_sections";
-          case 0x17: return "Metadata in 13818-6 Data Carousel";
-          case 0x18: return "Metadata in 13818-6 Object Carousel";
-          case 0x19: return "Metadata in 13818-6 Synchronized Download Protocol";
-          case 0x1A: return "13818-11 MPEG-2 IPMP stream";
-          case 0x1B: return "H.264/14496-10 video (MPEG-4/AVC)";
-          case 0x24: return "H.265 video (MPEG-H/HEVC)";
-          case 0x42: return "AVS Video";
-          case 0x7F: return "IPMP stream";
-          case 0x81: return "ATSC A/52";
-          case 0x86: return "SCTE 35 Splice Information Table";
-          case 0x87: return "ATSC A/52e";
-          default  : return "Unknown";
-      }
-  }
+  //string pmtGetStreamtypeString (uint8_t i_stream_type) {
+      ///* ISO/IEC 13818-1 | Table 2-36 - Stream type assignments */
+      //if (i_stream_type == 0)
+          //return "Reserved";
+      //switch (i_stream_type) {
+          //case 0x01: return "11172-2 video (MPEG-1)";
+          //case 0x02: return "13818-2 video (MPEG-2)";
+          //case 0x03: return "11172-3 audio (MPEG-1)";
+          //case 0x04: return "13818-3 audio (MPEG-2)";
+          //case 0x05: return "13818-1 private sections";
+          //case 0x06: return "13818-1 PES private data";
+          //case 0x07: return "13522 MHEG";
+          //case 0x08: return "H.222.0/13818-1 Annex A - DSM CC";
+          //case 0x09: return "H.222.1";
+          //case 0x0A: return "13818-6 type A";
+          //case 0x0B: return "13818-6 type B";
+          //case 0x0C: return "13818-6 type C";
+          //case 0x0D: return "13818-6 type D";
+          //case 0x0E: return "H.222.0/13818-1 auxiliary";
+          //case 0x0F: return "13818-7 Audio with ADTS transport syntax";
+          //case 0x10: return "14496-2 Visual (MPEG-4 part 2 video)";
+          //case 0x11: return "14496-3 Audio with LATM transport syntax (14496-3/AMD 1)";
+          //case 0x12: return "14496-1 SL-packetized or FlexMux stream in PES packets";
+          //case 0x13: return "14496-1 SL-packetized or FlexMux stream in 14496 sections";
+          //case 0x14: return "ISO/IEC 13818-6 Synchronized Download Protocol";
+          //case 0x15: return "Metadata in PES packets";
+          //case 0x16: return "Metadata in metadata_sections";
+          //case 0x17: return "Metadata in 13818-6 Data Carousel";
+          //case 0x18: return "Metadata in 13818-6 Object Carousel";
+          //case 0x19: return "Metadata in 13818-6 Synchronized Download Protocol";
+          //case 0x1A: return "13818-11 MPEG-2 IPMP stream";
+          //case 0x1B: return "H.264/14496-10 video (MPEG-4/AVC)";
+          //case 0x24: return "H.265 video (MPEG-H/HEVC)";
+          //case 0x42: return "AVS Video";
+          //case 0x7F: return "IPMP stream";
+          //case 0x81: return "ATSC A/52";
+          //case 0x86: return "SCTE 35 Splice Information Table";
+          //case 0x87: return "ATSC A/52e";
+          //default  : return "Unknown";
+      //}
+  //}
   //}}}
 
   //{{{
-  inline void pmtn_set_pid(uint8_t *p_pmt_n, uint16_t i_pid)
+  void pmtn_set_pid (uint8_t *p_pmt_n, uint16_t i_pid)
   {
       p_pmt_n[1] &= ~0x1f;
       p_pmt_n[1] |= i_pid >> 8;
@@ -1239,14 +1061,14 @@ namespace {
   }
   //}}}
   //{{{
-  inline uint16_t pmtn_get_pid(const uint8_t *p_pmt_n)
+  uint16_t pmtn_get_pid (const uint8_t *p_pmt_n)
   {
       return ((p_pmt_n[1] & 0x1f) << 8) | p_pmt_n[2];
   }
   //}}}
 
   //{{{
-  inline void pmtn_set_desclength(uint8_t *p_pmt_n, uint16_t i_length)
+  void pmtn_set_desclength (uint8_t *p_pmt_n, uint16_t i_length)
   {
       p_pmt_n[3] &= ~0xf;
       p_pmt_n[3] |= i_length >> 8;
@@ -1254,19 +1076,19 @@ namespace {
   }
   //}}}
   //{{{
-  inline uint16_t pmtn_get_desclength(const uint8_t *p_pmt_n)
+  uint16_t pmtn_get_desclength (const uint8_t *p_pmt_n)
   {
       return ((p_pmt_n[3] & 0xf) << 8) | p_pmt_n[4];
   }
   //}}}
   //{{{
-  inline uint8_t *pmtn_get_descs(uint8_t *p_pmt_n)
+  uint8_t* pmtn_get_descs (uint8_t *p_pmt_n)
   {
       return &p_pmt_n[3];
   }
   //}}}
   //{{{
-  inline uint8_t *pmt_get_es(uint8_t *p_pmt, uint8_t n)
+  uint8_t* pmt_get_es (uint8_t *p_pmt, uint8_t n)
   {
       uint16_t i_section_size = psi_get_length(p_pmt) + PSI_HEADER_SIZE
                                  - PSI_CRC_SIZE;
@@ -1284,16 +1106,7 @@ namespace {
   //}}}
 
   //{{{
-  inline bool pmt_validate_es(const uint8_t *p_pmt, const uint8_t *p_pmt_n, uint16_t i_desclength)
-  {
-      uint16_t i_section_size = psi_get_length(p_pmt) + PSI_HEADER_SIZE
-                                 - PSI_CRC_SIZE;
-      return (p_pmt_n + PMT_ES_SIZE + i_desclength
-               <= p_pmt + i_section_size);
-  }
-  //}}}
-  //{{{
-  inline bool pmt_validate(const uint8_t *p_pmt)
+  bool pmt_validate (const uint8_t *p_pmt)
   {
       uint16_t i_section_size = psi_get_length(p_pmt) + PSI_HEADER_SIZE
                                  - PSI_CRC_SIZE;
@@ -1328,67 +1141,12 @@ namespace {
       return (p_pmt_n - p_pmt == i_section_size);
   }
   //}}}
-
-  //{{{
-  inline uint8_t *pmt_find_es(uint8_t *p_pmt, uint16_t i_pid)
-  {
-      uint8_t *p_es;
-      uint8_t j = 0;
-
-      while ((p_es = pmt_get_es(p_pmt, j)) != NULL) {
-          j++;
-          if (pmtn_get_pid(p_es) == i_pid)
-              return p_es;
-      }
-
-      return NULL;
-  }
-  //}}}
   //}}}
   //{{{  tdt
   // Time and Date Table
   #define TDT_PID                 0x14
   #define TDT_TABLE_ID            0x70
   #define TDT_HEADER_SIZE         (PSI_HEADER_SIZE + 5)
-
-  //{{{
-  inline void tdt_init(uint8_t *p_tdt)
-  {
-      psi_init(p_tdt, false);
-      psi_set_tableid(p_tdt, TDT_TABLE_ID);
-      psi_set_length(p_tdt, TDT_HEADER_SIZE - PSI_HEADER_SIZE);
-  }
-  //}}}
-  //{{{
-  inline void tdt_set_utc(uint8_t *p_tdt, uint64_t i_utc)
-  {
-      p_tdt[3] = (i_utc >> 32) & 0xff;
-      p_tdt[4] = (i_utc >> 24) & 0xff;
-      p_tdt[5] = (i_utc >> 16) & 0xff;
-      p_tdt[6] = (i_utc >> 8) & 0xff;
-      p_tdt[7] = i_utc & 0xff;
-  }
-  //}}}
-  //{{{
-  inline uint64_t tdt_get_utc(const uint8_t *p_tdt)
-  {
-      return (uint64_t)(((uint64_t)p_tdt[3] << 32) | ((uint64_t)p_tdt[4] << 24) |
-                        ((uint64_t)p_tdt[5] << 16) | ((uint64_t)p_tdt[6] << 8) | p_tdt[7]);
-  }
-  //}}}
-  //{{{
-  inline bool tdt_validate(const uint8_t *p_tdt)
-  {
-      uint16_t i_section_size = psi_get_length(p_tdt) + PSI_HEADER_SIZE;
-      uint8_t i_tid = psi_get_tableid(p_tdt);
-
-      if (psi_get_syntax(p_tdt) || i_tid != TDT_TABLE_ID
-           || i_section_size < TDT_HEADER_SIZE)
-          return false;
-
-      return true;
-  }
-  //}}}
   //}}}
   //{{{  eit
   #define EIT_PID                         0x12
@@ -1405,207 +1163,33 @@ namespace {
   #define eit_get_sid psi_get_tableidext
 
   //{{{
-  inline void eit_init(uint8_t *p_eit, bool b_actual)
-  {
-      psi_init(p_eit, true);
-      psi_set_tableid(p_eit, b_actual ? EIT_TABLE_ID_PF_ACTUAL :
-                      EIT_TABLE_ID_PF_OTHER);
-  }
-  //}}}
-  //{{{
-  inline void eit_set_length(uint8_t *p_eit, uint16_t i_eit_length)
-  {
-      psi_set_length(p_eit, EIT_HEADER_SIZE + PSI_CRC_SIZE - PSI_HEADER_SIZE
-                      + i_eit_length);
-  }
-  //}}}
-
-  //{{{
-  inline void eit_set_tsid(uint8_t *p_eit, uint16_t i_tsid)
+  void eit_set_tsid(uint8_t *p_eit, uint16_t i_tsid)
   {
       p_eit[8] = i_tsid >> 8;
       p_eit[9] = i_tsid & 0xff;
   }
   //}}}
   //{{{
-  inline uint16_t eit_get_tsid(const uint8_t *p_eit)
-  {
-      return (p_eit[8] << 8) | p_eit[9];
-  }
-  //}}}
-
-  //{{{
-  inline void eit_set_onid(uint8_t *p_eit, uint16_t i_onid)
+  void eit_set_onid(uint8_t *p_eit, uint16_t i_onid)
   {
       p_eit[10] = i_onid >> 8;
       p_eit[11] = i_onid & 0xff;
   }
   //}}}
   //{{{
-  inline uint16_t eit_get_onid(const uint8_t *p_eit)
+  uint16_t eit_get_onid(const uint8_t *p_eit)
   {
       return (p_eit[10] << 8) | p_eit[11];
   }
   //}}}
-
   //{{{
-  inline void eit_set_segment_last_sec_number(uint8_t *p_eit, uint8_t i_segment_last_sec_number)
-  {
-      p_eit[12] = i_segment_last_sec_number;
-  }
-  //}}}
-  //{{{
-  inline uint8_t eit_get_segment_last_sec_number(const uint8_t *p_eit)
-  {
-      return p_eit[12];
-  }
-  //}}}
-
-  //{{{
-  inline void eit_set_last_table_id(uint8_t *p_eit, uint8_t i_last_table_id)
-  {
-      p_eit[13] = i_last_table_id;
-  }
-  //}}}
-  //{{{
-  inline uint8_t eit_get_last_table_id(const uint8_t *p_eit)
-  {
-      return p_eit[13];
-  }
-  //}}}
-
-  //{{{
-  inline void eitn_init(uint8_t *p_eit_n)
-  {
-      p_eit_n[10] = 0;
-  }
-  //}}}
-  //{{{
-  inline uint16_t eitn_get_event_id(const uint8_t *p_eit_n)
-  {
-      return (p_eit_n[0] << 8) | p_eit_n[1];
-  }
-  //}}}
-  //{{{
-  inline void eitn_set_event_id(uint8_t *p_eit_n, uint16_t i_event_id)
-  {
-      p_eit_n[0] = i_event_id >> 8;
-      p_eit_n[1] = i_event_id & 0xff;
-  }
-  //}}}
-
-  //{{{
-  inline uint64_t eitn_get_start_time(const uint8_t *p_eit_n)
-  {
-      return (uint64_t)(((uint64_t)p_eit_n[2] << 32) | ((uint64_t)p_eit_n[3] << 24) |
-                        ((uint64_t)p_eit_n[4] << 16) | ((uint64_t)p_eit_n[5] << 8) | p_eit_n[6]);
-  }
-  //}}}
-  //{{{
-  inline void eitn_set_start_time(uint8_t *p_eit_n, uint64_t i_start_time)
-  {
-      p_eit_n[2] = (i_start_time >> 32) & 0xff;
-      p_eit_n[3] = (i_start_time >> 24) & 0xff;
-      p_eit_n[4] = (i_start_time >> 16) & 0xff;
-      p_eit_n[5] = (i_start_time >>  8) & 0xff;
-      p_eit_n[6] = i_start_time         & 0xff;
-  }
-  //}}}
-
-  //{{{
-  inline uint32_t eitn_get_duration_bcd(const uint8_t *p_eit_n)
-  {
-      return ((p_eit_n[7] << 16) | (p_eit_n[8] << 8)) | p_eit_n[9];
-  }
-  //}}}
-  //{{{
-  inline void eitn_set_duration_bcd(uint8_t *p_eit_n, uint32_t i_duration_bcd)
-  {
-      p_eit_n[7] = (i_duration_bcd >> 16) & 0xff;
-      p_eit_n[8] = (i_duration_bcd >>  8) & 0xff;
-      p_eit_n[9] = i_duration_bcd         & 0xff;
-  }
-  //}}}
-
-  //{{{
-  inline uint8_t eitn_get_running(const uint8_t *p_eit_n)
-  {
-      return p_eit_n[10] >> 5;
-  }
-  //}}}
-  //{{{
-  inline void eitn_set_running(uint8_t *p_eit_n, uint8_t i_running_status)
-  {
-      p_eit_n[10] = (p_eit_n[10] & 0x1f) | (i_running_status << 5);
-  }
-  //}}}
-
-  //{{{
-  inline bool eitn_get_ca(const uint8_t *p_eit_n)
-  {
-      return (p_eit_n[10] & 0x10) == 0x10;
-  }
-  //}}}
-  //{{{
-  inline void eitn_set_ca(uint8_t *p_eit_n)
-  {
-      p_eit_n[10] |= 0x10;
-  }
-  //}}}
-
-  //{{{
-  inline uint16_t eitn_get_desclength(const uint8_t *p_eit_n)
+  uint16_t eitn_get_desclength(const uint8_t *p_eit_n)
   {
       return ((p_eit_n[10] & 0xf) << 8) | p_eit_n[11];
   }
   //}}}
   //{{{
-  inline void eitn_set_desclength(uint8_t *p_eit_n, uint16_t i_length)
-  {
-      p_eit_n[10] &= ~0xf;
-      p_eit_n[10] |= (i_length >> 8) & 0xf;
-      p_eit_n[11] = i_length & 0xff;
-  }
-  //}}}
-
-  //{{{
-  inline uint8_t *eitn_get_descs(uint8_t *p_eit_n)
-  {
-      return &p_eit_n[10];
-  }
-  //}}}
-  //{{{
-  inline uint8_t *eit_get_event(uint8_t *p_eit, uint8_t n)
-  {
-      uint16_t i_section_size = psi_get_length(p_eit) + PSI_HEADER_SIZE
-                                 - PSI_CRC_SIZE;
-      uint8_t *p_eit_n = p_eit + EIT_HEADER_SIZE;
-      if (p_eit_n - p_eit > i_section_size) return NULL;
-
-      while (n) {
-          if (p_eit_n + EIT_EVENT_SIZE - p_eit > i_section_size) return NULL;
-          p_eit_n += EIT_EVENT_SIZE + eitn_get_desclength(p_eit_n);
-          n--;
-      }
-      if (p_eit_n - p_eit >= i_section_size) return NULL;
-
-      return p_eit_n;
-  }
-  //}}}
-  //{{{
-  inline bool eit_validate_event(const uint8_t *p_eit,
-                                        const uint8_t *p_eit_n,
-                                        uint16_t i_desclength)
-  {
-      uint16_t i_section_size = psi_get_length(p_eit) + PSI_HEADER_SIZE
-                                 - PSI_CRC_SIZE;
-      return (p_eit_n + EIT_EVENT_SIZE + i_desclength
-               <= p_eit + i_section_size);
-  }
-  //}}}
-
-  //{{{
-  inline bool eit_validate(const uint8_t *p_eit)
+  bool eit_validate(const uint8_t *p_eit)
   {
       uint16_t i_section_size = psi_get_length(p_eit) + PSI_HEADER_SIZE
                                  - PSI_CRC_SIZE;
@@ -1645,119 +1229,7 @@ namespace {
   #define RST_TABLE_ID            0x71
   #define RST_HEADER_SIZE         PSI_HEADER_SIZE
   #define RST_STATUS_SIZE         9
-
-  //{{{
-  inline void rst_init(uint8_t *p_rst)
-  {
-      psi_set_tableid(p_rst, RST_TABLE_ID);
-      psi_init(p_rst, false);
-  }
   //}}}
-  //{{{
-  inline void rst_set_length(uint8_t *p_rst, uint16_t i_rst_length)
-  {
-      psi_set_length(p_rst, i_rst_length & 0x3fff);
-  }
-  //}}}
-  //{{{
-  inline void rstn_init(uint8_t *p_rst_n)
-  {
-      p_rst_n[8] = 0xf8;
-  }
-  //}}}
-
-  //{{{
-  inline uint16_t rstn_get_tsid(const uint8_t *p_rst_n)
-  {
-      return (p_rst_n[0] << 8) | p_rst_n[1];
-  }
-  //}}}
-  //{{{
-  inline void rstn_set_tsid(uint8_t *p_rst_n, uint16_t i_tsid)
-  {
-      p_rst_n[0] = i_tsid >> 8;
-      p_rst_n[1] = i_tsid & 0xff;
-  }
-  //}}}
-
-  //{{{
-  inline uint16_t rstn_get_onid(const uint8_t *p_rst_n)
-  {
-      return (p_rst_n[2] << 8) | p_rst_n[3];
-  }
-  //}}}
-  //{{{
-  inline void rstn_set_onid(uint8_t *p_rst_n, uint16_t i_onid)
-  {
-      p_rst_n[2] = i_onid >> 8;
-      p_rst_n[3] = i_onid & 0xff;
-  }
-  //}}}
-
-  //{{{
-  inline uint16_t rstn_get_service_id(const uint8_t *p_rst_n)
-  {
-      return (p_rst_n[4] << 8) | p_rst_n[5];
-  }
-  //}}}
-  //{{{
-  inline void rstn_set_service_id(uint8_t *p_rst_n, uint16_t i_service_id)
-  {
-      p_rst_n[4] = i_service_id >> 8;
-      p_rst_n[5] = i_service_id & 0xff;
-  }
-  //}}}
-
-  //{{{
-  inline uint16_t rstn_get_event_id(const uint8_t *p_rst_n)
-  {
-      return (p_rst_n[6] << 8) | p_rst_n[7];
-  }
-  //}}}
-  //{{{
-  inline void rstn_set_event_id(uint8_t *p_rst_n, uint16_t i_event_id)
-  {
-      p_rst_n[6] = i_event_id >> 8;
-      p_rst_n[7] = i_event_id & 0xff;
-  }
-  //}}}
-
-  //{{{
-  inline uint8_t rstn_get_running(const uint8_t *p_rst_n)
-  {
-      return p_rst_n[8] & 0x07;
-  }
-  //}}}
-  //{{{
-  inline void rstn_set_running(uint8_t *p_rst_n, uint8_t i_running_status)
-  {
-      p_rst_n[8] = 0xf8 | (i_running_status & 0x07);
-  }
-  //}}}
-
-  //{{{
-  inline uint8_t *rst_get_status(uint8_t *p_rst, uint8_t n)
-  {
-      uint8_t *p_rst_n = p_rst + RST_HEADER_SIZE + n * RST_STATUS_SIZE;
-      if (p_rst_n + RST_STATUS_SIZE - p_rst
-           > psi_get_length(p_rst) + PSI_HEADER_SIZE)
-          return NULL;
-      return p_rst_n;
-  }
-  //}}}
-  //{{{
-  inline bool rst_validate(const uint8_t *p_rst)
-  {
-      if (psi_get_syntax(p_rst) || psi_get_tableid(p_rst) != RST_TABLE_ID)
-          return false;
-      if (psi_get_length(p_rst) % RST_STATUS_SIZE)
-          return false;
-
-      return true;
-  }
-  //}}}
-  //}}}
-
   //{{{  sdt
   // Service Description Table
   #define SDT_PID                 0x11
@@ -1770,7 +1242,7 @@ namespace {
   #define sdt_get_tsid psi_get_tableidext
 
   //{{{
-  inline void sdt_init(uint8_t *p_sdt, bool b_actual)
+  void sdt_init(uint8_t *p_sdt, bool b_actual)
   {
       psi_init(p_sdt, true);
       psi_set_tableid(p_sdt, b_actual ? SDT_TABLE_ID_ACTUAL : SDT_TABLE_ID_OTHER);
@@ -1779,7 +1251,7 @@ namespace {
   //}}}
 
   //{{{
-  inline void sdt_set_length(uint8_t *p_sdt, uint16_t i_sdt_length)
+  void sdt_set_length(uint8_t *p_sdt, uint16_t i_sdt_length)
   {
       psi_set_length(p_sdt, SDT_HEADER_SIZE + PSI_CRC_SIZE - PSI_HEADER_SIZE
                       + i_sdt_length);
@@ -1787,21 +1259,21 @@ namespace {
   //}}}
 
   //{{{
-  inline void sdt_set_onid(uint8_t *p_sdt, uint16_t i_onid)
+  void sdt_set_onid(uint8_t *p_sdt, uint16_t i_onid)
   {
       p_sdt[8] = i_onid >> 8;
       p_sdt[9] = i_onid & 0xff;
   }
   //}}}
   //{{{
-  inline uint16_t sdt_get_onid(const uint8_t *p_sdt)
+  uint16_t sdt_get_onid(const uint8_t *p_sdt)
   {
       return (p_sdt[8] << 8) | p_sdt[9];
   }
   //}}}
 
   //{{{
-  inline void sdtn_init(uint8_t *p_sdt_n)
+  void sdtn_init(uint8_t *p_sdt_n)
   {
       p_sdt_n[2] = 0xfc;
       p_sdt_n[3] = 0;
@@ -1809,74 +1281,61 @@ namespace {
   //}}}
 
   //{{{
-  inline void sdtn_set_sid(uint8_t *p_sdt_n, uint16_t i_sid)
+  void sdtn_set_sid(uint8_t *p_sdt_n, uint16_t i_sid)
   {
       p_sdt_n[0] = i_sid >> 8;
       p_sdt_n[1] = i_sid & 0xff;
   }
   //}}}
   //{{{
-  inline uint16_t sdtn_get_sid(const uint8_t *p_sdt_n)
+  uint16_t sdtn_get_sid(const uint8_t *p_sdt_n)
   {
       return (p_sdt_n[0] << 8) | p_sdt_n[1];
   }
   //}}}
 
   //{{{
-  inline void sdtn_set_eitschedule(uint8_t *p_sdt_n)
+  void sdtn_set_eitschedule(uint8_t *p_sdt_n)
   {
       p_sdt_n[2] |= 0x2;
   }
   //}}}
   //{{{
-  inline bool sdtn_get_eitschedule(const uint8_t *p_sdt_n)
+  bool sdtn_get_eitschedule(const uint8_t *p_sdt_n)
   {
       return !!(p_sdt_n[2] & 0x2);
   }
   //}}}
 
   //{{{
-  inline void sdtn_set_eitpresent(uint8_t *p_sdt_n)
+  void sdtn_set_eitpresent(uint8_t *p_sdt_n)
   {
       p_sdt_n[2] |= 0x1;
   }
   //}}}
   //{{{
-  inline bool sdtn_get_eitpresent(const uint8_t *p_sdt_n)
+  bool sdtn_get_eitpresent(const uint8_t *p_sdt_n)
   {
       return !!(p_sdt_n[2] & 0x1);
   }
   //}}}
 
   //{{{
-  inline void sdtn_set_running(uint8_t *p_sdt_n, uint8_t i_running)
+  void sdtn_set_running(uint8_t *p_sdt_n, uint8_t i_running)
   {
       p_sdt_n[3] &= 0x1f;
       p_sdt_n[3] |= i_running << 5;
   }
   //}}}
   //{{{
-  inline uint8_t sdtn_get_running(const uint8_t *p_sdt_n)
+  uint8_t sdtn_get_running(const uint8_t *p_sdt_n)
   {
       return p_sdt_n[3] >> 5;
   }
   //}}}
 
   //{{{
-  inline void sdtn_set_ca(uint8_t *p_sdt_n)
-  {
-      p_sdt_n[3] |= 0x10;
-  }
-  //}}}
-  //{{{
-  inline bool sdtn_get_ca(const uint8_t *p_sdt_n)
-  {
-      return !!(p_sdt_n[3] & 0x10);
-  }
-  //}}}
-
-  //{{{
-  inline void sdtn_set_desclength(uint8_t *p_sdt_n, uint16_t i_length)
+  void sdtn_set_desclength(uint8_t *p_sdt_n, uint16_t i_length)
   {
       p_sdt_n[3] &= ~0xf;
       p_sdt_n[3] |= (i_length >> 8) & 0xf;
@@ -1884,21 +1343,21 @@ namespace {
   }
   //}}}
   //{{{
-  inline uint16_t sdtn_get_desclength(const uint8_t *p_sdt_n)
+  uint16_t sdtn_get_desclength(const uint8_t *p_sdt_n)
   {
       return ((p_sdt_n[3] & 0xf) << 8) | p_sdt_n[4];
   }
   //}}}
 
   //{{{
-  inline uint8_t *sdtn_get_descs(uint8_t *p_sdt_n)
+  uint8_t *sdtn_get_descs(uint8_t *p_sdt_n)
   {
       return &p_sdt_n[3];
   }
   //}}}
 
   //{{{
-  inline uint8_t *sdt_get_service(uint8_t *p_sdt, uint8_t n)
+  uint8_t *sdt_get_service(uint8_t *p_sdt, uint8_t n)
   {
       uint16_t i_section_size = psi_get_length(p_sdt) + PSI_HEADER_SIZE
                                  - PSI_CRC_SIZE;
@@ -1913,18 +1372,9 @@ namespace {
       return p_sdt_n;
   }
   //}}}
-  //{{{
-  inline bool sdt_validate_service(const uint8_t *p_sdt, const uint8_t *p_sdt_n, uint16_t i_desclength)
-  {
-      uint16_t i_section_size = psi_get_length(p_sdt) + PSI_HEADER_SIZE
-                                 - PSI_CRC_SIZE;
-      return (p_sdt_n + SDT_SERVICE_SIZE + i_desclength
-               <= p_sdt + i_section_size);
-  }
-  //}}}
 
   //{{{
-  inline bool sdt_validate(const uint8_t *p_sdt)
+  bool sdt_validate(const uint8_t *p_sdt)
   {
       uint16_t i_section_size = psi_get_length(p_sdt) + PSI_HEADER_SIZE
                                  - PSI_CRC_SIZE;
@@ -1950,7 +1400,7 @@ namespace {
   }
   //}}}
   //{{{
-  inline uint8_t *sdt_table_find_service(uint8_t **pp_sections, uint16_t i_sid)
+  uint8_t *sdt_table_find_service(uint8_t **pp_sections, uint16_t i_sid)
   {
       uint8_t i_last_section = psi_table_get_lastsection(pp_sections);
       uint8_t i;
@@ -1971,7 +1421,7 @@ namespace {
   }
   //}}}
   //{{{
-  inline bool sdt_table_validate(uint8_t **pp_sections)
+  bool sdt_table_validate(uint8_t **pp_sections)
   {
       uint8_t i_last_section = psi_table_get_lastsection(pp_sections);
       uint8_t i;
@@ -2007,25 +1457,25 @@ namespace {
   #define DESC48_HEADER_SIZE      (DESC_HEADER_SIZE + 1)
 
   //{{{
-  inline void desc48_init(uint8_t *p_desc)
+  void desc48_init(uint8_t *p_desc)
   {
       desc_set_tag(p_desc, 0x48);
   }
   //}}}
   //{{{
-  inline void desc48_set_type(uint8_t *p_desc, uint8_t i_type)
+  void desc48_set_type(uint8_t *p_desc, uint8_t i_type)
   {
       p_desc[2] = i_type;
   }
   //}}}
   //{{{
-  inline uint8_t desc48_get_type(const uint8_t *p_desc)
+  uint8_t desc48_get_type(const uint8_t *p_desc)
   {
       return p_desc[2];
   }
   //}}}
   //{{{
-  inline void desc48_set_provider(uint8_t *p_desc, const uint8_t *p_provider, uint8_t i_length)
+  void desc48_set_provider(uint8_t *p_desc, const uint8_t *p_provider, uint8_t i_length)
   {
       uint8_t *p = p_desc + DESC48_HEADER_SIZE;
       p[0] = i_length;
@@ -2033,7 +1483,7 @@ namespace {
   }
   //}}}
   //{{{
-  inline uint8_t *desc48_get_provider(const uint8_t *p_desc, uint8_t *pi_length)
+  uint8_t *desc48_get_provider(const uint8_t *p_desc, uint8_t *pi_length)
   {
       uint8_t *p = (uint8_t *)p_desc + DESC48_HEADER_SIZE;
       *pi_length = p[0];
@@ -2041,7 +1491,7 @@ namespace {
   }
   //}}}
   //{{{
-  inline void desc48_set_service(uint8_t *p_desc, const uint8_t *p_service, uint8_t i_length)
+  void desc48_set_service(uint8_t *p_desc, const uint8_t *p_service, uint8_t i_length)
   {
       uint8_t *p = p_desc + DESC48_HEADER_SIZE + 1 + p_desc[3];
       p[0] = i_length;
@@ -2049,7 +1499,7 @@ namespace {
   }
   //}}}
   //{{{
-  inline uint8_t *desc48_get_service(const uint8_t *p_desc, uint8_t *pi_length)
+  uint8_t *desc48_get_service(const uint8_t *p_desc, uint8_t *pi_length)
   {
       uint8_t *p = (uint8_t *)p_desc + DESC48_HEADER_SIZE + 1 + p_desc[3];
       *pi_length = p[0];
@@ -2057,7 +1507,7 @@ namespace {
   }
   //}}}
   //{{{
-  inline bool desc48_validate(const uint8_t *p_desc)
+  bool desc48_validate(const uint8_t *p_desc)
   {
       uint8_t i_length = desc_get_length(p_desc);
       const uint8_t *p = p_desc + DESC48_HEADER_SIZE;
@@ -2075,7 +1525,6 @@ namespace {
   }
   //}}}
   //}}}
-
   //{{{  nit
   #define NIT_PID                 0x10
   #define NIT_TABLE_ID_ACTUAL     0x40
@@ -2088,7 +1537,7 @@ namespace {
   #define nit_get_nid psi_get_tableidext
 
   //{{{
-  inline void nit_init(uint8_t *p_nit, bool b_actual)
+  void nit_init(uint8_t *p_nit, bool b_actual)
   {
       psi_init(p_nit, true);
       psi_set_tableid(p_nit, b_actual ? NIT_TABLE_ID_ACTUAL : NIT_TABLE_ID_OTHER);
@@ -2096,14 +1545,14 @@ namespace {
   }
   //}}}
   //{{{
-  inline void nit_set_length(uint8_t *p_nit, uint16_t i_nit_length)
+  void nit_set_length(uint8_t *p_nit, uint16_t i_nit_length)
   {
       psi_set_length(p_nit, NIT_HEADER_SIZE + PSI_CRC_SIZE - PSI_HEADER_SIZE
                       + i_nit_length);
   }
   //}}}
   //{{{
-  inline void nit_set_desclength(uint8_t *p_nit, uint16_t i_length)
+  void nit_set_desclength(uint8_t *p_nit, uint16_t i_length)
   {
       p_nit[8] &= ~0xf;
       p_nit[8] |= i_length >> 8;
@@ -2111,25 +1560,25 @@ namespace {
   }
   //}}}
   //{{{
-  inline uint16_t nit_get_desclength(const uint8_t *p_nit)
+  uint16_t nit_get_desclength(const uint8_t *p_nit)
   {
       return ((p_nit[8] & 0xf) << 8) | p_nit[9];
   }
   //}}}
   //{{{
-  inline uint8_t *nit_get_descs(uint8_t *p_nit)
+  uint8_t *nit_get_descs(uint8_t *p_nit)
   {
       return &p_nit[8];
   }
   //}}}
   //{{{
-  inline void nith_init(uint8_t *p_nit_h)
+  void nith_init(uint8_t *p_nit_h)
   {
       p_nit_h[0] = 0xf0;
   }
   //}}}
   //{{{
-  inline void nith_set_tslength(uint8_t *p_nit_h, uint16_t i_length)
+  void nith_set_tslength(uint8_t *p_nit_h, uint16_t i_length)
   {
       p_nit_h[0] &= ~0xf;
       p_nit_h[0] |= i_length >> 8;
@@ -2137,45 +1586,45 @@ namespace {
   }
   //}}}
   //{{{
-  inline uint16_t nith_get_tslength(const uint8_t *p_nit_h)
+  uint16_t nith_get_tslength(const uint8_t *p_nit_h)
   {
       return ((p_nit_h[0] & 0xf) << 8) | p_nit_h[1];
   }
   //}}}
   //{{{
-  inline void nitn_init(uint8_t *p_nit_n)
+  void nitn_init(uint8_t *p_nit_n)
   {
       p_nit_n[4] = 0xf0;
   }
   //}}}
   //{{{
-  inline void nitn_set_tsid(uint8_t *p_nit_n, uint16_t i_tsid)
+  void nitn_set_tsid(uint8_t *p_nit_n, uint16_t i_tsid)
   {
       p_nit_n[0] = i_tsid >> 8;
       p_nit_n[1] = i_tsid & 0xff;
   }
   //}}}
   //{{{
-  inline uint16_t nitn_get_tsid(const uint8_t *p_nit_n)
+  uint16_t nitn_get_tsid(const uint8_t *p_nit_n)
   {
       return (p_nit_n[0] << 8) | p_nit_n[1];
   }
   //}}}
   //{{{
-  inline void nitn_set_onid(uint8_t *p_nit_n, uint16_t i_onid)
+  void nitn_set_onid(uint8_t *p_nit_n, uint16_t i_onid)
   {
       p_nit_n[2] = i_onid >> 8;
       p_nit_n[3] = i_onid & 0xff;
   }
   //}}}
   //{{{
-  inline uint16_t nitn_get_onid(const uint8_t *p_nit_n)
+  uint16_t nitn_get_onid(const uint8_t *p_nit_n)
   {
       return (p_nit_n[2] << 8) | p_nit_n[3];
   }
   //}}}
   //{{{
-  inline void nitn_set_desclength(uint8_t *p_nit_n, uint16_t i_length)
+  void nitn_set_desclength(uint8_t *p_nit_n, uint16_t i_length)
   {
       p_nit_n[4] &= ~0xf;
       p_nit_n[4] |= i_length >> 8;
@@ -2183,25 +1632,19 @@ namespace {
   }
   //}}}
   //{{{
-  inline uint16_t nitn_get_desclength(const uint8_t *p_nit_n)
+  uint16_t nitn_get_desclength(const uint8_t *p_nit_n)
   {
       return ((p_nit_n[4] & 0xf) << 8) | p_nit_n[5];
   }
   //}}}
   //{{{
-  inline uint8_t *nitn_get_descs(uint8_t *p_nit_n)
-  {
-      return &p_nit_n[4];
-  }
-  //}}}
-  //{{{
-  inline uint8_t *nit_get_header2(uint8_t *p_nit)
+  uint8_t *nit_get_header2(uint8_t *p_nit)
   {
       return p_nit + NIT_HEADER_SIZE + nit_get_desclength(p_nit);
   }
   //}}}
   //{{{
-  inline uint8_t *nit_get_ts(uint8_t *p_nit, uint8_t n)
+  uint8_t *nit_get_ts(uint8_t *p_nit, uint8_t n)
   {
       uint16_t i_section_size = psi_get_length(p_nit) + PSI_HEADER_SIZE
                                  - PSI_CRC_SIZE;
@@ -2219,16 +1662,7 @@ namespace {
   }
   //}}}
   //{{{
-  inline bool nit_validate_ts(const uint8_t *p_nit, const uint8_t *p_nit_n, uint16_t i_desclength)
-  {
-      uint16_t i_section_size = psi_get_length(p_nit) + PSI_HEADER_SIZE
-                                 - PSI_CRC_SIZE;
-      return (p_nit_n + NIT_TS_SIZE + i_desclength
-               <= p_nit + i_section_size);
-  }
-  //}}}
-  //{{{
-  inline bool nit_validate(const uint8_t *p_nit)
+  bool nit_validate(const uint8_t *p_nit)
   {
       uint16_t i_section_size = psi_get_length(p_nit) + PSI_HEADER_SIZE
                                  - PSI_CRC_SIZE;
@@ -2266,7 +1700,7 @@ namespace {
   }
   //}}}
   //{{{
-  inline uint8_t *nit_table_find_ts(uint8_t **pp_sections, uint16_t i_tsid, uint16_t i_onid)
+  uint8_t *nit_table_find_ts(uint8_t **pp_sections, uint16_t i_tsid, uint16_t i_onid)
   {
       uint8_t i_last_section = psi_table_get_lastsection(pp_sections);
       uint8_t i;
@@ -2287,7 +1721,7 @@ namespace {
   }
   //}}}
   //{{{
-  inline bool nit_table_validate(uint8_t **pp_sections)
+  bool nit_table_validate(uint8_t **pp_sections)
   {
       uint8_t i_last_section = psi_table_get_lastsection(pp_sections);
       uint8_t i;
@@ -2317,13 +1751,13 @@ namespace {
   #define DESC40_HEADER_SIZE      DESC_HEADER_SIZE
 
   //{{{
-  inline void desc40_init(uint8_t *p_desc)
+  void desc40_init(uint8_t *p_desc)
   {
       desc_set_tag(p_desc, 0x40);
   }
   //}}}
   //{{{
-  inline void desc40_set_networkname(uint8_t *p_desc, const uint8_t *p_network_name, uint8_t i_length)
+  void desc40_set_networkname(uint8_t *p_desc, const uint8_t *p_network_name, uint8_t i_length)
   {
       desc_set_length(p_desc, i_length);
       memcpy(p_desc + 2, p_network_name, i_length);
@@ -4737,12 +4171,12 @@ cDvbRtp::~cDvbRtp() {
   mOutputs.clear();
   }
 //}}}
-
+//{{{  gets
 uint64_t cDvbRtp::getNumPackets() { return mNumPackets; }
 uint64_t cDvbRtp::getNumErrors() { return mNumErrors; }
 uint64_t cDvbRtp::getNumInvalids() { return mNumInvalids; }
 uint64_t cDvbRtp::getNumDiscontinuities() { return mNumDiscontinuities; }
-
+//}}}
 //{{{
 bool cDvbRtp::setOutput (const string& outputString, int sid) {
 
