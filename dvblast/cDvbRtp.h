@@ -1,4 +1,4 @@
-// cDvbRtp.h 
+// cDvbRtp.h
 #pragma once
 //{{{  includes
 #include <cstdlib>
@@ -18,6 +18,8 @@ public:
   uint64_t getNumErrors();
   uint64_t getNumInvalids();
   uint64_t getNumDiscontinuities();
+  int getNumOutputs();
+  std::string getOutputInfoString (int outputNum);
 
   static bool selectOutput (const std::string& addressString, int sid);
   static void processBlockList (cTsBlock* blockList);

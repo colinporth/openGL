@@ -95,6 +95,8 @@ private:
   //{{{
   void dvblast (int frequency, bool multicast, bool console) {
 
+    vector<string> statusInfo;
+
     // set thread realtime priority
     struct sched_param param;
     param.sched_priority = sched_get_priority_max (SCHED_RR);
@@ -125,8 +127,16 @@ private:
       dvbRtp.selectOutput ("192.168.1.109:5010", 17728);
       }
 
-    if (console)
+    if (console) {
+      //{{{  init status
       cLog::status ("title", 0, true, 2);
+      for (int i = 0; i < dvbRtp.getNumOutputs(); i++) {
+        string info = dvbRtp.getOutputInfoString (i);
+        statusInfo.push_back (info);
+        cLog::status (info, i+2, false, i);
+        }
+      }
+      //}}}
 
     while (!mExit) {
       mBlocks++;
@@ -134,8 +144,18 @@ private:
       mString = format ("dvblast blocks {} packets {} errors:{}:{}:{}",
                         mBlocks, dvbRtp.getNumPackets(),
                         dvbRtp.getNumInvalids(), dvbRtp.getNumDiscontinuities(), dvbRtp.getNumErrors());
-      if (console)
+      if (console) {
+        //{{{  update status
         cLog::status (mString);
+        for (int i = 0; i < dvbRtp.getNumOutputs(); i++) {
+          string info = dvbRtp.getOutputInfoString (i);
+          if (info != statusInfo[i]) {
+            cLog::status (info, i+2, false, i);
+            statusInfo[i] = info;
+            }
+          }
+        }
+        //}}}
       }
     }
   //}}}

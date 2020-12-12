@@ -1656,6 +1656,11 @@ namespace {
     //}}}
 
     int getBlockCount() { return (mConfig.mMtu - kRtpHeaderSize) / kTsSize; }
+    //{{{
+    string getInfoString() {
+      return format ("{} {}", mConfig.mDisplayName, mEitSectionsSent);
+      }
+    //}}}
 
     //{{{
     sRtpPacket* packetNew() {
@@ -1734,6 +1739,7 @@ namespace {
     uint8_t mEitContinuity;
     uint8_t mEit_ts_buffer_offset;
     cTsBlock* mEitTsBuffer;
+    int mEitSectionsSent = 0;
 
     uint16_t mTsId;
 
@@ -3081,6 +3087,7 @@ namespace {
 
         outputPsiSection (output, eit, EIT_PID, &output->mEitContinuity,
                           dts, &output->mEitTsBuffer, &output->mEit_ts_buffer_offset);
+        output->mEitSectionsSent++;
 
         if (output->mConfig.mOnid)
           eit_set_onid (eit, onid);
@@ -3765,6 +3772,8 @@ uint64_t cDvbRtp::getNumPackets() { return mNumPackets; }
 uint64_t cDvbRtp::getNumErrors() { return mNumErrors; }
 uint64_t cDvbRtp::getNumInvalids() { return mNumInvalids; }
 uint64_t cDvbRtp::getNumDiscontinuities() { return mNumDiscontinuities; }
+int cDvbRtp::getNumOutputs() { return mOutputs.size(); }
+string cDvbRtp::getOutputInfoString (int outputNum) { return mOutputs[outputNum]->getInfoString(); }
 //}}}
 //{{{
 bool cDvbRtp::selectOutput (const string& addressString, int sid) {
