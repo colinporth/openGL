@@ -124,6 +124,10 @@ private:
       dvbRtp.selectOutput ("192.168.1.109:5008", 17664);
       dvbRtp.selectOutput ("192.168.1.109:5010", 17728);
       }
+
+    if (console)
+      cLog::status ("title", 0, true, 2);
+
     while (!mExit) {
       mBlocks++;
       dvbRtp.processBlockList (dvb.read (&blockPool));
@@ -131,7 +135,7 @@ private:
                         mBlocks, dvbRtp.getNumPackets(),
                         dvbRtp.getNumInvalids(), dvbRtp.getNumDiscontinuities(), dvbRtp.getNumErrors());
       if (console)
-        printf ("%s\r", mString.c_str());
+        cLog::status (mString);
       }
     }
   //}}}
