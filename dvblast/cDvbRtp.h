@@ -1,4 +1,4 @@
-// cDvbRtp.h - dodgy singleton
+// cDvbRtp.h 
 #pragma once
 //{{{  includes
 #include <cstdlib>

@@ -1,4 +1,4 @@
-// dvbRtp.cpp - dvb ts to rtp streams - derived from videoLan dvblast
+// dvbRtp.cpp - dvb ts to rtp streams - from videoLan dvblast
 //{{{  includes
 #include "cTsBlockPool.h"
 #include "cDvbRtp.h"
