@@ -31,7 +31,7 @@ using namespace fmt;
 class cApp : public cGlWindow {
 public:
   //{{{
-  void run (const string& title, int width, int height, int frequency, bool gui, bool multicast) {
+  void run (const string& title, int width, int height, int frequency, bool gui, bool consoleStats, bool multicast) {
 
     if (gui) {
       initialiseGui (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
@@ -42,7 +42,7 @@ public:
       runGui (true);
       }
     else // run in this main thread
-      dvblast (frequency, multicast, true);
+      dvblast (frequency, multicast, consoleStats);
 
     cLog::log (LOGINFO, "exit");
     }
@@ -93,9 +93,9 @@ protected:
   //}}}
 private:
   //{{{
-  void dvblast (int frequency, bool multicast, bool console) {
+  void dvblast (int frequency, bool multicast, bool consoleStats) {
 
-    vector<string> statusInfo;
+    vector<string> stats;
 
     // set thread realtime priority
     struct sched_param param;
@@ -127,13 +127,14 @@ private:
       dvbRtp.selectOutput ("192.168.1.109:5010", 17728);
       }
 
-    if (console) {
-      //{{{  init status
-      cLog::status ("title", 0, true, 2);
+    if (consoleStats) {
+      //{{{  init stats
+      cLog::clearScreen();
+      cLog::status (0, 0, "title");
       for (int i = 0; i < dvbRtp.getNumOutputs(); i++) {
         string info = dvbRtp.getOutputInfoString (i);
-        statusInfo.push_back (info);
-        cLog::status (info, i+2, false, i);
+        stats.push_back (info);
+        cLog::status (i+1, i, info);
         }
       }
       //}}}
@@ -144,14 +145,14 @@ private:
       mString = format ("dvblast blocks {} packets {} errors:{}:{}:{}",
                         mBlocks, dvbRtp.getNumPackets(),
                         dvbRtp.getNumInvalids(), dvbRtp.getNumDiscontinuities(), dvbRtp.getNumErrors());
-      if (console) {
-        //{{{  update status
-        cLog::status (mString);
+      if (consoleStats) {
+        //{{{  update stats
+        cLog::status (0, 0, mString);
         for (int i = 0; i < dvbRtp.getNumOutputs(); i++) {
           string info = dvbRtp.getOutputInfoString (i);
-          if (info != statusInfo[i]) {
-            cLog::status (info, i+2, false, i);
-            statusInfo[i] = info;
+          if (info != stats[i]) {
+            cLog::status (i+1, i, info);
+            stats[i] = info;
             }
           }
         }
@@ -178,11 +179,13 @@ int main (int numArgs, char* args[]) {
   // options
   bool gui = false;
   bool multicast = false;
+  bool consoleStats = false;
   eLogLevel logLevel = LOGINFO;
   //{{{  parse params to options
   for (size_t i = 0; i < params.size(); i++) {
     if (params[i] == "gui") gui = true;
     else if (params[i] == "m") multicast = true;
+    else if (params[i] == "s") consoleStats = true;
     else if (params[i] == "log1") logLevel = LOGINFO1;
     else if (params[i] == "log2") logLevel = LOGINFO2;
     else if (params[i] == "log3") logLevel = LOGINFO3;
@@ -193,7 +196,7 @@ int main (int numArgs, char* args[]) {
   cLog::log (LOGNOTICE, "dvblast");
 
   cApp app;
-  app.run ("dvblast", 790, 450, 626000000, gui, multicast);
+  app.run ("dvblast", 790, 450, 626000000, gui, consoleStats, multicast);
 
   return 0;
   }
