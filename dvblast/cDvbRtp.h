@@ -19,6 +19,6 @@ public:
   uint64_t getNumInvalids();
   uint64_t getNumDiscontinuities();
 
-  static bool selectOutput (const std::string& serverAddressString, int sid);
+  static bool selectOutput (const std::string& addressString, int sid);
   static void processBlockList (cTsBlock* blockList);
   };
