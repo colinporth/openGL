@@ -22,6 +22,7 @@
 
 using namespace std;
 using namespace fmt;
+using namespace chrono;
 //}}}
 //{{{  defines
 constexpr int kRtpHeaderSize = 12;
@@ -1791,6 +1792,9 @@ namespace {
   uint8_t* mCurrentSdtSections[kPsiTableMaxSections];
   uint8_t* mNextSdtSections[kPsiTableMaxSections];
 
+  system_clock::time_point mTime;
+  string mTimeString;
+
   // outputs
   vector <cOutput*> mOutputs;
   //}}}
@@ -3097,17 +3101,15 @@ namespace {
   //{{{
   void readTDT (uint8_t* ts) {
 
-    ts++;
-    cLog::log (LOGINFO, format ("{:x} {:x} {:x} {:x} {:x} {:x} {:x}", ts[1], ts[2], ts[3], ts[4], ts[5], ts[6], ts[7]));
     if (ts[0] == 0x70) {
       uint32_t epochTime = (((ts[3] << 8) | ts[4]) - 40587) * 86400;
       uint32_t time = (3600 * ((10*((ts[5] & 0xF0)>>4)) + (ts[5] & 0xF))) +
                         (60 * ((10*((ts[6] & 0xF0)>>4)) + (ts[6] & 0xF))) +
                               ((10*((ts[7] & 0xF0)>>4)) + (ts[7] & 0xF));
 
-      std::chrono::system_clock::time_point mTime;
-      mTime = chrono::system_clock::from_time_t (epochTime + time);
-      cLog::log (LOGINFO, date::format ("%T", date::floor<chrono::seconds>(mTime)));
+      mTime = system_clock::from_time_t (epochTime + time);
+      mTimeString = date::format ("%T", date::floor<seconds>(mTime));
+      //cLog::log (LOGINFO, mTimeString);
       }
     }
   //}}}
@@ -3641,7 +3643,7 @@ namespace {
     if (!ts_get_transporterror (block->mTs)) {
       // parse psi
       if (pidNum == kTdtPid) {
-        readTDT (block->mTs);
+        readTDT (block->mTs + 5);
         sendTDTandRST (block);
         }
       else if (pidNum == kRstPid)
@@ -3776,6 +3778,8 @@ uint64_t cDvbRtp::getNumPackets() { return mNumPackets; }
 uint64_t cDvbRtp::getNumErrors() { return mNumErrors; }
 uint64_t cDvbRtp::getNumInvalids() { return mNumInvalids; }
 uint64_t cDvbRtp::getNumDiscontinuities() { return mNumDiscontinuities; }
+string cDvbRtp::getTimeString() { return mTimeString; }
+
 int cDvbRtp::getNumOutputs() { return mOutputs.size(); }
 string cDvbRtp::getOutputInfoString (int outputNum) { return mOutputs[outputNum]->getInfoString(); }
 //}}}

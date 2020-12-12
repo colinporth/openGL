@@ -141,7 +141,8 @@ private:
     while (!mExit) {
       mBlocks++;
       dvbRtp.processBlockList (dvb.read (&blockPool));
-      mString = format ("dvblast blocks {} packets {} errors:{}:{}:{}",
+      mString = format ("{} blocks {} packets {} errors:{}:{}:{}",
+                        dvbRtp.getTimeString(),
                         mBlocks, dvbRtp.getNumPackets(),
                         dvbRtp.getNumInvalids(), dvbRtp.getNumDiscontinuities(), dvbRtp.getNumErrors());
       if (consoleStats) {

@@ -18,6 +18,8 @@ public:
   uint64_t getNumErrors();
   uint64_t getNumInvalids();
   uint64_t getNumDiscontinuities();
+  std::string getTimeString();
+
   int getNumOutputs();
   std::string getOutputInfoString (int outputNum);
 
