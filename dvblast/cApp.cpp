@@ -95,14 +95,11 @@ private:
   //{{{
   void dvblast (int frequency, bool multicast, bool consoleStats) {
 
-    vector<string> stats;
-
-    // set thread realtime priority
+  // set thread realtime priority
     struct sched_param param;
     param.sched_priority = sched_get_priority_max (SCHED_RR);
-    int error = pthread_setschedparam (pthread_self(), SCHED_RR, &param);
-    if (error)
-      cLog::log (LOGERROR, "dvblast - pthread_setschedparam failed: %s", strerror (error));
+    if (pthread_setschedparam (pthread_self(), SCHED_RR, &param))
+      cLog::log (LOGERROR, "pthread_setschedparam failed");
 
     // init blockPool
     cTsBlockPool blockPool (100);
@@ -127,9 +124,11 @@ private:
       dvbRtp.selectOutput ("192.168.1.109:5010", 17728);
       }
 
+    vector<string> stats;
     if (consoleStats) {
       //{{{  init stats
       cLog::clearScreen();
+
       cLog::status (0, 0, "title");
       for (int i = 0; i < dvbRtp.getNumOutputs(); i++) {
         string info = dvbRtp.getOutputInfoString (i);
@@ -148,6 +147,7 @@ private:
       if (consoleStats) {
         //{{{  update stats
         cLog::status (0, 0, mString);
+
         for (int i = 0; i < dvbRtp.getNumOutputs(); i++) {
           string info = dvbRtp.getOutputInfoString (i);
           if (info != stats[i]) {

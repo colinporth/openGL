@@ -53,22 +53,7 @@ constexpr int OUTPUT_EPG   = 0x02;
 namespace {
   //{{{  dvb bitstream utils
   constexpr int kTsSize = 188;
-  constexpr int kPaddingPid = 8191;
-  constexpr int kMaxPids = 8192;
-  constexpr int kUnusedPids = kMaxPids + 1;
-
   constexpr int kTsHeaderSize = 4;
-
-  constexpr int kPsiHeaderSize = 3;
-  constexpr int kPsiHeaderSizeSyntax1 = 8;
-  constexpr int kPsiCrcSize = 4;
-  constexpr int kPsiMaxSize = 1021;
-  constexpr int kPsiPrivateMaxSize = 4093;
-
-  constexpr int kDescHeaderSize = 2;
-  constexpr int kDescsHeaderSize = 2;
-  constexpr int kDescsMaxSize = 4095;
-
   //{{{  ts utils
   //{{{
   void ts_init (uint8_t* ts) {
@@ -151,6 +136,13 @@ namespace {
   bool ts_check_duplicate (uint8_t cc, uint8_t lastCc) { return lastCc == cc; }
   bool ts_check_discontinuity (uint8_t cc, uint8_t lastCc) { return (lastCc + 17 - cc) % 16; }
   //}}}
+
+  constexpr int kPsiHeaderSize = 3;
+  constexpr int kPsiHeaderSizeSyntax1 = 8;
+  constexpr int kPsiCrcSize = 4;
+  constexpr int kPsiMaxSize = 1021;
+  constexpr int kPsiPrivateMaxSize = 4093;
+  constexpr int kPsiTableMaxSections = 256;
   //{{{  psi utils
   //{{{
   /*****************************************************************************
@@ -459,18 +451,17 @@ namespace {
     }
   //}}}
 
-  #define PSI_TABLE_MAX_SECTIONS  256
   //{{{
   void psi_table_init (uint8_t** sections) {
 
-    for (int i = 0; i < PSI_TABLE_MAX_SECTIONS; i++)
+    for (int i = 0; i < kPsiTableMaxSections; i++)
       sections[i] = NULL;
     }
   //}}}
   //{{{
   void psi_table_free (uint8_t** sections) {
 
-    for (int i = 0; i < PSI_TABLE_MAX_SECTIONS; i++)
+    for (int i = 0; i < kPsiTableMaxSections; i++)
       free (sections[i]);
     }
   //}}}
@@ -478,7 +469,7 @@ namespace {
   bool psi_table_validate (uint8_t* const* sections) { return sections[0] != NULL; }
   //{{{
   void psi_table_copy (uint8_t** dest, uint8_t** src) {
-    memcpy (dest, src, PSI_TABLE_MAX_SECTIONS * sizeof(uint8_t*));
+    memcpy (dest, src, kPsiTableMaxSections * sizeof(uint8_t*));
     }
   //}}}
 
@@ -512,7 +503,7 @@ namespace {
       }
 
     // free spurious, invalid sections
-    for (; i < PSI_TABLE_MAX_SECTIONS; i++) {
+    for (; i < kPsiTableMaxSections; i++) {
       free (sections[i]);
       sections[i] = NULL;
       }
@@ -540,6 +531,10 @@ namespace {
     }
   //}}}
   //}}}
+
+  constexpr int kDescHeaderSize = 2;
+  constexpr int kDescsHeaderSize = 2;
+  constexpr int kDescsMaxSize = 4095;
   //{{{  descriptors
   void desc_set_tag (uint8_t* desc, uint8_t tag) { desc[0] = tag; }
   uint8_t desc_get_tag (const uint8_t* desc) { return desc[0]; }
@@ -598,8 +593,16 @@ namespace {
   //}}}
   //}}}
 
-  //{{{  pat
-  #define PAT_PID 0x0
+  constexpr int kPatPid = 0x0;
+  constexpr int kNitPid = 0x10;
+  constexpr int kSdtPid = 0x11;
+  constexpr int kEitPid = 0x12;
+  constexpr int kRstPid = 0x13;
+  constexpr int kTdtPid = 0x14;
+  constexpr int kPaddingPid = 8191;
+  constexpr int kMaxPids = 8192;
+  constexpr int kUnusedPids = kMaxPids + 1;
+  //{{{  pat - Program Association Table
   #define PAT_TABLE_ID  0x0
   constexpr int PAT_HEADER_SIZE = kPsiHeaderSizeSyntax1;
   #define PAT_PROGRAM_SIZE 4
@@ -707,9 +710,8 @@ namespace {
     return true;
     }
   //}}}
-                                                    //}}}
-  //{{{  pmt
-  // Program Map Table
+  //}}}
+  //{{{  pmt - Program Map Table
   #define PMT_TABLE_ID 0x2
   #define PMT_HEADER_SIZE (kPsiHeaderSizeSyntax1 + 4)
   #define PMT_ES_SIZE 5
@@ -922,15 +924,11 @@ namespace {
     }
   //}}}
   //}}}
-  //{{{  tdt
-  // Time and Date Table
-  #define TDT_PID 0x14
+  //{{{  tdt - Time and Date Table
   #define TDT_TABLE_ID  0x70
   #define TDT_HEADER_SIZE (kPsiHeaderSize + 5)
   //}}}
-  //{{{  eit
-  #define EIT_PID 0x12
-
+  //{{{  eit - Event Information table
   #define EIT_TABLE_ID_PF_ACTUAL 0x4e
   #define EIT_TABLE_ID_PF_OTHER  0x4f
   #define EIT_TABLE_ID_SCHED_ACTUAL_FIRST 0x50
@@ -944,13 +942,42 @@ namespace {
   #define eit_set_sid psi_set_tableidext
   #define eit_get_sid psi_get_tableidext
 
+  uint16_t eitn_get_desclength (const uint8_t* eitn) { return ((eitn[10] & 0xf) << 8) | eitn[11]; }
+  //{{{
+  bool eit_validate (const uint8_t* eit) {
+
+    uint16_t sectionSize = psi_get_length (eit) + kPsiHeaderSize - kPsiCrcSize;
+    uint8_t tid = psi_get_tableid (eit);
+
+    const uint8_t* eitn;
+
+    if (!psi_get_syntax (eit) ||
+        ((tid != EIT_TABLE_ID_PF_ACTUAL) && (tid != EIT_TABLE_ID_PF_OTHER) &&
+        !(tid >= EIT_TABLE_ID_SCHED_ACTUAL_FIRST && tid <= EIT_TABLE_ID_SCHED_ACTUAL_LAST) &&
+        !(tid >= EIT_TABLE_ID_SCHED_OTHER_FIRST && tid <= EIT_TABLE_ID_SCHED_OTHER_LAST)))
+      return false;
+
+    if (!psi_check_crc (eit))
+      return false;
+
+    eitn = eit + EIT_HEADER_SIZE;
+    while ((eitn + EIT_EVENT_SIZE - eit <= sectionSize) &&
+           (eitn + EIT_EVENT_SIZE + eitn_get_desclength (eitn) - eit <= sectionSize)) {
+      if (!descs_validate (eitn + 10))
+        return false;
+      eitn += EIT_EVENT_SIZE + eitn_get_desclength (eitn);
+      }
+
+    return (eitn - eit == sectionSize);
+    }
+  //}}}
+
   //{{{
   void eit_set_tsid (uint8_t* eit, uint16_t tsId) {
     eit[8] = tsId >> 8;
     eit[9] = tsId & 0xff;
     }
   //}}}
-
   //{{{
   void eit_set_onid (uint8_t* eit, uint16_t onId) {
     eit[10] = onId >> 8;
@@ -959,49 +986,13 @@ namespace {
   //}}}
   uint16_t eit_get_onid (const uint8_t* eit) { return (eit[10] << 8) | eit[11]; }
 
-  uint16_t eitn_get_desclength (const uint8_t* eitn) { return ((eitn[10] & 0xf) << 8) | eitn[11]; }
-
-  //{{{
-  bool eit_validate (const uint8_t* eit) {
-
-    uint16_t sectionSize = psi_get_length (eit) + kPsiHeaderSize - kPsiCrcSize;
-    uint8_t i_tid = psi_get_tableid (eit);
-
-    const uint8_t* eitn;
-
-    if (!psi_get_syntax (eit) ||
-        (i_tid != EIT_TABLE_ID_PF_ACTUAL && i_tid != EIT_TABLE_ID_PF_OTHER
-         && !(i_tid >= EIT_TABLE_ID_SCHED_ACTUAL_FIRST && i_tid <= EIT_TABLE_ID_SCHED_ACTUAL_LAST)
-         && !(i_tid >= EIT_TABLE_ID_SCHED_OTHER_FIRST && i_tid <= EIT_TABLE_ID_SCHED_OTHER_LAST)))
-      return false;
-
-    if (!psi_check_crc (eit))
-      return false;
-
-    eitn = eit + EIT_HEADER_SIZE;
-    while (eitn + EIT_EVENT_SIZE - eit <= sectionSize
-           && eitn + EIT_EVENT_SIZE + eitn_get_desclength (eitn) - eit <= sectionSize) {
-      if (!descs_validate (eitn + 10))
-        return false;
-
-      eitn += EIT_EVENT_SIZE + eitn_get_desclength (eitn);
-      }
-
-    return (eitn - eit == sectionSize);
-    }
   //}}}
-  //}}}
-  //{{{  rst
-  // Running Status Table
-  #define RST_PID 0x13
+  //{{{  rst - Running Status Table
   #define RST_TABLE_ID 0x71
   #define RST_HEADER_SIZE kPsiHeaderSize
   #define RST_STATUS_SIZE 9
   //}}}
-
-  //{{{  sdt
-  // Service Description Table
-  #define SDT_PID 0x11
+  //{{{  sdt - Service Description Table
   #define SDT_TABLE_ID_ACTUAL 0x42
   #define SDT_TABLE_ID_OTHER 0x46
   #define SDT_HEADER_SIZE (kPsiHeaderSizeSyntax1 + 3)
@@ -1159,8 +1150,8 @@ namespace {
     return true;
     }
   //}}}
-  //}}}
-  //{{{  service descriptor
+
+  // service descriptor
   #define DESC48_HEADER_SIZE (kDescHeaderSize + 1)
 
   void desc48_init (uint8_t* desc) { desc_set_tag (desc, 0x48); }
@@ -1220,9 +1211,7 @@ namespace {
     }
   //}}}
   //}}}
-
-  //{{{  nit
-  #define NIT_PID 0x10
+  //{{{  nit - Network Information Table
   #define NIT_TABLE_ID_ACTUAL 0x40
   #define NIT_TABLE_ID_OTHER  0x41
   #define NIT_HEADER_SIZE (kPsiHeaderSizeSyntax1 + 2)
@@ -1389,8 +1378,8 @@ namespace {
     return true;
     }
   //}}}
-  //}}}
-  //{{{  network name descriptor
+
+  // network name descriptor
   #define DESC40_HEADER_SIZE  kDescHeaderSize
 
   void desc40_init (uint8_t* desc) { desc_set_tag (desc, 0x40); }
@@ -1436,7 +1425,7 @@ namespace {
   //}}}
   //{{{
   struct sEitSections {
-    uint8_t* data[PSI_TABLE_MAX_SECTIONS];
+    uint8_t* data[kPsiTableMaxSections];
     };
   //}}}
   //{{{
@@ -1794,12 +1783,12 @@ namespace {
   sSid** mSids = NULL;
 
   // tables
-  uint8_t* mCurrentPatSections[PSI_TABLE_MAX_SECTIONS];
-  uint8_t* mNextPatSections[PSI_TABLE_MAX_SECTIONS];
-  uint8_t* mCurrentNitSections[PSI_TABLE_MAX_SECTIONS];
-  uint8_t* mNexttNitSections[PSI_TABLE_MAX_SECTIONS];
-  uint8_t* mCurrentSdtSections[PSI_TABLE_MAX_SECTIONS];
-  uint8_t* mNextSdtSections[PSI_TABLE_MAX_SECTIONS];
+  uint8_t* mCurrentPatSections[kPsiTableMaxSections];
+  uint8_t* mNextPatSections[kPsiTableMaxSections];
+  uint8_t* mCurrentNitSections[kPsiTableMaxSections];
+  uint8_t* mNexttNitSections[kPsiTableMaxSections];
+  uint8_t* mCurrentSdtSections[kPsiTableMaxSections];
+  uint8_t* mNextSdtSections[kPsiTableMaxSections];
 
   // outputs
   vector <cOutput*> mOutputs;
@@ -1906,17 +1895,16 @@ namespace {
 
     // Simple cases
     switch (pidNum) {
-      case 0x00: return "PAT";
-      case 0x01: return "CAT";
-      case 0x11: return "SDT";
-      case 0x12: return "EPG";
-      case 0x14: return "TDT/TOT";
+      case kPatPid: return "PAT";
+      case kSdtPid: return "SDT";
+      case kEitPid: return "EPG";
+      case kTdtPid: return "TDT/TOT";
       }
 
     // Detect NIT pid
     int j;
     uint8_t lastSection;
-    uint16_t nitPid = NIT_PID;
+    uint16_t nitPid = kNitPid;
     if (psi_table_validate (mCurrentPatSections)) {
       lastSection = psi_table_get_lastsection (mCurrentPatSections);
       for (int i = 0; i <= lastSection; i++) {
@@ -2217,7 +2205,7 @@ namespace {
       p = pat_get_program (output->mPatSection, k++);
       patn_init (p);
       patn_set_program (p, 0);
-      patn_set_pid (p, NIT_PID);
+      patn_set_pid (p, kNitPid);
       }
 
     p = pat_get_program (output->mPatSection, k++);
@@ -2947,10 +2935,10 @@ namespace {
     uint16_t sectionLength = psi_get_length (section) + kPsiHeaderSize;
 
     do {
-      bool append = tsBuffer && *tsBuffer;
-
       cTsBlock* block;
       uint8_t tsOffset;
+
+      bool append = tsBuffer && *tsBuffer;
       if (append) {
         block = *tsBuffer;
         tsOffset = *tsBufferOffset;
@@ -3013,7 +3001,7 @@ namespace {
         }
 
       if (output->mPatSection)
-        outputPsiSection (output, output->mPatSection, PAT_PID, &output->mPatContinuity, dts, NULL, NULL);
+        outputPsiSection (output, output->mPatSection, kPatPid, &output->mPatContinuity, dts, NULL, NULL);
       }
     }
   //}}}
@@ -3032,7 +3020,7 @@ namespace {
 
     for (auto output: mOutputs)
       if (output->mConfig.mOutputDvb && output->mNitSection)
-        outputPsiSection (output, output->mNitSection, NIT_PID, &output->mNitContinuity, dts, NULL, NULL);
+        outputPsiSection (output, output->mNitSection, kNitPid, &output->mNitContinuity, dts, NULL, NULL);
     }
   //}}}
   //{{{
@@ -3040,7 +3028,7 @@ namespace {
 
     for (auto output : mOutputs)
       if (output->mConfig.mOutputDvb && output->mSdtSection)
-        outputPsiSection (output, output->mSdtSection, SDT_PID, &output->mSdtContinuity, dts, NULL, NULL);
+        outputPsiSection (output, output->mSdtSection, kSdtPid, &output->mSdtContinuity, dts, NULL, NULL);
     }
   //}}}
   //{{{
@@ -3079,7 +3067,7 @@ namespace {
 
         psi_set_crc (eit);
 
-        outputPsiSection (output, eit, EIT_PID, &output->mEitContinuity,
+        outputPsiSection (output, eit, kEitPid, &output->mEitContinuity,
                           dts, &output->mEitTsBuffer, &output->mEit_ts_buffer_offset);
         output->mEitSectionsSent++;
 
@@ -3146,7 +3134,7 @@ namespace {
   void handlePAT (int64_t dts) {
 
     bool change = false;
-    uint8_t* oldPatSections[PSI_TABLE_MAX_SECTIONS];
+    uint8_t* oldPatSections[kPsiTableMaxSections];
     uint8_t lastSection = psi_table_get_lastsection (mNextPatSections);
 
     if (psi_table_validate (mCurrentPatSections) && psi_table_compare (mCurrentPatSections, mNextPatSections)) {
@@ -3188,7 +3176,7 @@ namespace {
         j++;
 
         if (sid == 0) {
-          if (pid != NIT_PID)
+          if (pid != kNitPid)
             cLog::log (LOGINFO, "nit is carried on PID %hu which isn't DVB compliant", pid);
           continue; // NIT
           }
@@ -3254,7 +3242,7 @@ namespace {
   //{{{
   void handlePATSection (uint16_t pid, uint8_t* section, int64_t dts) {
 
-    if ((pid != PAT_PID) || !pat_validate (section)) {
+    if ((pid != kPatPid) || !pat_validate (section)) {
       cLog::log (LOGERROR, "invalid pat section pid:%hu", pid);
       free (section);
       return;
@@ -3365,7 +3353,7 @@ namespace {
   //{{{
   void handleNITSection (uint16_t pid, uint8_t* section, int64_t dts) {
 
-    if (pid != NIT_PID || !nit_validate (section)) {
+    if (pid != kNitPid || !nit_validate (section)) {
       cLog::log (LOGERROR, "invalid nit section pid:%hu", pid);
       free (section);
       return;
@@ -3382,7 +3370,7 @@ namespace {
   //{{{
   void handleSDT (int64_t dts) {
 
-    uint8_t* oldSdtSections[PSI_TABLE_MAX_SECTIONS];
+    uint8_t* oldSdtSections[kPsiTableMaxSections];
     uint8_t lastSection = psi_table_get_lastsection (mNextSdtSections);
 
     if (psi_table_validate (mCurrentSdtSections) && psi_table_compare (mCurrentSdtSections, mNextSdtSections)) {
@@ -3441,7 +3429,7 @@ namespace {
   //{{{
   void handleSDTSection (uint16_t pid, uint8_t* section, int64_t dts) {
 
-    if ((pid != SDT_PID) || !sdt_validate (section)) {
+    if ((pid != kSdtPid) || !sdt_validate (section)) {
       cLog::log (LOGERROR, "invalid SDT section pid:%hu", pid);
       free (section);
       return;
@@ -3466,7 +3454,7 @@ namespace {
       return;
       }
 
-    if ((pid != EIT_PID) || !eit_validate (eit)) {
+    if ((pid != kEitPid) || !eit_validate (eit)) {
       cLog::log (LOGERROR, "invalid eit section pid:%hu", pid);
       free (eit);
       return;
@@ -3634,7 +3622,7 @@ namespace {
 
     if (!ts_get_transporterror (block->mTs)) {
       // parse psi
-      if (pidNum == TDT_PID || pidNum == RST_PID)
+      if (pidNum == kTdtPid || pidNum == kRstPid)
         sendTDT (block);
       else if (tsPid->mPsiRefCount)
         handlePsiPacket (block->mTs, block->mDts);
@@ -3705,23 +3693,23 @@ cDvbRtp::cDvbRtp (cDvb* dvb, cTsBlockPool* blockPool) {
   psi_table_init (mCurrentPatSections);
   psi_table_init (mNextPatSections);
 
-  setPid (PAT_PID);
-  mTsPids[PAT_PID].mPsiRefCount++;
+  setPid (kPatPid);
+  mTsPids[kPatPid].mPsiRefCount++;
 
-  setPid (NIT_PID);
-  mTsPids[NIT_PID].mPsiRefCount++;
+  setPid (kNitPid);
+  mTsPids[kNitPid].mPsiRefCount++;
 
   psi_table_init (mCurrentSdtSections);
   psi_table_init (mNextSdtSections);
 
-  setPid (SDT_PID);
-  mTsPids[SDT_PID].mPsiRefCount++;
+  setPid (kSdtPid);
+  mTsPids[kSdtPid].mPsiRefCount++;
 
-  setPid (EIT_PID);
-  mTsPids[EIT_PID].mPsiRefCount++;
+  setPid (kEitPid);
+  mTsPids[kEitPid].mPsiRefCount++;
 
-  setPid (RST_PID);
-  setPid (TDT_PID);
+  setPid (kRstPid);
+  setPid (kTdtPid);
   }
 //}}}
 //{{{
