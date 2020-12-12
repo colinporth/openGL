@@ -18,6 +18,7 @@
 // utils
 #include "../../shared/fmt/core.h"
 #include "../../shared/utils/cLog.h"
+#include "../../shared/date/date.h"
 
 using namespace std;
 using namespace fmt;
@@ -3032,7 +3033,7 @@ namespace {
     }
   //}}}
   //{{{
-  void sendTDT (cTsBlock* block) {
+  void sendTDTandRST (cTsBlock* block) {
 
     for (auto output : mOutputs)
       if (output->mConfig.mOutputDvb && output->mSdtSection)
@@ -3093,6 +3094,23 @@ namespace {
   //}}}
 
   // demux
+  //{{{
+  void readTDT (uint8_t* ts) {
+
+    ts++;
+    cLog::log (LOGINFO, format ("{:x} {:x} {:x} {:x} {:x} {:x} {:x}", ts[1], ts[2], ts[3], ts[4], ts[5], ts[6], ts[7]));
+    if (ts[0] == 0x70) {
+      uint32_t epochTime = (((ts[3] << 8) | ts[4]) - 40587) * 86400;
+      uint32_t time = (3600 * ((10*((ts[5] & 0xF0)>>4)) + (ts[5] & 0xF))) +
+                        (60 * ((10*((ts[6] & 0xF0)>>4)) + (ts[6] & 0xF))) +
+                              ((10*((ts[7] & 0xF0)>>4)) + (ts[7] & 0xF));
+
+      std::chrono::system_clock::time_point mTime;
+      mTime = chrono::system_clock::from_time_t (epochTime + time);
+      cLog::log (LOGINFO, date::format ("%T", date::floor<chrono::seconds>(mTime)));
+      }
+    }
+  //}}}
   //{{{
   void deleteProgram (uint16_t sidNum, uint16_t pidNum) {
 
@@ -3622,8 +3640,12 @@ namespace {
 
     if (!ts_get_transporterror (block->mTs)) {
       // parse psi
-      if (pidNum == kTdtPid || pidNum == kRstPid)
-        sendTDT (block);
+      if (pidNum == kTdtPid) {
+        readTDT (block->mTs);
+        sendTDTandRST (block);
+        }
+      else if (pidNum == kRstPid)
+        sendTDTandRST (block);
       else if (tsPid->mPsiRefCount)
         handlePsiPacket (block->mTs, block->mDts);
       }
