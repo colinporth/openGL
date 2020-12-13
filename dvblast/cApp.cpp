@@ -124,15 +124,16 @@ private:
       dvbRtp.selectOutput ("192.168.1.109:5010", 17728);
       }
 
-    vector<string> stats;
+    string timeString;
+    vector<string> statsStrings;
     if (consoleStats) {
       //{{{  init stats
       cLog::clearScreen();
 
-      cLog::status (0, 0, "title");
+      cLog::status (0, 0, "");
       for (int i = 0; i < dvbRtp.getNumOutputs(); i++) {
         string info = dvbRtp.getOutputInfoString (i);
-        stats.push_back (info);
+        statsStrings.push_back (info);
         cLog::status (i+1, i, info);
         }
       }
@@ -147,13 +148,18 @@ private:
                         dvbRtp.getNumInvalids(), dvbRtp.getNumDiscontinuities(), dvbRtp.getNumErrors());
       if (consoleStats) {
         //{{{  update stats
-        cLog::status (0, 0, mString);
+        if (dvbRtp.getTimeString() != timeString) {
+          // time ticked, update status
+          cLog::status (0, 0, mString);
+          timeString = dvbRtp.getTimeString();
+          }
 
         for (int i = 0; i < dvbRtp.getNumOutputs(); i++) {
           string info = dvbRtp.getOutputInfoString (i);
-          if (info != stats[i]) {
+          if (info != statsStrings[i]) {
+            // info changed, update info
             cLog::status (i+1, i, info);
-            stats[i] = info;
+            statsStrings[i] = info;
             }
           }
         }
