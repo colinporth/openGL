@@ -1471,7 +1471,6 @@ namespace {
       mPids = NULL;
       mNumPids = 0;
 
-      mNewSid = 0;
       mOnid = 0;
       }
     //}}}
@@ -1506,7 +1505,6 @@ namespace {
       mPids = NULL;
       mNumPids = 0;
 
-      mNewSid = 0;
       mOnid = 0;
       }
     //}}}
@@ -1539,7 +1537,6 @@ namespace {
     int mNumPids = 0;
     uint16_t* mPids = NULL;
 
-    uint16_t mNewSid = 0;
     uint16_t mOnid = 0;
     };
   //}}}
@@ -1578,16 +1575,11 @@ namespace {
       mSdtSection = NULL;
 
       mEitTsBuffer = NULL;
-      mEit_ts_buffer_offset = 0;
+      mEitTsBufferOffset = 0;
       mEitContinuity = rand() & 0xf;
 
       mTsId = 0;
       mPcrPid = 0;
-      for (int i = 0; i < kMaxPids; i++) {
-        mNewPids[i] = kUnusedPids;
-        mFreePids[i] = kUnusedPids;
-        }
-      //raw_pkt_header;
 
       // init socket-related fields
       mConfig.mFamily = outputConfig->mFamily;
@@ -1722,7 +1714,7 @@ namespace {
     uint8_t* mSdtSection;
 
     uint8_t mEitContinuity;
-    uint8_t mEit_ts_buffer_offset;
+    uint8_t mEitTsBufferOffset;
     cTsBlock* mEitTsBuffer;
     int mEitSectionsSent = 0;
 
@@ -1730,10 +1722,6 @@ namespace {
 
     // incomplete PID (only PCR packets)
     uint16_t mPcrPid;
-
-    // Arrays used for mapping pids, newpids is indexed using the original pid
-    uint16_t mNewPids[kMaxPids];
-    uint16_t mFreePids[kMaxPids];   // used where multiple streams of the same type are used
 
   private:
     static constexpr int kMaxOutputPackets = 100;
@@ -2215,12 +2203,7 @@ namespace {
 
     p = pat_get_program (output->mPatSection, k++);
     patn_init (p);
-    if (output->mConfig.mNewSid) {
-      cLog::log (LOGINFO, "mapping pat sid %d to %d", output->mConfig.mSid, output->mConfig.mNewSid);
-      patn_set_program (p, output->mConfig.mNewSid);
-      }
-    else
-      patn_set_program (p, output->mConfig.mSid);
+    patn_set_program (p, output->mConfig.mSid);
 
     patn_set_pid (p, patn_get_pid (p_program));
 
@@ -2250,20 +2233,11 @@ namespace {
     uint8_t* p = output->mPmtSection = psi_allocate();
     pmt_init (p);
     psi_set_length (p, kPsiMaxSize);
-    if (output->mConfig.mNewSid) {
-      cLog::log (LOGINFO, "mapping pmt sid %d to %d", output->mConfig.mSid, output->mConfig.mNewSid);
-      pmt_set_program (p, output->mConfig.mNewSid);
-      }
-    else
-      pmt_set_program (p, output->mConfig.mSid);
+    pmt_set_program (p, output->mConfig.mSid);
 
     psi_set_version (p, output->mPmtVersion);
     psi_set_current (p);
     pmt_set_desclength (p, 0);
-    for (int i = 0; i < kMaxPids; i++) {
-      output->mNewPids[i] = kUnusedPids;
-      output->mFreePids[i] = kUnusedPids;
-      }
     copyDescriptors (pmt_get_descs (p), pmt_get_descs (currentPmt));
 
     uint16_t j = 0;
@@ -2290,13 +2264,6 @@ namespace {
 
     // Do the pcr pid after everything else as it may have been remapped
     uint16_t pcrPid = pmt_get_pcrpid (currentPmt);
-    if (output->mNewPids[pcrPid] != kUnusedPids) {
-      cLog::log (LOGINFO, "remap - pcr pid changed from 0x%x %u to 0x%x %u",
-                 pcrPid, pcrPid, output->mNewPids[pcrPid], output->mNewPids[pcrPid]);
-      pcrPid = output->mNewPids[pcrPid];
-      }
-    else
-      cLog::log (LOGINFO1, "pcr pid kept original value of 0x%x %u", pcrPid, pcrPid);
 
     pmt_set_pcrpid (p, pcrPid);
     uint8_t* es = pmt_get_es (p, k);
@@ -2400,12 +2367,7 @@ namespace {
 
     uint8_t* service = sdt_get_service (sdtSection, 0);
     sdtn_init (service);
-    if (output->mConfig.mNewSid) {
-      cLog::log (LOGINFO, "mapping sdt sid %d to %d", output->mConfig.mSid, output->mConfig.mNewSid);
-      sdtn_set_sid (service, output->mConfig.mNewSid);
-      }
-    else
-      sdtn_set_sid (service, output->mConfig.mSid);
+    sdtn_set_sid (service, output->mConfig.mSid);
 
     // We always forward EITpf
     if (sdtn_get_eitpresent (currentService))
@@ -2543,6 +2505,14 @@ namespace {
       }
     }
   //}}}
+
+  //{{{
+  bool isOurEpg (int tableId) {
+
+    return (tableId == EIT_TABLE_ID_PF_ACTUAL) ||
+           ((tableId >= EIT_TABLE_ID_SCHED_ACTUAL_FIRST) && (tableId <= EIT_TABLE_ID_SCHED_ACTUAL_LAST));
+    }
+  //}}}
   //}}}
 
   //  setup output
@@ -2669,7 +2639,6 @@ namespace {
     output->mConfig.mOutputDvb = config->mOutputDvb;
     output->mConfig.mOutputEpg = config->mOutputEpg;
     output->mConfig.mNetworkId = config->mNetworkId;
-    output->mConfig.mNewSid = config->mNewSid;
     output->mConfig.mOnid = config->mOnid;
 
     output->mConfig.mNetworkName = config->mNetworkName;
@@ -3037,7 +3006,7 @@ namespace {
     }
   //}}}
   //{{{
-  void sendTDTandRST (cTsBlock* block) {
+  void sendBlock (cTsBlock* block) {
 
     for (auto output : mOutputs)
       if (output->mConfig.mOutputDvb && output->mSdtSection)
@@ -3045,35 +3014,22 @@ namespace {
     }
   //}}}
   //{{{
-  bool handleEpg (int tableId) {
-
-    return (tableId == EIT_TABLE_ID_PF_ACTUAL) ||
-           ((tableId >= EIT_TABLE_ID_SCHED_ACTUAL_FIRST) && (tableId <= EIT_TABLE_ID_SCHED_ACTUAL_LAST));
-    }
-  //}}}
-  //{{{
   void sendEIT (sSid* sid, int64_t dts, uint8_t* eit) {
 
-    bool epg = handleEpg (psi_get_tableid (eit));
+    bool epg = isOurEpg (psi_get_tableid (eit));
     uint16_t onid = eit_get_onid (eit);
 
     for (auto output : mOutputs) {
       if (output->mConfig.mOutputDvb &&
           (!epg || output->mConfig.mOutputEpg) && (output->mConfig.mSid == sid->mSid)) {
         eit_set_tsid (eit, output->mTsId);
-
-        if (output->mConfig.mNewSid)
-          eit_set_sid (eit, output->mConfig.mNewSid);
-        else
-          eit_set_sid (eit, output->mConfig.mSid);
-
+        eit_set_sid (eit, output->mConfig.mSid);
         if (output->mConfig.mOnid)
           eit_set_onid (eit, output->mConfig.mOnid);
-
         psi_set_crc (eit);
 
         outputPsiSection (output, eit, kEitPid, &output->mEitContinuity,
-                          dts, &output->mEitTsBuffer, &output->mEit_ts_buffer_offset);
+                          dts, &output->mEitTsBuffer, &output->mEitTsBufferOffset);
         output->mEitSectionsSent++;
 
         if (output->mConfig.mOnid)
@@ -3086,30 +3042,32 @@ namespace {
   void flushEIT (cOutput* output, int64_t dts) {
 
     cTsBlock* block = output->mEitTsBuffer;
-    psi_split_end (block->mTs, &output->mEit_ts_buffer_offset);
+    psi_split_end (block->mTs, &output->mEitTsBufferOffset);
 
     block->mDts = dts;
     block->decRefCount();
     outputPut (output, block);
 
     output->mEitTsBuffer = NULL;
-    output->mEit_ts_buffer_offset = 0;
+    output->mEitTsBufferOffset = 0;
     }
   //}}}
 
   // demux
   //{{{
   void readTDT (uint8_t* ts) {
+  // dumb parser, loadsa of assumptions, no crc
 
+    // skip to tableId
+    ts += 5;
     if (ts[0] == 0x70) {
       uint32_t epochTime = (((ts[3] << 8) | ts[4]) - 40587) * 86400;
-      uint32_t time = (3600 * ((10*((ts[5] & 0xF0)>>4)) + (ts[5] & 0xF))) +
-                        (60 * ((10*((ts[6] & 0xF0)>>4)) + (ts[6] & 0xF))) +
-                              ((10*((ts[7] & 0xF0)>>4)) + (ts[7] & 0xF));
+      uint32_t time = (3600 * ((10 * ((ts[5] & 0xF0) >> 4)) + (ts[5] & 0xF))) +
+                        (60 * ((10 * ((ts[6] & 0xF0) >> 4)) + (ts[6] & 0xF))) +
+                              ((10 * ((ts[7] & 0xF0) >> 4)) + (ts[7] & 0xF));
 
       mTime = system_clock::from_time_t (epochTime + time);
       mTimeString = date::format ("%T", date::floor<seconds>(mTime));
-      //cLog::log (LOGINFO, mTimeString);
       }
     }
   //}}}
@@ -3166,12 +3124,14 @@ namespace {
       }
 
     if (!pat_table_validate (mNextPatSections)) {
+      //{{{  invalid PAT error return
       cLog::log (LOGERROR, "invalid PAT received");
       psi_table_free (mNextPatSections);
       psi_table_init (mNextPatSections);
       sendPAT (dts);
       return;
       }
+      //}}}
 
     // Switch tables
     psi_table_copy (oldPatSections, mCurrentPatSections);
@@ -3197,7 +3157,7 @@ namespace {
 
         if (sid == 0) {
           if (pid != kNitPid)
-            cLog::log (LOGINFO, "nit is carried on PID %hu which isn't DVB compliant", pid);
+            cLog::log (LOGINFO, "nit is carried on PID %d which isn't DVB compliant", pid);
           continue; // NIT
           }
 
@@ -3263,7 +3223,7 @@ namespace {
   void handlePATSection (uint16_t pid, uint8_t* section, int64_t dts) {
 
     if ((pid != kPatPid) || !pat_validate (section)) {
-      cLog::log (LOGERROR, "invalid pat section pid:%hu", pid);
+      cLog::log (LOGERROR, "invalid pat section pid:%d", pid);
       free (section);
       return;
       }
@@ -3280,30 +3240,36 @@ namespace {
     uint16_t sidNum = pmt_get_program (pmt);
     sSid* sid = findSid (sidNum);
     if (sid == NULL) {
-      // unwanted SID (happens when the same PMT PID is used for several programs).
+      //{{{  unwanted SID error return
       free (pmt);
       return;
       }
+      //}}}
 
     if (pid != sid->mPmtPid) {
-      cLog::log (LOGERROR, "invalid pmt section pid:%hu", pid);
+      //{{{  invalid pmt section error return
+      cLog::log (LOGERROR, "invalid pmt section pid:%d", pid);
       free (pmt);
       return;
       }
+      //}}}
 
     if (sid->mCurrentPmt && psi_compare (sid->mCurrentPmt, pmt)) {
-      // Identical PMT
+      // identical PMT
       free (pmt);
       sendPMT (sid, dts);
       return;
       }
 
     if  (!pmt_validate (pmt)) {
-      cLog::log (LOGERROR, "invalid pmt section pid:%hu", pid);
+      //{{{  invalid pmt section return
+      cLog::log (LOGERROR, "invalid pmt section pid:%d", pid);
       free (pmt);
+
       sendPMT (sid, dts);
       return;
       }
+      //}}}
 
     uint8_t pid_map[kMaxPids];
     memset (pid_map, 0, sizeof(pid_map));
@@ -3342,7 +3308,6 @@ namespace {
 
     sid->mCurrentPmt = pmt;
     updatePMT (sidNum);
-
     sendPMT (sid, dts);
     }
   //}}}
@@ -3351,20 +3316,22 @@ namespace {
 
     if (psi_table_validate (mCurrentNitSections) &&
         psi_table_compare (mCurrentNitSections, mNexttNitSections)) {
-      // Identical NIT. Shortcut
+      // identical NIT
       psi_table_free (mNexttNitSections);
       psi_table_init (mNexttNitSections);
       return;
       }
 
     if (!nit_table_validate (mNexttNitSections)) {
+      //{{{  invalid nit error, return
       cLog::log (LOGERROR, "invalid NIT received");
       psi_table_free (mNexttNitSections);
       psi_table_init (mNexttNitSections);
       return;
       }
+      //}}}
 
-    // Switch tables
+    // switch tables
     psi_table_free (mCurrentNitSections);
     psi_table_copy (mCurrentNitSections, mNexttNitSections);
     psi_table_init (mNexttNitSections);
@@ -3374,7 +3341,7 @@ namespace {
   void handleNITSection (uint16_t pid, uint8_t* section, int64_t dts) {
 
     if (pid != kNitPid || !nit_validate (section)) {
-      cLog::log (LOGERROR, "invalid nit section pid:%hu", pid);
+      cLog::log (LOGERROR, "invalid nit section pid:%d", pid);
       free (section);
       return;
       }
@@ -3402,12 +3369,14 @@ namespace {
       }
 
     if (!sdt_table_validate (mNextSdtSections)) {
+      //{{{  invalid sdt, return
       cLog::log (LOGERROR, "invalid sdt received");
       psi_table_free (mNextSdtSections);
       psi_table_init (mNextSdtSections);
       sendSDT (dts);
       return;
       }
+      //}}}
 
     // switch tables
     psi_table_copy (oldSdtSections, mCurrentSdtSections);
@@ -3450,10 +3419,12 @@ namespace {
   void handleSDTSection (uint16_t pid, uint8_t* section, int64_t dts) {
 
     if ((pid != kSdtPid) || !sdt_validate (section)) {
-      cLog::log (LOGERROR, "invalid SDT section pid:%hu", pid);
+      //{{{  invalid sdt section, return
+      cLog::log (LOGERROR, "invalid SDT section pid:%d", pid);
       free (section);
       return;
       }
+      //}}}
 
     if (!psi_table_section (mNextSdtSections, section))
       return;
@@ -3475,12 +3446,14 @@ namespace {
       }
 
     if ((pid != kEitPid) || !eit_validate (eit)) {
-      cLog::log (LOGERROR, "invalid eit section pid:%hu", pid);
+      //{{{  invalid eit section, return
+      cLog::log (LOGERROR, "invalid eit section pid:%d", pid);
       free (eit);
       return;
       }
+      //}}}
 
-    bool epg = handleEpg (tableId);
+    bool epg = isOurEpg (tableId);
     if (!epg) {
       sendEIT (sid, dts, eit);
       if (!epg)
@@ -3501,7 +3474,7 @@ namespace {
 
     if (sid->mEitTables[eitTableId].data[iSection] &&
         psi_compare (sid->mEitTables[eitTableId].data[iSection], eit)) {
-      // Identical section
+      // identical section
       free (sid->mEitTables[eitTableId].data[iSection]);
       sid->mEitTables[eitTableId].data[iSection] = eit;
       sendEIT (sid, dts, eit);
@@ -3522,10 +3495,12 @@ namespace {
   void handleSection (uint16_t pid, uint8_t* section, int64_t dts) {
 
     if (!psi_validate (section)) {
-      cLog::log (LOGERROR, "invalid section pid:%hu", pid);
+      //{{{  invalid section error, return
+      cLog::log (LOGERROR, "invalid section pid:%d", pid);
       free (section);
       return;
       }
+      //}}}
 
     if (!psi_get_current (section)) {
       // ignore sections which are not in use yet
@@ -3552,7 +3527,7 @@ namespace {
         break;
 
       default:
-        if (handleEpg (tableId)) {
+        if (isOurEpg (tableId)) {
           handleEIT (pid, section, dts);
           break;
           }
@@ -3641,13 +3616,12 @@ namespace {
       }
 
     if (!ts_get_transporterror (block->mTs)) {
-      // parse psi
       if (pidNum == kTdtPid) {
-        readTDT (block->mTs + 5);
-        sendTDTandRST (block);
+        readTDT (block->mTs);
+        sendBlock (block);
         }
       else if (pidNum == kRstPid)
-        sendTDTandRST (block);
+        sendBlock (block);
       else if (tsPid->mPsiRefCount)
         handlePsiPacket (block->mTs, block->mDts);
       }
@@ -3656,6 +3630,7 @@ namespace {
     // output
     for (int i = 0; i < tsPid->mNumOutputs; i++) {
       cOutput* output = tsPid->mOutputs[i];
+      // ??? no sure what his does ???
       if ((output->mPcrPid != pidNum) ||
           (ts_has_adaptation (block->mTs) && ts_get_adaptation (block->mTs) && tsaf_has_pcr (block->mTs)))
         outputPut (output, block);
