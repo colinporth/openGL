@@ -131,10 +131,11 @@ private:
       cLog::clearScreen();
 
       cLog::status (0, 0, "");
+
       for (int i = 0; i < dvbRtp.getNumOutputs(); i++) {
         string info = dvbRtp.getOutputInfoString (i);
         statsStrings.push_back (info);
-        cLog::status (i+1, i, info);
+        cLog::status (i+1, i+1, info);
         }
       }
       //}}}
@@ -142,28 +143,31 @@ private:
     while (!mExit) {
       mBlocks++;
       dvbRtp.processBlockList (dvb.read (&blockPool));
+
+      string nowTimeString = dvbRtp.getTimeString();
       mString = format ("{} blocks {} packets {} errors:{}:{}:{}",
-                        dvbRtp.getTimeString(),
-                        mBlocks, dvbRtp.getNumPackets(),
+                        nowTimeString, mBlocks, dvbRtp.getNumPackets(),
                         dvbRtp.getNumInvalids(), dvbRtp.getNumDiscontinuities(), dvbRtp.getNumErrors());
+
       if (consoleStats) {
         //{{{  update stats
-        if (dvbRtp.getTimeString() != timeString) {
+        if (nowTimeString != timeString) {
           // time ticked, update status
           cLog::status (0, 0, mString);
-          timeString = dvbRtp.getTimeString();
+          timeString = nowTimeString;
           }
-
+        //}}}
+        //{{{  update outputs
         for (int i = 0; i < dvbRtp.getNumOutputs(); i++) {
           string info = dvbRtp.getOutputInfoString (i);
           if (info != statsStrings[i]) {
             // info changed, update info
-            cLog::status (i+1, i, info);
+            cLog::status (i+1, i+1, info);
             statsStrings[i] = info;
             }
           }
-        }
         //}}}
+        }
       }
     }
   //}}}
