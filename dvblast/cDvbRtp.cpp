@@ -1394,8 +1394,6 @@ namespace {
 
   constexpr int MIN_SECTION_FRAGMENT = kPsiHeaderSizeSyntax1;
 
-  // EIT is carried in several separate tables, we need to track each table
-  // separately, otherwise one table overwrites sections of another table
   constexpr int MAX_EIT_TABLES = EIT_TABLE_ID_SCHED_ACTUAL_LAST - EIT_TABLE_ID_PF_ACTUAL;
 
   uint8_t kPadTs[kTsSize] = {
@@ -3016,12 +3014,11 @@ namespace {
   //{{{
   void sendEIT (sSid* sid, int64_t dts, uint8_t* eit) {
 
-    bool epg = isOurEpg (psi_get_tableid (eit));
     uint16_t onid = eit_get_onid (eit);
 
-    for (auto output : mOutputs) {
-      if (output->mConfig.mOutputDvb &&
-          (!epg || output->mConfig.mOutputEpg) && (output->mConfig.mSid == sid->mSid)) {
+    bool epg = isOurEpg (psi_get_tableid (eit));
+    for (auto output : mOutputs) 
+      if (output->mConfig.mOutputDvb && (!epg || output->mConfig.mOutputEpg) && (output->mConfig.mSid == sid->mSid)) {
         eit_set_tsid (eit, output->mTsId);
         eit_set_sid (eit, output->mConfig.mSid);
         if (output->mConfig.mOnid)
@@ -3035,7 +3032,6 @@ namespace {
         if (output->mConfig.mOnid)
           eit_set_onid (eit, onid);
         }
-      }
     }
   //}}}
   //{{{

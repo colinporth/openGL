@@ -11,6 +11,7 @@
     <ClCompile Include="..\..\shared\vg\cVg.cpp" />
     <ClCompile Include="..\..\shared\fmt\format.cpp" />
     <ClCompile Include="..\..\shared\dvb\cTsDvb.cpp" />
+    <ClCompile Include="..\..\shared\dvb\cDvbString.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\utils\cLog.h">
@@ -29,9 +30,6 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\dvb\cDvb.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\dvb\huffmanTables.h">
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\utils\utils.h">
@@ -83,6 +81,9 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\dvb\cTsDvb.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\dvb\cDvbString.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>

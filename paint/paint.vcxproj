@@ -176,11 +176,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\shared\dvb\cDvb.h" />
     <ClInclude Include="..\..\shared\dvb\cSubtitle.h" />
     <ClInclude Include="..\..\shared\dvb\cSubtitleDecoder.h" />
-    <ClInclude Include="..\..\shared\dvb\cTransportStream.h" />
-    <ClInclude Include="..\..\shared\dvb\huffmanTables.h" />
     <ClInclude Include="..\..\shared\glad\glad.h" />
     <ClInclude Include="..\..\shared\nanoVg\cPerfGraph.h" />
     <ClInclude Include="..\..\shared\nanoVg\cPointF.h" />
@@ -199,7 +196,6 @@
     <ClInclude Include="..\..\shared\vg\cRaspWindow.h" />
     <ClInclude Include="..\..\shared\vg\cVg.h" />
     <ClInclude Include="..\..\shared\widgets\cContainer.h" />
-    <ClInclude Include="..\..\shared\widgets\cDvbWidget.h" />
     <ClInclude Include="..\..\shared\widgets\cRootContainer.h" />
     <ClInclude Include="..\..\shared\widgets\cTextBox.h" />
     <ClInclude Include="..\..\shared\widgets\cWidget.h" />
@@ -241,8 +237,6 @@
     <ClInclude Include="libmypaint\tilemap.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\shared\dvb\cDvb.cpp" />
-    <ClCompile Include="..\..\shared\dvb\cTransportStream.cpp" />
     <ClCompile Include="..\..\shared\fmt\format.cpp" />
     <ClCompile Include="..\..\shared\glad\glad.c" />
     <ClCompile Include="..\..\shared\utils\cLog.cpp" />

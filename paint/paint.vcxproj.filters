@@ -2,9 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="..\..\shared\utils\cLog.cpp" />
-    <ClCompile Include="..\..\shared\dvb\cTransportStream.cpp" />
     <ClCompile Include="..\..\shared\glad\glad.c" />
-    <ClCompile Include="..\..\shared\dvb\cDvb.cpp" />
     <ClCompile Include="paint.cpp" />
     <ClCompile Include="libmypaint\brushmodes.c">
       <Filter>libmypaint</Filter>
@@ -79,12 +77,6 @@
     <ClInclude Include="..\..\shared\glad\glad.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\dvb\cDvb.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\dvb\huffmanTables.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\utils\utils.h">
       <Filter>h</Filter>
     </ClInclude>
@@ -94,13 +86,7 @@
     <ClInclude Include="..\..\shared\dvb\cSubtitleDecoder.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\dvb\cTransportStream.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared\widgets\iWindow.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared\widgets\cDvbWidget.h">
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared\dvb\cSubtitle.h">

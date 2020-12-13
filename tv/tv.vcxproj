@@ -179,11 +179,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\dvb\cDvb.h" />
+    <ClInclude Include="..\..\shared\dvb\cDvbString.h" />
     <ClInclude Include="..\..\shared\dvb\cSubtitle.h" />
     <ClInclude Include="..\..\shared\dvb\cSubtitleDecoder.h" />
     <ClInclude Include="..\..\shared\dvb\cTransportStream.h" />
     <ClInclude Include="..\..\shared\dvb\cTsDvb.h" />
-    <ClInclude Include="..\..\shared\dvb\huffmanTables.h" />
     <ClInclude Include="..\..\shared\glad\glad.h" />
     <ClInclude Include="..\..\shared\nanoVg\stb_image.h" />
     <ClInclude Include="..\..\shared\nanoVg\stb_truetype.h" />
@@ -205,6 +205,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\shared\dvb\cDvb.cpp" />
+    <ClCompile Include="..\..\shared\dvb\cDvbString.cpp" />
     <ClCompile Include="..\..\shared\dvb\cTransportStream.cpp" />
     <ClCompile Include="..\..\shared\dvb\cTsDvb.cpp" />
     <ClCompile Include="..\..\shared\fmt\format.cpp" />
