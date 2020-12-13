@@ -125,7 +125,7 @@ private:
       }
 
     string timeString;
-    vector<string> statsStrings;
+    vector <string> statsStrings;
     if (consoleStats) {
       //{{{  init stats
       cLog::clearScreen();
