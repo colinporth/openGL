@@ -3060,7 +3060,7 @@ namespace {
 
     // skip to tableId
     ts += 5;
-    if (ts[0] == 0x70) {
+    if (ts[0] == TDT_TABLE_ID) {
       uint32_t epochTime = (((ts[3] << 8) | ts[4]) - 40587) * 86400;
       uint32_t time = (3600 * ((10 * ((ts[5] & 0xF0) >> 4)) + (ts[5] & 0xF))) +
                         (60 * ((10 * ((ts[6] & 0xF0) >> 4)) + (ts[6] & 0xF))) +
@@ -3083,7 +3083,6 @@ namespace {
     uint8_t* pmt = sid->mCurrentPmt;
     if (pmt) {
       uint16_t pcrPid = pmt_get_pcrpid (pmt);
-
       if (pcrPid != kPaddingPid && pcrPid != sid->mPmtPid)
         unselectPid (sidNum, pcrPid);
 
@@ -3453,11 +3452,9 @@ namespace {
       }
       //}}}
 
-    bool epg = isOurEpg (tableId);
-    if (!epg) {
+    if (!isOurEpg (tableId)) {
       sendEIT (sid, dts, eit);
-      if (!epg)
-        free (eit);
+      free (eit);
       return;
       }
 
@@ -3467,8 +3464,6 @@ namespace {
     uint8_t eitTableId = tableId - EIT_TABLE_ID_PF_ACTUAL;
     if (eitTableId >= MAX_EIT_TABLES) {
       sendEIT (sid, dts, eit);
-      if (!epg)
-        free (eit);
       return;
       }
 
@@ -3478,17 +3473,12 @@ namespace {
       free (sid->mEitTables[eitTableId].data[iSection]);
       sid->mEitTables[eitTableId].data[iSection] = eit;
       sendEIT (sid, dts, eit);
-      if (!epg)
-        free (eit);
       return;
       }
 
     free (sid->mEitTables[eitTableId].data[iSection]);
     sid->mEitTables[eitTableId].data[iSection] = eit;
-
     sendEIT (sid, dts, eit);
-    if (!epg)
-      free (eit);
     }
   //}}}
   //{{{
