@@ -185,7 +185,7 @@
     <ClInclude Include="..\..\shared\decoders\cAudioParser.h" />
     <ClInclude Include="..\..\shared\decoders\cFFmpegAudioDecoder.h" />
     <ClInclude Include="..\..\shared\dvb\cDvb.h" />
-    <ClInclude Include="..\..\shared\dvb\cDvbString.h" />
+    <ClInclude Include="..\..\shared\dvb\cDvbUtils.h" />
     <ClInclude Include="..\..\shared\fmt\args.h" />
     <ClInclude Include="..\..\shared\fmt\chrono.h" />
     <ClInclude Include="..\..\shared\fmt\color.h" />
@@ -248,7 +248,7 @@
     <ClCompile Include="..\..\shared\decoders\cAudioParser.cpp" />
     <ClCompile Include="..\..\shared\decoders\cFFmpegAudioDecoder.cpp" />
     <ClCompile Include="..\..\shared\dvb\cDvb.cpp" />
-    <ClCompile Include="..\..\shared\dvb\cDvbString.cpp" />
+    <ClCompile Include="..\..\shared\dvb\cDvbUtils.cpp" />
     <ClCompile Include="..\..\shared\fmt\format.cpp" />
     <ClCompile Include="..\..\shared\glad\glad.c" />
     <ClCompile Include="..\..\shared\kissFft\kiss_fft.c" />

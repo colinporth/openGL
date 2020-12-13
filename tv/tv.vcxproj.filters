@@ -11,7 +11,7 @@
     <ClCompile Include="..\..\shared\vg\cVg.cpp" />
     <ClCompile Include="..\..\shared\fmt\format.cpp" />
     <ClCompile Include="..\..\shared\dvb\cTsDvb.cpp" />
-    <ClCompile Include="..\..\shared\dvb\cDvbString.cpp" />
+    <ClCompile Include="..\..\shared\dvb\cDvbUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\utils\cLog.h">
@@ -83,7 +83,7 @@
     <ClInclude Include="..\..\shared\dvb\cTsDvb.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\dvb\cDvbString.h">
+    <ClInclude Include="..\..\shared\dvb\cDvbUtils.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>

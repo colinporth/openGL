@@ -18,7 +18,7 @@
     <ClCompile Include="..\..\shared\utils\cVideoPool.cpp" />
     <ClCompile Include="..\..\shared\fmt\format.cpp" />
     <ClCompile Include="..\..\shared\dvb\cDvb.cpp" />
-    <ClCompile Include="..\..\shared\dvb\cDvbString.cpp" />
+    <ClCompile Include="..\..\shared\dvb\cDvbUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\utils\date.h">
@@ -207,7 +207,7 @@
     <ClInclude Include="..\..\shared\dvb\cDvb.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared\dvb\cDvbString.h">
+    <ClInclude Include="..\..\shared\dvb\cDvbUtils.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>
