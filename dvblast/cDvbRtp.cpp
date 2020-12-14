@@ -1722,7 +1722,7 @@ namespace {
     bool mPes;
     int8_t mLastContinuity;
 
-    // biTStream PSI section gathering
+    // bitstream PSI section gathering
     uint16_t mPsiBufferUsed;
     uint8_t* mPsiBuffer;
 
