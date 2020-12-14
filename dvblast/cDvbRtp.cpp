@@ -27,29 +27,16 @@ using namespace chrono;
 //{{{  defines
 constexpr int kRtpHeaderSize = 12;
 
-constexpr int DEFAULT_IPV4_MTU = 1500;
-constexpr int DEFAULT_IPV6_MTU = 1280;
-constexpr int DEFAULT_PORT = 3001;
+constexpr int kMaxTunerErrorsTillReset = 1000;
+constexpr int kMaxEitRetentionMicroSeconds = 500000; // 500 ms
 
-constexpr int  MAX_ERRORS = 1000;
-
-constexpr int MAX_POLL_TIMEOUT = 100000;  // 100 ms
-constexpr int MIN_POLL_TIMEOUT = 100;     // 100 us
-
-constexpr int MAX_EIT_RETENTION = 500000; // 500 ms
-
-#define WATCHDOG_WAIT 10000000LL
-#define WATCHDOG_REFRACTORY_PERIOD 60000000LL
+constexpr int kDefaultIPv4Mtu = 1500;
+constexpr int kDefaultIPv6Mtu = 1280;
 
 #ifndef IPV6_ADD_MEMBERSHIP
   #define IPV6_ADD_MEMBERSHIP IPV6_JOIN_GROUP
   #define IPV6_DROP_MEMBERSHIP IPV6_LEAVE_GROUP
 #endif
-
-//   Bit  1 : Set if DVB conformance tables are inserted
-//   Bit  2 : Set if DVB EIT schedule tables are forwarded
-constexpr int OUTPUT_DVB   = 0x01;
-constexpr int OUTPUT_EPG   = 0x02;
 //}}}
 
 namespace {
@@ -410,46 +397,46 @@ namespace {
     }
   //}}}
   //{{{
-  void psi_split_end (uint8_t* ts, uint8_t* tsOffset) {
+  void psi_split_end (uint8_t* ts, uint8_t& tsOffset) {
 
-    if (*tsOffset != kTsSize) {
-      memset (ts + *tsOffset, 0xff, kTsSize - *tsOffset);
-      *tsOffset = kTsSize;
+    if (tsOffset != kTsSize) {
+      memset (ts + tsOffset, 0xff, kTsSize - tsOffset);
+      tsOffset = kTsSize;
       }
     }
   //}}}
   //{{{
-  void psi_split_section (uint8_t* ts, uint8_t* tsOffset, const uint8_t* section, uint16_t* sectionOffset) {
+  void psi_split_section (uint8_t* ts, uint8_t& tsOffset, const uint8_t* section, uint16_t& sectionOffset) {
 
-    uint16_t sectionLength = psi_get_length (section) + kPsiHeaderSize - *sectionOffset;
+    uint16_t sectionLength = psi_get_length (section) + kPsiHeaderSize - sectionOffset;
 
-    if (!*tsOffset) {
+    if (!tsOffset) {
       ts_init(ts);
       ts_set_payload (ts);
-      *tsOffset = ts_payload (ts) - ts;
+      tsOffset = ts_payload (ts) - ts;
       }
 
-    if (!*sectionOffset) {
-      if (kTsSize - *tsOffset < 2) {
+    if (!sectionOffset) {
+      if (kTsSize - tsOffset < 2) {
         psi_split_end (ts, tsOffset);
         return;
         }
       if (!ts_get_unitstart (ts)) {
         uint8_t* payload = ts_payload (ts);
-        uint8_t payloadLength = *tsOffset - (payload - ts);
+        uint8_t payloadLength = tsOffset - (payload - ts);
         if (payloadLength)
           memmove (payload + 1, payload, payloadLength);
-        (*tsOffset)++;
+        tsOffset++;
         *payload = payloadLength; /* pointer_field */
         ts_set_unitstart (ts);
         }
       }
-    uint8_t tsLength = kTsSize - *tsOffset;
+    uint8_t tsLength = kTsSize - tsOffset;
 
     uint8_t copy = tsLength < sectionLength ? tsLength : sectionLength;
-    memcpy (ts + *tsOffset, section + *sectionOffset, copy);
-    *tsOffset += copy;
-    *sectionOffset += copy;
+    memcpy (ts + tsOffset, section + sectionOffset, copy);
+    tsOffset += copy;
+    sectionOffset += copy;
     }
   //}}}
 
@@ -1633,7 +1620,7 @@ namespace {
     int getBlockCount() { return (mConfig.mMtu - kRtpHeaderSize) / kTsSize; }
     //{{{
     string getInfoString() {
-      return format ("{} {}", mConfig.mDisplayName, mEitSectionsSent);
+      return format ("{} {}", mConfig.mDisplayName, nEitSectionsCount);
       }
     //}}}
 
@@ -1714,7 +1701,7 @@ namespace {
     uint8_t mEitContinuity;
     uint8_t mEitTsBufferOffset;
     cTsBlock* mEitTsBuffer;
-    int mEitSectionsSent = 0;
+    int nEitSectionsCount = 0;
 
     uint16_t mTsId;
 
@@ -1892,7 +1879,7 @@ namespace {
       case kTdtPid: return "TDT/TOT";
       }
 
-    // Detect NIT pid
+    // detect NIT pid
     int j;
     uint8_t lastSection;
     uint16_t nitPid = kNitPid;
@@ -1912,7 +1899,7 @@ namespace {
         }
       }
 
-    // Detect streams in PMT
+    // detect streams in PMT
     uint16_t pcrPid = 0;
     for (int k = 0; k < mNumSids; k++) {
       sSid* sid = mSids[k];
@@ -1929,7 +1916,7 @@ namespace {
         // so just remember the pid and if it is alone it will be reported as PCR, otherwise
         // stream type of the PID will be reported
         if (pidNum == pmt_get_pcrpid (mCurrentPmt)) {
-         sidNum = sid->mSid;
+          sidNum = sid->mSid;
           pcrPid = pmt_get_pcrpid (mCurrentPmt);
           }
 
@@ -2899,56 +2886,29 @@ namespace {
     }
   //}}}
   //{{{
-  void outputPsiSection (cOutput* output, uint8_t* section,
-                         uint16_t pidNum, uint8_t* continuity, int64_t dts,
-                         cTsBlock** tsBuffer, uint8_t* tsBufferOffset) {
+  void outputPsiSection (cOutput* output, uint8_t* section, uint16_t pidNum, uint8_t& continuity, int64_t dts) {
 
     uint16_t sectionOffset = 0;
     uint16_t sectionLength = psi_get_length (section) + kPsiHeaderSize;
 
     do {
-      cTsBlock* block;
-      uint8_t tsOffset;
+      cTsBlock* block = mBlockPool->newBlock();
+      block->mDts = dts;
 
-      bool append = tsBuffer && *tsBuffer;
-      if (append) {
-        block = *tsBuffer;
-        tsOffset = *tsBufferOffset;
-        }
-      else {
-        block = mBlockPool->newBlock();
-        block->mDts = dts;
-        tsOffset = 0;
-        }
       uint8_t* p = block->mTs;
+      uint8_t tsOffset = 0;
+      psi_split_section (p, tsOffset, section, sectionOffset);
 
-      psi_split_section (p, &tsOffset, section, &sectionOffset);
+      ts_set_pid (p, pidNum);
+      ts_set_cc (p, continuity);
+      continuity = (continuity + 1) & 0xf;
 
-      if (!append) {
-        ts_set_pid (p, pidNum);
-        ts_set_cc (p, *continuity);
-        (*continuity)++;
-        *continuity &= 0xf;
-        }
-
-      if (sectionOffset == sectionLength) {
-        if (tsOffset < kTsSize - MIN_SECTION_FRAGMENT && tsBuffer) {
-          *tsBuffer = block;
-          *tsBufferOffset = tsOffset;
-          break;
-          }
-        else
-          psi_split_end (p, &tsOffset);
-        }
+      if (sectionOffset == sectionLength)
+        psi_split_end (p, tsOffset);
 
       block->mDts = dts;
       block->decRefCount();
       outputPut (output, block);
-
-      if (tsBuffer) {
-        *tsBuffer = NULL;
-        *tsBufferOffset = 0;
-        }
       } while (sectionOffset < sectionLength);
     }
   //}}}
@@ -2973,7 +2933,7 @@ namespace {
         }
 
       if (output->mPatSection)
-        outputPsiSection (output, output->mPatSection, kPatPid, &output->mPatContinuity, dts, NULL, NULL);
+        outputPsiSection (output, output->mPatSection, kPatPid, output->mPatContinuity, dts);
       }
     }
   //}}}
@@ -2984,7 +2944,7 @@ namespace {
 
     for (auto output: mOutputs)
       if ((output->mConfig.mSid == sid->mSid) && output->mPmtSection)
-        outputPsiSection (output, output->mPmtSection, pmtPid, &output->mPmtContinuity, dts, NULL, NULL);
+        outputPsiSection (output, output->mPmtSection, pmtPid, output->mPmtContinuity, dts);
     }
   //}}}
   //{{{
@@ -2992,7 +2952,7 @@ namespace {
 
     for (auto output: mOutputs)
       if (output->mConfig.mOutputDvb && output->mNitSection)
-        outputPsiSection (output, output->mNitSection, kNitPid, &output->mNitContinuity, dts, NULL, NULL);
+        outputPsiSection (output, output->mNitSection, kNitPid, output->mNitContinuity, dts);
     }
   //}}}
   //{{{
@@ -3000,7 +2960,7 @@ namespace {
 
     for (auto output : mOutputs)
       if (output->mConfig.mOutputDvb && output->mSdtSection)
-        outputPsiSection (output, output->mSdtSection, kSdtPid, &output->mSdtContinuity, dts, NULL, NULL);
+        outputPsiSection (output, output->mSdtSection, kSdtPid, output->mSdtContinuity, dts);
     }
   //}}}
   //{{{
@@ -3012,12 +2972,62 @@ namespace {
     }
   //}}}
   //{{{
+  void outputEitSection (cOutput* output, uint8_t* section, uint16_t pidNum, uint8_t& continuity, int64_t dts,
+                         cTsBlock*& tsBuffer, uint8_t& tsBufferOffset) {
+
+    uint16_t sectionOffset = 0;
+    uint16_t sectionLength = psi_get_length (section) + kPsiHeaderSize;
+
+    do {
+      cTsBlock* block;
+      uint8_t tsOffset;
+
+      bool append = tsBuffer && tsBuffer;
+      if (append) {
+        block = tsBuffer;
+        tsOffset = tsBufferOffset;
+        }
+      else {
+        block = mBlockPool->newBlock();
+        block->mDts = dts;
+        tsOffset = 0;
+        }
+      uint8_t* p = block->mTs;
+
+      psi_split_section (p, tsOffset, section, sectionOffset);
+
+      if (!append) {
+        ts_set_pid (p, pidNum);
+        ts_set_cc (p, continuity);
+        continuity = (continuity + 1) & 0xf;
+        }
+
+      if (sectionOffset == sectionLength) {
+        if (tsOffset < kTsSize - MIN_SECTION_FRAGMENT && tsBuffer) {
+          tsBuffer = block;
+          tsBufferOffset = tsOffset;
+          break;
+          }
+        else
+          psi_split_end (p, tsOffset);
+        }
+
+      block->mDts = dts;
+      block->decRefCount();
+      outputPut (output, block);
+
+      tsBuffer = NULL;
+      tsBufferOffset = 0;
+      } while (sectionOffset < sectionLength);
+    }
+  //}}}
+  //{{{
   void sendEIT (sSid* sid, int64_t dts, uint8_t* eit) {
 
     uint16_t onid = eit_get_onid (eit);
 
     bool epg = isOurEpg (psi_get_tableid (eit));
-    for (auto output : mOutputs) 
+    for (auto output : mOutputs)
       if (output->mConfig.mOutputDvb && (!epg || output->mConfig.mOutputEpg) && (output->mConfig.mSid == sid->mSid)) {
         eit_set_tsid (eit, output->mTsId);
         eit_set_sid (eit, output->mConfig.mSid);
@@ -3025,9 +3035,9 @@ namespace {
           eit_set_onid (eit, output->mConfig.mOnid);
         psi_set_crc (eit);
 
-        outputPsiSection (output, eit, kEitPid, &output->mEitContinuity,
-                          dts, &output->mEitTsBuffer, &output->mEitTsBufferOffset);
-        output->mEitSectionsSent++;
+        outputEitSection (output, eit, kEitPid, output->mEitContinuity,
+                          dts, output->mEitTsBuffer, output->mEitTsBufferOffset);
+        output->nEitSectionsCount++;
 
         if (output->mConfig.mOnid)
           eit_set_onid (eit, onid);
@@ -3038,7 +3048,7 @@ namespace {
   void flushEIT (cOutput* output, int64_t dts) {
 
     cTsBlock* block = output->mEitTsBuffer;
-    psi_split_end (block->mTs, &output->mEitTsBufferOffset);
+    psi_split_end (block->mTs, output->mEitTsBufferOffset);
 
     block->mDts = dts;
     block->decRefCount();
@@ -3050,23 +3060,6 @@ namespace {
   //}}}
 
   // demux
-  //{{{
-  void readTDT (uint8_t* ts) {
-  // dumb parser, loadsa of assumptions, no crc
-
-    // skip to tableId
-    ts += 5;
-    if (ts[0] == TDT_TABLE_ID) {
-      uint32_t epochTime = (((ts[3] << 8) | ts[4]) - 40587) * 86400;
-      uint32_t time = (3600 * ((10 * ((ts[5] & 0xF0) >> 4)) + (ts[5] & 0xF))) +
-                        (60 * ((10 * ((ts[6] & 0xF0) >> 4)) + (ts[6] & 0xF))) +
-                              ((10 * ((ts[7] & 0xF0) >> 4)) + (ts[7] & 0xF));
-
-      mTime = system_clock::from_time_t (epochTime + time);
-      mTimeString = date::format ("%T", date::floor<seconds>(mTime));
-      }
-    }
-  //}}}
   //{{{
   void deleteProgram (uint16_t sidNum, uint16_t pidNum) {
 
@@ -3478,6 +3471,33 @@ namespace {
     }
   //}}}
   //{{{
+  void handleRST (cTsBlock* block) {
+
+    sendBlock (block);
+    }
+  //}}}
+  //{{{
+  void handleTDT (cTsBlock* block) {
+  // dumb parser, loadsa of assumptions, no crc
+
+    uint8_t* ts = block->mTs;
+
+    // skip to tableId
+    ts += 5;
+    if (ts[0] == TDT_TABLE_ID) {
+      uint32_t epochTime = (((ts[3] << 8) | ts[4]) - 40587) * 86400;
+      uint32_t time = (3600 * ((10 * ((ts[5] & 0xF0) >> 4)) + (ts[5] & 0xF))) +
+                        (60 * ((10 * ((ts[6] & 0xF0) >> 4)) + (ts[6] & 0xF))) +
+                              ((10 * ((ts[7] & 0xF0) >> 4)) + (ts[7] & 0xF));
+
+      mTime = system_clock::from_time_t (epochTime + time);
+      mTimeString = date::format ("%T", date::floor<seconds>(mTime));
+      }
+
+    sendBlock (block);
+    }
+  //}}}
+  //{{{
   void handleSection (uint16_t pid, uint8_t* section, int64_t dts) {
 
     if (!psi_validate (section)) {
@@ -3575,54 +3595,48 @@ namespace {
         (tsPid->mLastContinuity != -1) &&
         !ts_check_duplicate (continuity, tsPid->mLastContinuity) &&
         ts_check_discontinuity (continuity, tsPid->mLastContinuity)) {
-      // inc error counts
+      //{{{  continutiy error
       mNumDiscontinuities++;
-
-      // get and log info
-      uint16_t sid = 0;
+      uint16_t sid;
       string pidDesc = getPidDesc (pidNum, sid);
       cLog::log (LOGERROR, format ("continuity sid:{} pid:{} {}:{} {}",
-                                   sid, pidNum, continuity, (tsPid->mLastContinuity + 1) & 0x0f, pidDesc));
+                                   sid, pidNum, continuity, (tsPid->mLastContinuity+1) & 0x0f, pidDesc));
       }
+      //}}}
 
     if (ts_get_transporterror (block->mTs)) {
-      // get and log info
-      uint16_t sid = 0;
+      //{{{  tuner error
+      mNumErrors++;
+      mTunerErrors++;
+      uint16_t sid;
       string desc = getPidDesc (pidNum, sid);
       cLog::log (LOGERROR, format ("transportErorIndicator pid:{} {} sid:{}", pidNum, desc, sid));
 
-      // inc error counts
-      mNumErrors++;
-      mTunerErrors++;
-      }
-
-    if (mTunerErrors > MAX_ERRORS) {
-      mTunerErrors = 0;
-      mDvb->reset();
-      }
-
-    if (!ts_get_transporterror (block->mTs)) {
-      if (pidNum == kTdtPid) {
-        readTDT (block->mTs);
-        sendBlock (block);
+      if (mTunerErrors > kMaxTunerErrorsTillReset) {
+        mTunerErrors = 0;
+        mDvb->reset();
         }
-      else if (pidNum == kRstPid)
-        sendBlock (block);
-      else if (tsPid->mPsiRefCount)
-        handlePsiPacket (block->mTs, block->mDts);
       }
+      //}}}
+    else if (pidNum == kRstPid)
+      handleRST (block);
+    else if (pidNum == kTdtPid)
+      handleTDT (block);
+    else if (tsPid->mPsiRefCount)
+      handlePsiPacket (block->mTs, block->mDts);
     tsPid->mLastContinuity = continuity;
 
     // output
     for (int i = 0; i < tsPid->mNumOutputs; i++) {
       cOutput* output = tsPid->mOutputs[i];
-      // ??? no sure what his does ???
+      // ??? no sure what this does ???
       if ((output->mPcrPid != pidNum) ||
           (ts_has_adaptation (block->mTs) && ts_get_adaptation (block->mTs) && tsaf_has_pcr (block->mTs)))
         outputPut (output, block);
 
+      // send out EIT if retained for more than kMaxEitRetentionMicroSeconds - 500ms
       if (output->mEitTsBuffer &&
-          (block->mDts > output->mEitTsBuffer->mDts + MAX_EIT_RETENTION))
+          (block->mDts > output->mEitTsBuffer->mDts + kMaxEitRetentionMicroSeconds))
         flushEIT (output, block->mDts);
       }
 
@@ -3747,7 +3761,7 @@ string cDvbRtp::getOutputInfoString (int outputNum) { return mOutputs[outputNum]
 //{{{
 bool cDvbRtp::selectOutput (const string& addressString, int sid) {
 
-  struct addrinfo* addr = parseHost (addressString.c_str(), DEFAULT_PORT);
+  struct addrinfo* addr = parseHost (addressString.c_str(), 5002);
   if (!addr)
     return false;
 
@@ -3762,7 +3776,7 @@ bool cDvbRtp::selectOutput (const string& addressString, int sid) {
   outputConfig.mFamily = outputConfig.mConnectAddr.ss_family;
   freeaddrinfo (addr);
 
-  int mtu = outputConfig.mFamily == AF_INET6 ? DEFAULT_IPV6_MTU : DEFAULT_IPV4_MTU;
+  int mtu = outputConfig.mFamily == AF_INET6 ? kDefaultIPv6Mtu : kDefaultIPv4Mtu;
   if (outputConfig.mMtu) {
     cLog::log (LOGERROR, "invalid MTU %d, setting %d", outputConfig.mMtu, mtu);
     outputConfig.mMtu = mtu;
