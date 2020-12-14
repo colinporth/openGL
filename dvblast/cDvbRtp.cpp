@@ -2970,92 +2970,69 @@ namespace {
         outputPut (output, block);
     }
   //}}}
+
   //{{{
-  void outputEitSection (cOutput* output, uint8_t* section, uint16_t pidNum, uint8_t& continuity, int64_t dts,
-                         cTsBlock*& tsBuffer, uint8_t& tsBufferOffset) {
-  // eit multi sections
+  void parseEitSection (cOutput* output, uint8_t* section) {
+  // parse eitSection for shortEvent now program name, startTime
 
-    uint16_t sectionOffset = 0;
-    uint16_t sectionLength = psi_get_length (section) + kPsiHeaderSize;
-
-    //cLog::log (LOGINFO, "outputEitSection %d %d", sectionOffset, sectionLength);
-
-    //{{{  parse EIT section
-    uint8_t* ts = section;
-    int length = sectionLength;
-
-    int tid = ts[0];
-    //{{{  unused eit header fields
-    //int sid = (ts[3] << 8) + ts[4];
-    //int versionNumber = ts[5];
-    //int sectionNumber = ts[6];
-    //int lastSectionNumber = ts[7];
-    //int tsId = (ts[8] << 8) + ts[9];
-    //int onId = (ts[10]<< 8) + ts[11];
-    //}}}
+    int tid = section[0];
+    int sectionLength = cDvbUtils::getSectionLength (section+1);
 
     // skip past eit header to first eitEvent
     constexpr int kEitHeaderLength = 14;
-    ts += kEitHeaderLength;
-    length -= kEitHeaderLength + 4;
+    section += kEitHeaderLength;
+    sectionLength -= kEitHeaderLength + 4;
 
     // iterate eit events
-    while (length > 0) {
-      system_clock::time_point startTime = system_clock::from_time_t (cDvbUtils::getEpochTime (ts+2) + cDvbUtils::getBcdTime (ts+4));
-      seconds duration (cDvbUtils::getBcdTime (ts+7));
-      int running = (ts[10] & 0xE0) >> 5;
-      int loopLength = ((ts[10] & 0x0F) << 8) + ts[11];
-      //{{{  unused fields
-      //int eventId = (ts[0] << 8) + ts[1];
-      //bool caMode = ts[10] & 0x10;
-      //}}}
+    while (sectionLength > 0) {
+      system_clock::time_point startTime =
+        system_clock::from_time_t (cDvbUtils::getEpochTime (section+2) + cDvbUtils::getBcdTime (section+4));
+      seconds duration (cDvbUtils::getBcdTime (section+7));
+      int running = (section[10] & 0xE0) >> 5;
+      int loopLength = ((section[10] & 0x0F) << 8) + section[11];
 
       // skip past eitEvent
       constexpr int kEitEventLength = 12;
-      ts += kEitEventLength;
-      length -= kEitEventLength;
+      section += kEitEventLength;
+      sectionLength -= kEitEventLength;
 
       // iterate eit event descriptors
       int i = 0;
-      int descrLength = ts[1] + 2;
+      int descrLength = section[1] + 2;
       while ((i < loopLength) && (descrLength > 0) && (descrLength <= loopLength - i)) {
-        int tag = ts[0];
-        switch (tag) {
+        switch (section[0]) {
           //{{{
-          case 0x4D: // shortEvent
+          case 0x4D:   // shortEvent
             {
-            bool now = (tid == 0x4E) && (running == 0x04);
             //bool epg = (tid == 0x50) || (tid == 0x51);
+            bool now = (tid == 0x4E) && (running == 0x04);
             if (now)
-              output->mNowString = date::format ("%H:%M", floor<seconds>(startTime)) + " " + cDvbUtils::getString (ts+5);
+              output->mNowString = format ("{} {:3}m {}",
+                                           date::format ("%H:%M", floor<seconds>(startTime)),
+                                           duration.count()/60,
+                                           cDvbUtils::getString (section+5));
             }
             break;
           //}}}
-          //{{{
-          case 0x4E: // extendedEvent
-            //cLog::log (LOGINFO,  format ("extendedEvent descriptor tag:{} len:{}", tag, descrLength));
-            break;
-          //}}}
-          case 0x50: // component
-          case 0x54: // current
-          case 0x5F: // defaultAuthority
-          case 0x76: // contentId
-          case 0x7E: // ftaContentMangement
-          case 0x89: // guidance
-            break;
-          //{{{
-          default:
-            cLog::log (LOGERROR, format ("unknown eitEvent descriptor tag:{} len:{}", tag, descrLength));
-            break;
-          //}}}
+          case 0x4E: break; // extendedEvent
+          default: break;
           }
+
         i += descrLength;
-        ts += descrLength;
-        descrLength = ts[1] + 2;
+        section += descrLength;
+        descrLength = section[1] + 2;
         }
-      length -= loopLength;
+
+      sectionLength -= loopLength;
       }
-    //}}}
+    }
+  //}}}
+  //{{{
+  void outputEitSection (cOutput* output, uint8_t* section, uint16_t pidNum, uint8_t& continuity, int64_t dts,
+                         cTsBlock*& tsBuffer, uint8_t& tsBufferOffset) {
+
+    uint16_t sectionOffset = 0;
+    uint16_t sectionLength = psi_get_length (section) + kPsiHeaderSize;
 
     do {
       cTsBlock* block;
@@ -3104,18 +3081,22 @@ namespace {
 
     uint16_t onid = eit_get_onid (eit);
 
-    bool epg = isOurEpg (psi_get_tableid (eit));
     for (auto output : mOutputs)
-      if (output->mConfig.mOutputDvb && (!epg || output->mConfig.mOutputEpg) && (output->mConfig.mSid == sid->mSid)) {
+      if (output->mConfig.mOutputDvb &&
+          (!isOurEpg (psi_get_tableid (eit)) || output->mConfig.mOutputEpg) &&
+          (output->mConfig.mSid == sid->mSid)) {
+
+        // set eit section
         eit_set_tsid (eit, output->mTsId);
         eit_set_sid (eit, output->mConfig.mSid);
         if (output->mConfig.mOnid)
           eit_set_onid (eit, output->mConfig.mOnid);
         psi_set_crc (eit);
 
-        outputEitSection (output, eit, kEitPid, output->mEitContinuity,
-                          dts, output->mEitTsBuffer, output->mEitTsBufferOffset);
         output->nEitSectionsCount++;
+        parseEitSection (output, eit);
+        outputEitSection (output, eit, kEitPid, output->mEitContinuity, dts,
+                          output->mEitTsBuffer, output->mEitTsBufferOffset);
 
         if (output->mConfig.mOnid)
           eit_set_onid (eit, onid);
