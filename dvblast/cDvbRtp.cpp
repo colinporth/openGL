@@ -592,7 +592,6 @@ namespace {
   constexpr int kTdtPid = 0x14;
   constexpr int kPaddingPid = 8191;
   constexpr int kMaxPids = 8192;
-  constexpr int kUnusedPids = kMaxPids + 1;
   //{{{  pat - Program Association Table
   #define PAT_TABLE_ID  0x0
   constexpr int PAT_HEADER_SIZE = kPsiHeaderSizeSyntax1;
@@ -1952,21 +1951,20 @@ namespace {
     }
   //}}}
   //{{{
-  void getPids (uint16_t** ppi_wanted_pids, int* pi_num_wanted_pids,
-                uint16_t* pi_wanted_pcr_pid, uint16_t sidNum,
-                const uint16_t* pids, int numPids) {
+  void getPids (uint16_t** wantedPids, int* numWantedPids, uint16_t* wantedPcrPid, 
+                uint16_t sidNum, const uint16_t* pids, int numPids) {
 
-    *pi_wanted_pcr_pid = 0;
+    *wantedPcrPid = 0;
     if (numPids || sidNum == 0) {
-      *pi_num_wanted_pids = numPids;
-      *ppi_wanted_pids = (uint16_t*)malloc (sizeof(uint16_t) * numPids);
-      memcpy (*ppi_wanted_pids, pids, sizeof(uint16_t) * numPids);
+      *numWantedPids = numPids;
+      *wantedPids = (uint16_t*)malloc (sizeof(uint16_t) * numPids);
+      memcpy (*wantedPids, pids, sizeof(uint16_t) * numPids);
       if (sidNum == 0)
         return;
       }
     else {
-      *pi_num_wanted_pids = 0;
-      *ppi_wanted_pids = NULL;
+      *numWantedPids = 0;
+      *wantedPids = NULL;
       }
 
     sSid* sid = findSid (sidNum);
@@ -1986,26 +1984,26 @@ namespace {
     while ((es = pmt_get_es (pmt, j))) {
       j++;
       uint16_t pidNum = pmtn_get_pid (es);
-      bool b_select;
+      bool select;
       if (numPids)
-        b_select = isIn (pids, numPids, pidNum);
+        select = isIn (pids, numPids, pidNum);
       else {
-        b_select = pidWouldBeSelected (es);
-        if (b_select) {
-          *ppi_wanted_pids = (uint16_t*)realloc (*ppi_wanted_pids, (*pi_num_wanted_pids + 1) * sizeof(uint16_t));
-          (*ppi_wanted_pids)[(*pi_num_wanted_pids)++] = pidNum;
+        select = pidWouldBeSelected (es);
+        if (select) {
+          *wantedPids = (uint16_t*)realloc (*wantedPids, (*numWantedPids + 1) * sizeof(uint16_t));
+          (*wantedPids)[(*numWantedPids)++] = pidNum;
           }
         }
       }
 
-    if (pcrPid != kPaddingPid
-        && pcrPid != pmtPid
-        && !isIn (*ppi_wanted_pids, *pi_num_wanted_pids, pcrPid)) {
-      *ppi_wanted_pids = (uint16_t*)realloc (*ppi_wanted_pids, (*pi_num_wanted_pids + 1) * sizeof(uint16_t));
-      (*ppi_wanted_pids)[(*pi_num_wanted_pids)++] = pcrPid;
+    if ((pcrPid != kPaddingPid) && 
+        (pcrPid != pmtPid) &&
+        !isIn (*wantedPids, *numWantedPids, pcrPid)) {
+      *wantedPids = (uint16_t*)realloc (*wantedPids, (*numWantedPids + 1) * sizeof(uint16_t));
+      (*wantedPids)[(*numWantedPids)++] = pcrPid;
 
       // We only need the PCR packets of this stream (incomplete)
-      *pi_wanted_pcr_pid = pcrPid;
+      *wantedPcrPid = pcrPid;
       cLog::log (LOGINFO, "Requesting partial PCR PID %d", pcrPid);
       }
 
