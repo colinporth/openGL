@@ -20,6 +20,8 @@
 #include "../../shared/utils/cLog.h"
 #include "../../shared/date/date.h"
 
+#include "../../shared/dvb/cDvbUtils.h"
+
 using namespace std;
 using namespace fmt;
 using namespace chrono;
@@ -1618,11 +1620,7 @@ namespace {
     //}}}
 
     int getBlockCount() { return (mConfig.mMtu - kRtpHeaderSize) / kTsSize; }
-    //{{{
-    string getInfoString() {
-      return format ("{} {}", mConfig.mDisplayName, nEitSectionsCount);
-      }
-    //}}}
+    string getInfoString() { return mConfig.mDisplayName + " " + mNowString; }
 
     //{{{
     sRtpPacket* packetNew() {
@@ -1703,9 +1701,9 @@ namespace {
     cTsBlock* mEitTsBuffer;
     int nEitSectionsCount = 0;
 
-    uint16_t mTsId;
+    string mNowString;
 
-    // incomplete PID (only PCR packets)
+    uint16_t mTsId;
     uint16_t mPcrPid;
 
   private:
@@ -2887,6 +2885,7 @@ namespace {
   //}}}
   //{{{
   void outputPsiSection (cOutput* output, uint8_t* section, uint16_t pidNum, uint8_t& continuity, int64_t dts) {
+  // simple psi section
 
     uint16_t sectionOffset = 0;
     uint16_t sectionLength = psi_get_length (section) + kPsiHeaderSize;
@@ -2974,16 +2973,95 @@ namespace {
   //{{{
   void outputEitSection (cOutput* output, uint8_t* section, uint16_t pidNum, uint8_t& continuity, int64_t dts,
                          cTsBlock*& tsBuffer, uint8_t& tsBufferOffset) {
+  // eit multi sections
 
     uint16_t sectionOffset = 0;
     uint16_t sectionLength = psi_get_length (section) + kPsiHeaderSize;
+
+    //cLog::log (LOGINFO, "outputEitSection %d %d", sectionOffset, sectionLength);
+
+    //{{{  parse EIT section
+    uint8_t* ts = section;
+    int length = sectionLength;
+
+    int tid = ts[0];
+    //{{{  unused eit header fields
+    //int sid = (ts[3] << 8) + ts[4];
+    //int versionNumber = ts[5];
+    //int sectionNumber = ts[6];
+    //int lastSectionNumber = ts[7];
+    //int tsId = (ts[8] << 8) + ts[9];
+    //int onId = (ts[10]<< 8) + ts[11];
+    //}}}
+
+    // skip past eit header to first eitEvent
+    constexpr int kEitHeaderLength = 14;
+    ts += kEitHeaderLength;
+    length -= kEitHeaderLength + 4;
+
+    // iterate eit events
+    while (length > 0) {
+      system_clock::time_point startTime = system_clock::from_time_t (cDvbUtils::getEpochTime (ts+2) + cDvbUtils::getBcdTime (ts+4));
+      seconds duration (cDvbUtils::getBcdTime (ts+7));
+      int running = (ts[10] & 0xE0) >> 5;
+      int loopLength = ((ts[10] & 0x0F) << 8) + ts[11];
+      //{{{  unused fields
+      //int eventId = (ts[0] << 8) + ts[1];
+      //bool caMode = ts[10] & 0x10;
+      //}}}
+
+      // skip past eitEvent
+      constexpr int kEitEventLength = 12;
+      ts += kEitEventLength;
+      length -= kEitEventLength;
+
+      // iterate eit event descriptors
+      int i = 0;
+      int descrLength = ts[1] + 2;
+      while ((i < loopLength) && (descrLength > 0) && (descrLength <= loopLength - i)) {
+        int tag = ts[0];
+        switch (tag) {
+          //{{{
+          case 0x4D: // shortEvent
+            {
+            bool now = (tid == 0x4E) && (running == 0x04);
+            //bool epg = (tid == 0x50) || (tid == 0x51);
+            if (now)
+              output->mNowString = date::format ("%H:%M", floor<seconds>(startTime)) + " " + cDvbUtils::getString (ts+5);
+            }
+            break;
+          //}}}
+          //{{{
+          case 0x4E: // extendedEvent
+            //cLog::log (LOGINFO,  format ("extendedEvent descriptor tag:{} len:{}", tag, descrLength));
+            break;
+          //}}}
+          case 0x50: // component
+          case 0x54: // current
+          case 0x5F: // defaultAuthority
+          case 0x76: // contentId
+          case 0x7E: // ftaContentMangement
+          case 0x89: // guidance
+            break;
+          //{{{
+          default:
+            cLog::log (LOGERROR, format ("unknown eitEvent descriptor tag:{} len:{}", tag, descrLength));
+            break;
+          //}}}
+          }
+        i += descrLength;
+        ts += descrLength;
+        descrLength = ts[1] + 2;
+        }
+      length -= loopLength;
+      }
+    //}}}
 
     do {
       cTsBlock* block;
       uint8_t tsOffset;
 
-      bool append = tsBuffer && tsBuffer;
-      if (append) {
+      if (tsBuffer) {
         block = tsBuffer;
         tsOffset = tsBufferOffset;
         }
@@ -2996,7 +3074,7 @@ namespace {
 
       psi_split_section (p, tsOffset, section, sectionOffset);
 
-      if (!append) {
+      if (!tsBuffer) {
         ts_set_pid (p, pidNum);
         ts_set_cc (p, continuity);
         continuity = (continuity + 1) & 0xf;

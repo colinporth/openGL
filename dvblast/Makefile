@@ -8,6 +8,7 @@ SRCS      = cApp.cpp \
 	    ../../shared/vg/cAtlasText.cpp \
 	    ../../shared/vg/cGlWindow.cpp \
 	    ../../shared/utils/cLog.cpp \
+	    ../../shared/dvb/cDvbUtils.cpp \
 	    ../../shared/fmt/format.cpp \
 
 BUILD_DIR = ./build
