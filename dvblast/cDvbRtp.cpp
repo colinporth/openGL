@@ -17,8 +17,8 @@
 
 // utils
 #include "../../shared/fmt/core.h"
-#include "../../shared/utils/cLog.h"
 #include "../../shared/date/date.h"
+#include "../../shared/utils/cLog.h"
 
 #include "../../shared/dvb/cDvbUtils.h"
 
@@ -1670,45 +1670,44 @@ namespace {
     cOutputConfig mConfig;
 
     // output
-    int mSocket;
+    int mSocket = -1;
 
-    sRtpPacket* mLastPacket;
-    sRtpPacket* mPacketLifo;
-    sRtpPacket* mPackets;
-
-    uint16_t mSeqnum;
+    uint16_t mSeqnum = 0;
+    sRtpPacket* mLastPacket = NULL;
+    sRtpPacket* mPacketLifo = NULL;
+    sRtpPacket* mPackets = NULL;
 
     // demux
-    uint8_t mPatVersion;
-    uint8_t mPatContinuity;
-    uint8_t* mPatSection;
+    uint16_t mTsId = 0;
+    uint16_t mPcrPid = 0;
 
-    uint8_t mPmtVersion;
-    uint8_t mPmtContinuity;
-    uint8_t* mPmtSection;
+    uint8_t mPatVersion = 0;
+    uint8_t mPatContinuity = 0;
+    uint8_t* mPatSection = NULL;
 
-    uint8_t mNitVersion;
-    uint8_t mNitContinuity;
-    uint8_t* mNitSection;
+    uint8_t mPmtVersion = 0;
+    uint8_t mPmtContinuity = 0;
+    uint8_t* mPmtSection = NULL;
 
-    uint8_t mSdtVersion;
-    uint8_t mSdtContinuity;
-    uint8_t* mSdtSection;
+    uint8_t mNitVersion = 0;
+    uint8_t mNitContinuity = 0;
+    uint8_t* mNitSection = NULL;
 
-    uint8_t mEitContinuity;
-    uint8_t mEitTsBufferOffset;
-    cTsBlock* mEitTsBuffer;
+    uint8_t mSdtVersion = 0;
+    uint8_t mSdtContinuity = 0;
+    uint8_t* mSdtSection = NULL;
+
+    uint8_t mEitContinuity = 0;
+    uint8_t mEitTsBufferOffset = 0;
+    cTsBlock* mEitTsBuffer = NULL;
     int nEitSectionsCount = 0;
 
     string mNowString;
 
-    uint16_t mTsId;
-    uint16_t mPcrPid;
-
   private:
     static constexpr int kMaxOutputPackets = 100;
 
-    unsigned int mPacketCount;
+    unsigned int mPacketCount = 0;
     };
   //}}}
   //{{{
@@ -1951,7 +1950,7 @@ namespace {
     }
   //}}}
   //{{{
-  void getPids (uint16_t** wantedPids, int* numWantedPids, uint16_t* wantedPcrPid, 
+  void getPids (uint16_t** wantedPids, int* numWantedPids, uint16_t* wantedPcrPid,
                 uint16_t sidNum, const uint16_t* pids, int numPids) {
 
     *wantedPcrPid = 0;
@@ -1996,7 +1995,7 @@ namespace {
         }
       }
 
-    if ((pcrPid != kPaddingPid) && 
+    if ((pcrPid != kPaddingPid) &&
         (pcrPid != pmtPid) &&
         !isIn (*wantedPids, *numWantedPids, pcrPid)) {
       *wantedPids = (uint16_t*)realloc (*wantedPids, (*numWantedPids + 1) * sizeof(uint16_t));
