@@ -17,6 +17,7 @@ public:
   ~cDvb();
 
   cTsBlock* read (cTsBlockPool* blockPool);
+  void status();
 
   void reset();
   int setFilter (uint16_t pid);
@@ -47,7 +48,7 @@ private:
 
   fe_status_t mLastStatus;
 
-  int mFrontend = -1;
+  int mFrontEnd = -1;
   struct pollfd fds[1];
 
   cTsBlock* mBlockFreeList = NULL;

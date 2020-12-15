@@ -138,8 +138,8 @@ cDvb::cDvb (int frequency, int adapter) {
   mAdapter = adapter;
 
   string frontend = format ("/dev/dvb/adapter{}/frontend{}", mAdapter, mFeNum);
-  mFrontend = open (frontend.c_str(), O_RDWR | O_NONBLOCK);
-  if (mFrontend < 0) {
+  mFrontEnd = open (frontend.c_str(), O_RDWR | O_NONBLOCK);
+  if (mFrontEnd < 0) {
     //{{{  error exit
     cLog::log (LOGERROR, "dvbOpen openDevice failed" + frontend);
     exit (1);
@@ -209,6 +209,39 @@ cTsBlock* cDvb::read (cTsBlockPool* blockPool) {
   *current = NULL;
 
   return block;
+  }
+//}}}
+
+//{{{
+void cDvb::status() {
+
+  struct dtv_property getProps[] = {
+      { .cmd = DTV_STAT_SIGNAL_STRENGTH },
+      { .cmd = DTV_STAT_CNR },
+      { .cmd = DTV_STAT_PRE_ERROR_BIT_COUNT },
+      { .cmd = DTV_STAT_PRE_TOTAL_BIT_COUNT },
+      { .cmd = DTV_STAT_POST_ERROR_BIT_COUNT },
+      { .cmd = DTV_STAT_POST_TOTAL_BIT_COUNT },
+      { .cmd = DTV_STAT_ERROR_BLOCK_COUNT },
+      { .cmd = DTV_STAT_TOTAL_BLOCK_COUNT },
+    };
+
+  struct dtv_properties cmdGet = {
+    .num = sizeof(getProps) / sizeof (getProps[0]),
+    .props = getProps
+    };
+
+  if ((ioctl (mFrontEnd, FE_GET_PROPERTY, &cmdGet)) < 0) {
+    cLog::log (LOGERROR, "cDvb::status FE_GET_PROPERTY failed");
+    return;
+    }
+
+  for (int i = 0; i < 8; i++)
+    cLog::log (LOGINFO, format ("cDvb::status index:{} len:{} scale:{} uvalue:{})",
+               i,
+               (int)getProps[i].u.st.len,
+               (int)getProps[i].u.st.stat[0].scale,
+               (int)getProps[i].u.st.stat[0].uvalue));
   }
 //}}}
 
@@ -475,14 +508,14 @@ void cDvb::frontendInfo (struct dvb_frontend_info& info, uint32_t version,
 void cDvb::frontendSetup() {
 
   struct dvb_frontend_info info;
-  if (ioctl (mFrontend, FE_GET_INFO, &info) < 0) {
+  if (ioctl (mFrontEnd, FE_GET_INFO, &info) < 0) {
     //{{{  error exit
     cLog::log (LOGERROR, "frontend FE_GET_INFO failed %s", strerror(errno));
     exit (1);
     }
     //}}}
 
-  if (ioctl (mFrontend, FE_GET_PROPERTY, &info_cmdseq) < 0) {
+  if (ioctl (mFrontEnd, FE_GET_PROPERTY, &info_cmdseq) < 0) {
     //{{{  error exit
     cLog::log (LOGERROR, "frontend FE_GET_PROPERTY api version failed");
     exit (1);
@@ -490,7 +523,7 @@ void cDvb::frontendSetup() {
     //}}}
   int version = info_cmdargs[0].u.data;
 
-  if (ioctl (mFrontend, FE_GET_PROPERTY, &enum_cmdseq) < 0) {
+  if (ioctl (mFrontEnd, FE_GET_PROPERTY, &enum_cmdseq) < 0) {
     //{{{  error exit
     cLog::log (LOGERROR, "frontend FE_GET_PROPERTY failed");
     exit (1);
@@ -511,7 +544,7 @@ void cDvb::frontendSetup() {
   frontendInfo (info, version, systems, numSystems);
 
   // clear frontend commands
-  if (ioctl (mFrontend, FE_SET_PROPERTY, &cmdclear) < 0) {
+  if (ioctl (mFrontEnd, FE_SET_PROPERTY, &cmdclear) < 0) {
     //{{{  error exit
     cLog::log (LOGERROR, "Unable to clear frontend");
     exit (1);
@@ -567,12 +600,12 @@ void cDvb::frontendSetup() {
   // empty the event queue
   while (true) {
     struct dvb_frontend_event event;
-    if ((ioctl (mFrontend, FE_GET_EVENT, &event) < 0) && (errno == EWOULDBLOCK))
+    if ((ioctl (mFrontEnd, FE_GET_EVENT, &event) < 0) && (errno == EWOULDBLOCK))
       break;
     }
 
   // send properties to frontend device
-  if (ioctl (mFrontend, FE_SET_PROPERTY, p) < 0) {
+  if (ioctl (mFrontEnd, FE_SET_PROPERTY, p) < 0) {
     //{{{  error exit
     cLog::log (LOGERROR, "setting frontend failed %s", strerror(errno));
     exit (1);
@@ -588,7 +621,7 @@ bool cDvb::frontendStatus() {
   bool result = false;
 
   struct dvb_frontend_event event;
-  if (ioctl (mFrontend, FE_GET_EVENT, &event) < 0) {
+  if (ioctl (mFrontEnd, FE_GET_EVENT, &event) < 0) {
     if (errno == EWOULDBLOCK)
       return false;
     cLog::log (LOGERROR, "cDvb read FE_GET_EVENT failed");
@@ -640,11 +673,11 @@ bool cDvb::frontendStatus() {
         statusString += "lock ";
 
         int32_t value = 0;
-        if (ioctl (mFrontend, FE_READ_BER, &value) >= 0)
+        if (ioctl (mFrontEnd, FE_READ_BER, &value) >= 0)
           statusString += format ("ber:{} ", value);
-        if (ioctl (mFrontend, FE_READ_SIGNAL_STRENGTH, &value) >= 0)
+        if (ioctl (mFrontEnd, FE_READ_SIGNAL_STRENGTH, &value) >= 0)
           statusString += format ("strength:{} ", value);
-        if (ioctl (mFrontend, FE_READ_SNR, &value) >= 0)
+        if (ioctl (mFrontEnd, FE_READ_SNR, &value) >= 0)
           statusString += format ("snr:{} ", value);
         result = true;
         }

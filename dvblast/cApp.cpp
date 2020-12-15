@@ -155,6 +155,7 @@ private:
           // time ticked, update status
           cLog::status (0, 0, mString);
           timeString = nowTimeString;
+          dvb.status();
           }
         //}}}
         //{{{  update outputs

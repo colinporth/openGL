@@ -1,4 +1,4 @@
-// dvbRtp.cpp - dvb ts to rtp streams - from videoLan dvblast
+// cDvbRtp.cpp - dvb transport stream to rtp udp streams - copied from videoLan dvblast
 //{{{  includes
 #include "cTsBlockPool.h"
 #include "cDvbRtp.h"
@@ -42,7 +42,7 @@ constexpr int kDefaultIPv6Mtu = 1280;
 //}}}
 
 namespace {
-  //{{{  dvb bitstream utils
+  //{{{  dvb transport stream utils
   constexpr int kTsSize = 188;
   constexpr int kTsHeaderSize = 4;
   //{{{  ts utils
@@ -1404,14 +1404,6 @@ namespace {
     };
   //}}}
   //{{{
-  struct sRtpPacket {
-    sRtpPacket* mNextPacket;
-    int64_t mDts;
-    int mDepth;
-    cTsBlock* mBlocks[];
-    };
-  //}}}
-  //{{{
   struct sEitSections {
     uint8_t* data[kPsiTableMaxSections];
     };
@@ -1425,105 +1417,84 @@ namespace {
     };
   //}}}
   //{{{
+  struct sRtpPacket {
+    sRtpPacket* mNextPacket;
+    int64_t mDts;
+    int mDepth;
+    cTsBlock* mBlocks[];
+    };
+  //}}}
+  //{{{
   class cOutputConfig {
   public:
-    static constexpr int DEFAULT_OUTPUT_LATENCY = 200000; // 200ms
-    static constexpr int DEFAULT_MAX_RETENTION = 40000;   //  40ms
+    cOutputConfig() { initialise(); }
 
     //{{{
     void initialise() {
 
+      string mDisplayName;
+
       mOutputDvb = true;
       mOutputEpg = true;
 
+      // identity
       mFamily = AF_UNSPEC;
       mIndexV6 = -1;
       mConnectAddr.ss_family = AF_UNSPEC;
       mBindAddr.ss_family = AF_UNSPEC;
 
+      // output config
       mNetworkId = 0xffff;
-
-      mSsrc[0] = 0;
-      mSsrc[1] = 0;
-      mSsrc[2] = 0;
-      mSsrc[3] = 0;
-      mTtl = 64;
-      mTos = 0;
-      mMtu = 0;
-
-      mTsId = -1;
-      mSid = 0;
-
-      mPids = NULL;
-      mNumPids = 0;
-
-      mOnid = 0;
-      }
-    //}}}
-    //{{{
-    void initialise (const string& networkName, const string& providerName) {
-
-      mDisplayName = "displayName";
-      mOutputDvb = true;
-      mOutputEpg = true;
-
-      mFamily = AF_UNSPEC;
-      mIndexV6 = -1;
-      mConnectAddr.ss_family = AF_UNSPEC;
-      mBindAddr.ss_family = AF_UNSPEC;
-
-      mNetworkId = 0xffff;
-      mNetworkName = networkName;
+      mNetworkName = "";
       mServiceName = "";
-      mProviderName = providerName;
+      mProviderName = "";
 
       mSsrc[0] = 0;
       mSsrc[1] = 0;
       mSsrc[2] = 0;
       mSsrc[3] = 0;
+
       mTtl = 64;
       mTos = 0;
       mMtu = 0;
 
+      // demux config
       mTsId = -1;
-      mSid = 0;
+      mSid = 0; // 0 if raw mode
 
-      mPids = NULL;
       mNumPids = 0;
+      mPids = NULL;
 
       mOnid = 0;
       }
     //}}}
 
     string mDisplayName;
-    uint64_t mOutputDvb = true;
-    uint64_t mOutputEpg = true;
+    uint64_t mOutputDvb;
+    uint64_t mOutputEpg;
 
-    // identity
-    int mFamily = AF_UNSPEC;
-    int mIndexV6 = -1;
+    int mFamily;
+    int mIndexV6;
     struct sockaddr_storage mConnectAddr;
     struct sockaddr_storage mBindAddr;
 
-    // output config
-    uint16_t mNetworkId = 0xffff;
-    string mNetworkName = "";
-    string mServiceName = "";
-    string mProviderName = "";
+    uint16_t mNetworkId;
+    string mNetworkName;
+    string mServiceName;
+    string mProviderName;
 
-    uint8_t mSsrc[4] = { 0 };
-    int mTtl = 64;
-    uint8_t mTos = 0;
-    int mMtu = 0;
+    uint8_t mSsrc[4];
+    int mTtl;
+    uint8_t mTos;
+    int mMtu;
 
-    // demux config
-    int mTsId = -1;
-    uint16_t mSid = 0; // 0 if raw mode
+    int mTsId;
+    uint16_t mSid;
 
-    int mNumPids = 0;
-    uint16_t* mPids = NULL;
+    int mNumPids;
+    uint16_t* mPids;
 
-    uint16_t mOnid = 0;
+    uint16_t mOnid;
     };
   //}}}
   //{{{
@@ -1619,7 +1590,9 @@ namespace {
     //}}}
 
     int getBlockCount() { return (mConfig.mMtu - kRtpHeaderSize) / kTsSize; }
-    string getInfoString() { return mConfig.mDisplayName + " " + mNowString; }
+    string getInfoString() { return format ("{}:{:4} {:4}:{:4}:{:4} {:12} {}",
+                                            mConfig.mDisplayName, mConfig.mSid,
+                                            mVidPid, mAudPid, mSubPid, mNameString, mNowString); }
 
     //{{{
     sRtpPacket* packetNew() {
@@ -1681,6 +1654,10 @@ namespace {
     uint16_t mTsId = 0;
     uint16_t mPcrPid = 0;
 
+    uint16_t mAudPid = 0;
+    uint16_t mVidPid = 0;
+    uint16_t mSubPid = 0;
+
     uint8_t mPatVersion = 0;
     uint8_t mPatContinuity = 0;
     uint8_t* mPatSection = NULL;
@@ -1702,6 +1679,7 @@ namespace {
     cTsBlock* mEitTsBuffer = NULL;
     int nEitSectionsCount = 0;
 
+    string mNameString;
     string mNowString;
 
   private:
@@ -2882,40 +2860,38 @@ namespace {
   //}}}
   //{{{
   void outputPsiSection (cOutput* output, uint8_t* section, uint16_t pidNum, uint8_t& continuity, int64_t dts) {
-  // simple psi section
+  // output simple psi section
 
+    cTsBlock* block = mBlockPool->newBlock();
+    block->mDts = dts;
+
+    uint8_t* p = block->mTs;
+    uint8_t tsOffset = 0;
     uint16_t sectionOffset = 0;
-    uint16_t sectionLength = psi_get_length (section) + kPsiHeaderSize;
+    psi_split_section (p, tsOffset, section, sectionOffset);
 
-    cLog::log (LOGINFO, "outputPsiSection");
-    do {
-      cLog::log (LOGINFO, "%d", sectionOffset);
+    ts_set_pid (p, pidNum);
+    ts_set_cc (p, continuity);
+    continuity = (continuity + 1) & 0xf;
+    psi_split_end (p, tsOffset);
 
-      cTsBlock* block = mBlockPool->newBlock();
-      block->mDts = dts;
+    block->decRefCount();
+    outputPut (output, block);
+    }
+  //}}}
+  //{{{
+  void sendBlock (cTsBlock* block) {
 
-      uint8_t* p = block->mTs;
-      uint8_t tsOffset = 0;
-      psi_split_section (p, tsOffset, section, sectionOffset);
-
-      ts_set_pid (p, pidNum);
-      ts_set_cc (p, continuity);
-      continuity = (continuity + 1) & 0xf;
-
-      if (sectionOffset == sectionLength)
-        psi_split_end (p, tsOffset);
-
-      block->mDts = dts;
-      block->decRefCount();
-      outputPut (output, block);
-      } while (sectionOffset < sectionLength);
+    for (auto output : mOutputs)
+      if (output->mConfig.mOutputDvb && output->mSdtSection)
+        outputPut (output, block);
     }
   //}}}
   //{{{
   void sendPAT (int64_t dts) {
 
     for (auto output : mOutputs) {
-      if ((output->mPatSection == NULL) && psi_table_validate (mCurrentPatSections)) {
+      if (!output->mPatSection && psi_table_validate (mCurrentPatSections)) {
         // SID doesn't exist - build an empty PAT
         uint8_t* patSection = psi_allocate();
         output->mPatSection = patSection;
@@ -2937,13 +2913,62 @@ namespace {
     }
   //}}}
   //{{{
+  void parsePMT (cOutput* output, uint8_t* section) {
+  // parse pmtSection for streams
+
+    //int tid = section[0];
+    int sectionLength = cDvbUtils::getSectionLength (section+1);
+
+    //int sid = (section[3] << 8) + section[4];
+    int programInfoLength = ((section[10] & 0x0f) << 8) + section[11];
+
+    // skip past pmt header
+    constexpr int kPmtHeaderLength = 12;
+    section += kPmtHeaderLength + programInfoLength;
+    sectionLength -= kPmtHeaderLength + 4 - programInfoLength;
+
+    // iterate pmt streams
+    while (sectionLength > 0) {
+      int streamType = section[0];
+      int streamPid = ((section[1] & 0x1F) << 8) + section[2];
+      int streamInfoLength = ((section[3] & 0x0F) << 8) + section[4];
+
+      //cLog::log (LOGINFO, format ("stream sid {} {} {}", sid, streamType, streamPid));
+      switch (streamType) {
+        case  2: // ISO 13818-2 video
+        case 27: // h264video
+          output->mVidPid = streamPid;
+          break;
+
+        case  3: // ISO 11172-3 audio
+        case 17: // aacLatm
+          output->mAudPid = streamPid;
+          break;
+
+        case  6: // subtitle
+          output->mSubPid = streamPid;
+          break;
+
+        default:
+          break;
+        }
+
+      constexpr int kPmtStreamLength = 5;
+      section += kPmtStreamLength + streamInfoLength;
+      sectionLength -= kPmtStreamLength + streamInfoLength;
+      }
+    }
+  //}}}
+  //{{{
   void sendPMT (sSid* sid, int64_t dts) {
 
     int pmtPid = sid->mPmtPid;
 
     for (auto output: mOutputs)
-      if ((output->mConfig.mSid == sid->mSid) && output->mPmtSection)
+      if ((output->mConfig.mSid == sid->mSid) && output->mPmtSection) {
+        parsePMT (output, output->mPmtSection);
         outputPsiSection (output, output->mPmtSection, pmtPid, output->mPmtContinuity, dts);
+        }
     }
   //}}}
   //{{{
@@ -2955,24 +2980,55 @@ namespace {
     }
   //}}}
   //{{{
+  void parseSDT (cOutput* output, uint8_t* section) {
+  // parse sdtSection for serviceName
+
+    int tid = section[0];
+    if (tid == 0x42) {
+      int sectionLength = cDvbUtils::getSectionLength (section+1);
+
+      // skip past sdt header
+      constexpr int kSdtHeaderLength = 11;
+      section += kSdtHeaderLength;
+      sectionLength -= kSdtHeaderLength + 4;
+
+      // iterate sdt sections
+      while (sectionLength > 0) {
+        // sdt descriptor
+        int loopLength = ((section[3] & 0x0F) << 8) + section[4];
+
+        // skip past sdt descriptor
+        constexpr int kSdtDescriptorLength = 5;
+        section += kSdtDescriptorLength;
+        sectionLength -= kSdtDescriptorLength;
+
+        // iterate descriptors
+        int i = 0;
+        int descrLength = section[1] + 2;
+        while ((i < loopLength) && (descrLength > 0) && (descrLength <= loopLength - i)) {
+          if (section[0] == 0x48) // serviceDescriptor
+            output->mNameString = cDvbUtils::getString (section+4);
+          i += descrLength;
+          section += descrLength;
+          descrLength = section[1] + 2;
+          }
+        sectionLength -= loopLength;
+        }
+      }
+    }
+  //}}}
+  //{{{
   void sendSDT (int64_t dts) {
 
     for (auto output : mOutputs)
-      if (output->mConfig.mOutputDvb && output->mSdtSection)
+      if (output->mConfig.mOutputDvb && output->mSdtSection) {
+        parseSDT (output, output->mSdtSection);
         outputPsiSection (output, output->mSdtSection, kSdtPid, output->mSdtContinuity, dts);
+        }
     }
   //}}}
   //{{{
-  void sendBlock (cTsBlock* block) {
-
-    for (auto output : mOutputs)
-      if (output->mConfig.mOutputDvb && output->mSdtSection)
-        outputPut (output, block);
-    }
-  //}}}
-
-  //{{{
-  void parseEitSection (cOutput* output, uint8_t* section) {
+  void parseEIT (cOutput* output, uint8_t* section) {
   // parse eitSection for shortEvent now program name, startTime
 
     int tid = section[0];
@@ -3000,22 +3056,15 @@ namespace {
       int i = 0;
       int descrLength = section[1] + 2;
       while ((i < loopLength) && (descrLength > 0) && (descrLength <= loopLength - i)) {
-        switch (section[0]) {
-          //{{{
-          case 0x4D:   // shortEvent
-            {
-            //bool epg = (tid == 0x50) || (tid == 0x51);
-            bool now = (tid == 0x4E) && (running == 0x04);
-            if (now)
-              output->mNowString = format ("{} {:3}m {}",
-                                           date::format ("%H:%M", floor<seconds>(startTime)),
-                                           duration.count()/60,
-                                           cDvbUtils::getString (section+5));
-            }
-            break;
-          //}}}
-          case 0x4E: break; // extendedEvent
-          default: break;
+        // 0x4E: extendedEvent, could use ??
+        if (section[0] == 0x4D) {
+          // shortEvent
+          //bool epg = (tid == 0x50) || (tid == 0x51);
+          bool now = (tid == 0x4E) && (running == 0x04);
+          if (now)
+            output->mNowString = format ("{} {:3}m {}",
+                                         date::format ("%H:%M", floor<seconds>(startTime)), duration.count()/60,
+                                         cDvbUtils::getString (section+5));
           }
 
         i += descrLength;
@@ -3028,8 +3077,8 @@ namespace {
     }
   //}}}
   //{{{
-  void outputEitSection (cOutput* output, uint8_t* section, uint16_t pidNum, uint8_t& continuity, int64_t dts,
-                         cTsBlock*& tsBuffer, uint8_t& tsBufferOffset) {
+  void outputEIT (cOutput* output, uint8_t* section, uint16_t pidNum, uint8_t& continuity, int64_t dts,
+                  cTsBlock*& tsBuffer, uint8_t& tsBufferOffset) {
 
     uint16_t sectionOffset = 0;
     uint16_t sectionLength = psi_get_length (section) + kPsiHeaderSize;
@@ -3094,9 +3143,9 @@ namespace {
         psi_set_crc (eit);
 
         output->nEitSectionsCount++;
-        parseEitSection (output, eit);
-        outputEitSection (output, eit, kEitPid, output->mEitContinuity, dts,
-                          output->mEitTsBuffer, output->mEitTsBufferOffset);
+        parseEIT (output, eit);
+        outputEIT (output, eit, kEitPid, output->mEitContinuity, dts,
+                   output->mEitTsBuffer, output->mEitTsBufferOffset);
 
         if (output->mConfig.mOnid)
           eit_set_onid (eit, onid);
@@ -3825,7 +3874,6 @@ bool cDvbRtp::selectOutput (const string& addressString, int sid) {
     return false;
 
   cOutputConfig outputConfig;
-  outputConfig.initialise ("", "");
   outputConfig.mDisplayName = addressString;
   outputConfig.mSid = sid;
   outputConfig.mOutputDvb = true;
