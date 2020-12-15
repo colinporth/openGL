@@ -130,14 +130,8 @@ private:
     if (consoleStats) {
       //{{{  init stats
       cLog::clearScreen();
-
-      cLog::status (0, 0, "");
-
-      for (int i = 0; i < dvbRtp.getNumOutputs(); i++) {
-        string info = dvbRtp.getOutputInfoString (i);
-        statsStrings.push_back (info);
-        cLog::status (i+1, i+1, info);
-        }
+      for (int i = 0; i < dvbRtp.getNumOutputs(); i++)
+        statsStrings.push_back ("");
       }
       //}}}
 
@@ -161,7 +155,7 @@ private:
         //{{{  update status
         string nowStatusString = dvb.getStatusString();
         if (nowStatusString != statusString) {
-          cLog::status (1, 7, nowStatusString);
+          cLog::status (1, 6, nowStatusString);
           statusString = nowStatusString;
           }
         //}}}
