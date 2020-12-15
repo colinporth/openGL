@@ -125,6 +125,7 @@ private:
       }
 
     string timeString;
+    string statusString;
     vector <string> statsStrings;
     if (consoleStats) {
       //{{{  init stats
@@ -155,7 +156,13 @@ private:
           // time ticked, update status
           cLog::status (0, 0, mString);
           timeString = nowTimeString;
-          dvb.status();
+          }
+        //}}}
+        //{{{  update status
+        string nowStatusString = dvb.getStatusString();
+        if (nowStatusString != statusString) {
+          cLog::status (1, 7, nowStatusString);
+          statusString = nowStatusString;
           }
         //}}}
         //{{{  update outputs
@@ -163,7 +170,7 @@ private:
           string info = dvbRtp.getOutputInfoString (i);
           if (info != statsStrings[i]) {
             // info changed, update info
-            cLog::status (i+1, i+1, info);
+            cLog::status (i+2, i+1, info);
             statsStrings[i] = info;
             }
           }

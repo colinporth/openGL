@@ -17,7 +17,7 @@ public:
   ~cDvb();
 
   cTsBlock* read (cTsBlockPool* blockPool);
-  void status();
+  std::string getStatusString();
 
   void reset();
   int setFilter (uint16_t pid);

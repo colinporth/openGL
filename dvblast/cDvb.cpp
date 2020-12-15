@@ -213,35 +213,36 @@ cTsBlock* cDvb::read (cTsBlockPool* blockPool) {
 //}}}
 
 //{{{
-void cDvb::status() {
+string cDvb::getStatusString() {
 
-  struct dtv_property getProps[] = {
-      { .cmd = DTV_STAT_SIGNAL_STRENGTH },
-      { .cmd = DTV_STAT_CNR },
-      { .cmd = DTV_STAT_PRE_ERROR_BIT_COUNT },
-      { .cmd = DTV_STAT_PRE_TOTAL_BIT_COUNT },
-      { .cmd = DTV_STAT_POST_ERROR_BIT_COUNT },
-      { .cmd = DTV_STAT_POST_TOTAL_BIT_COUNT },
-      { .cmd = DTV_STAT_ERROR_BLOCK_COUNT },
-      { .cmd = DTV_STAT_TOTAL_BLOCK_COUNT },
+  struct dtv_property props[] = {
+    { .cmd = DTV_STAT_SIGNAL_STRENGTH },   // max 0xFFFF percentage
+    { .cmd = DTV_STAT_CNR },               // 0.001db
+    { .cmd = DTV_STAT_TOTAL_BLOCK_COUNT }, // count
+    { .cmd = DTV_STAT_ERROR_BLOCK_COUNT },
+    { .cmd = DTV_STAT_PRE_ERROR_BIT_COUNT },
+    { .cmd = DTV_STAT_PRE_TOTAL_BIT_COUNT },
+    { .cmd = DTV_STAT_POST_ERROR_BIT_COUNT },
+    { .cmd = DTV_STAT_POST_TOTAL_BIT_COUNT },
     };
 
-  struct dtv_properties cmdGet = {
-    .num = sizeof(getProps) / sizeof (getProps[0]),
-    .props = getProps
+  struct dtv_properties cmdProperty = {
+    .num = 8,
+    .props = props
     };
 
-  if ((ioctl (mFrontEnd, FE_GET_PROPERTY, &cmdGet)) < 0) {
-    cLog::log (LOGERROR, "cDvb::status FE_GET_PROPERTY failed");
-    return;
-    }
+  if ((ioctl (mFrontEnd, FE_GET_PROPERTY, &cmdProperty)) < 0)
+    return "status failed";
 
-  for (int i = 0; i < 8; i++)
-    cLog::log (LOGINFO, format ("cDvb::status index:{} len:{} scale:{} uvalue:{})",
-               i,
-               (int)getProps[i].u.st.len,
-               (int)getProps[i].u.st.stat[0].scale,
-               (int)getProps[i].u.st.stat[0].uvalue));
+  return format ("strength {:5.2f}% snr {:5.2f}db {} {} {} {} {} {}",
+                 (props[0].u.st.stat[0].uvalue * 100.f) / 0xFFFF,
+                 props[1].u.st.stat[0].uvalue / 1000.f,
+                 (int)props[2].u.st.stat[0].uvalue,
+                 (int)props[3].u.st.stat[0].uvalue,
+                 (int)props[4].u.st.stat[0].uvalue,
+                 (int)props[5].u.st.stat[0].uvalue,
+                 (int)props[6].u.st.stat[0].uvalue,
+                 (int)props[7].u.st.stat[0].uvalue);
   }
 //}}}
 
