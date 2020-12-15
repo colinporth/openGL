@@ -537,9 +537,9 @@ namespace {
   uint8_t* descl_get_desc (uint8_t* descl, uint16_t i_length, uint16_t n) {
 
     uint8_t* desc = descl;
-
     while (n) {
-      if (desc + kDescHeaderSize - descl > i_length) return NULL;
+      if (desc + kDescHeaderSize - descl > i_length) 
+        return NULL;
       desc += kDescHeaderSize + desc_get_length (desc);
       n--;
       }
@@ -554,7 +554,6 @@ namespace {
   bool descl_validate (const uint8_t* descl, uint16_t length) {
 
     const uint8_t* desc = descl;
-
     while (desc + kDescHeaderSize - descl <= length)
       desc += kDescHeaderSize + desc_get_length (desc);
 
@@ -564,7 +563,6 @@ namespace {
 
   //{{{
   void descs_set_length (uint8_t* descs, uint16_t length) {
-
     descs[0] &= 0xf0;
     descs[0] |= (length >> 8) & 0xf;
     descs[1] = length & 0xff;
@@ -580,7 +578,7 @@ namespace {
   //{{{
   bool descs_validate (const uint8_t* descs) {
     return descl_validate (descs + kDescsHeaderSize, descs_get_length (descs));
-  }
+    }
   //}}}
   //}}}
 
@@ -602,7 +600,6 @@ namespace {
 
   //{{{
   void pat_init (uint8_t* pat) {
-
     psi_init (pat, true);
     psi_set_tableid (pat, PAT_TABLE_ID);
     pat[1] &= ~0x40;
@@ -625,7 +622,6 @@ namespace {
 
   //{{{
   void patn_set_pid (uint8_t* patn, uint16_t pid) {
-
     patn[2] &= ~0x1f;
     patn[2] |= pid >> 8;
     patn[3] = pid & 0xff;
@@ -660,7 +656,7 @@ namespace {
   //{{{
   uint8_t* pat_table_find_program (uint8_t** sections, uint16_t programNum) {
 
-    uint8_t lastSection = psi_table_get_lastsection(sections);
+    uint8_t lastSection = psi_table_get_lastsection (sections);
 
     for (uint8_t i = 0; i <= lastSection; i++) {
       uint8_t* section = psi_table_get_section (sections, i);
