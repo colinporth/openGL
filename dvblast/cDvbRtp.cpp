@@ -2887,7 +2887,10 @@ namespace {
     uint16_t sectionOffset = 0;
     uint16_t sectionLength = psi_get_length (section) + kPsiHeaderSize;
 
+    cLog::log (LOGINFO, "outputPsiSection");
     do {
+      cLog::log (LOGINFO, "%d", sectionOffset);
+
       cTsBlock* block = mBlockPool->newBlock();
       block->mDts = dts;
 
