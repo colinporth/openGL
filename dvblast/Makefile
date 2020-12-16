@@ -6,7 +6,7 @@ SRCS      = cApp.cpp \
 	    ../../shared/vg/cGlWindow.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/dvb/cDvbUtils.cpp \
-	    ../../shared/dvb/cDvb1.cpp \
+	    ../../shared/dvb/cDvb.cpp \
 	    ../../shared/dvb/cDvbRtp.cpp \
 	    ../../shared/fmt/format.cpp \
 
