@@ -137,7 +137,7 @@ private:
 
     while (!mExit) {
       mBlocks++;
-      dvbRtp.processBlockList (dvb.read (&blockPool));
+      dvbRtp.processBlockList (dvb.getBlocks (&blockPool));
 
       string nowTimeString = dvbRtp.getTimeString();
       mString = format ("{} blocks {} packets {} errors:{}:{}:{}",
