@@ -2,7 +2,7 @@
 //{{{  includes
 #include "../../shared/dvb/cDvbUtils.h"
 #include "../../shared/dvb/cDvbRtp.h"
-#include "../../shared/dvb/cDvb1.h"
+#include "../../shared/dvb/cDvb.h"
 
 #include <unistd.h>
 #include <sys/types.h>
