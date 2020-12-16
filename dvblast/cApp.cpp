@@ -37,12 +37,12 @@ public:
       initialiseGui (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
       add (new cTextBox (mString, 0.f));
 
-      thread ([=](){ dvblast (frequency, multicast, false); } ).detach();
+      thread ([=](){ dvblast (626000000, multicast, false); } ).detach();
 
       runGui (true);
       }
     else // run in this main thread
-      dvblast (frequency, multicast, consoleStats);
+      dvblast (626000000, multicast, consoleStats);
 
     cLog::log (LOGINFO, "exit");
     }
