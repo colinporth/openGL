@@ -31,7 +31,7 @@ using namespace fmt;
 class cApp : public cGlWindow {
 public:
   //{{{
-  void run (const string& title, int width, int height, int frequency, bool gui, bool consoleStats, bool multicast) {
+  void run (const string& title, int width, int height, bool gui, bool consoleStats, bool multicast) {
 
     if (gui) {
       initialiseGui (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
@@ -105,44 +105,32 @@ private:
     cTsBlockPool blockPool (100);
 
     // init dvb
-    cDvb dvb (frequency, 0);
+    cDvb dvb (626000000, 0);
 
     // init dvbRtp
     cDvbRtp dvbRtp (&dvb, &blockPool);
-    if (multicast) {
-      dvbRtp.selectOutput ("239.255.1.1:5002", 17540);
-      dvbRtp.selectOutput ("239.255.1.2:5002", 17472);
-      dvbRtp.selectOutput ("239.255.1.3:5002", 17662);
-      dvbRtp.selectOutput ("239.255.1.4:5002", 17664);
-      dvbRtp.selectOutput ("239.255.1.5:5002", 17728);
-      }
-    else {
-      dvbRtp.selectOutput ("192.168.1.109:5002", 17540);
-      dvbRtp.selectOutput ("192.168.1.109:5004", 17472);
-      dvbRtp.selectOutput ("192.168.1.109:5006", 17662);
-      dvbRtp.selectOutput ("192.168.1.109:5008", 17664);
-      dvbRtp.selectOutput ("192.168.1.109:5010", 17728);
-      }
+    dvbRtp.selectOutput (multicast ? "239.255.1.1:5002" : "192.168.1.109:5002", 17540);
+    dvbRtp.selectOutput (multicast ? "239.255.1.2:5002" : "192.168.1.109:5004", 17472);
+    dvbRtp.selectOutput (multicast ? "239.255.1.3:5002" : "192.168.1.109:5006", 17662);
+    dvbRtp.selectOutput (multicast ? "239.255.1.4:5002" : "192.168.1.109:5008", 17664);
+    dvbRtp.selectOutput (multicast ? "239.255.1.5:5002" : "192.168.1.109:5010", 17728);
 
     string timeString;
     string statusString;
     vector <string> statsStrings;
     if (consoleStats) {
-      //{{{  init stats
       cLog::clearScreen();
       for (int i = 0; i < dvbRtp.getNumOutputs(); i++)
         statsStrings.push_back ("");
       }
-      //}}}
 
     while (!mExit) {
       mBlocks++;
       dvbRtp.processBlockList (dvb.getBlocks (&blockPool));
 
-      string nowTimeString = dvbRtp.getTimeString();
-
       if (consoleStats) {
         //{{{  update stats
+        string nowTimeString = dvbRtp.getTimeString();
         if (nowTimeString != timeString) {
           // time ticked, update status
           timeString = nowTimeString;
@@ -209,7 +197,7 @@ int main (int numArgs, char* args[]) {
   cLog::log (LOGNOTICE, "dvblast");
 
   cApp app;
-  app.run ("dvblast", 790, 450, 626000000, gui, consoleStats, multicast);
+  app.run ("dvblast", 790, 450, gui, consoleStats, multicast);
 
   return 0;
   }
