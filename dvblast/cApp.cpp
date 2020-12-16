@@ -1,6 +1,6 @@
 // cApp.cpp - dvblast console or gui app
 //{{{  includes
-#include "../../shared/dvb/cTsBlockPool.h"
+#include "../../shared/dvb/cDvbUtils.h"
 #include "../../shared/dvb/cDvbRtp.h"
 #include "../../shared/dvb/cDvb1.h"
 

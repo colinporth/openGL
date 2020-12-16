@@ -10,7 +10,6 @@ SRCS      = tv.cpp \
 	    ../../shared/dvb/cDvb.cpp \
 	    ../../shared/dvb/cTsDvb.cpp \
 	    ../../shared/dvb/cTransportStream.cpp \
-	    ../../shared/dvb/cTsBlockPool.cpp \
 
 BUILD_DIR = ./build
 CLEAN_DIRS = $(BUILD_DIR) ./shared

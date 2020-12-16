@@ -5,10 +5,9 @@ SRCS      = cApp.cpp \
 	    ../../shared/vg/cAtlasText.cpp \
 	    ../../shared/vg/cGlWindow.cpp \
 	    ../../shared/utils/cLog.cpp \
-	    ../../shared/dvb/cDvb1.cpp \
 	    ../../shared/dvb/cDvbUtils.cpp \
+	    ../../shared/dvb/cDvb1.cpp \
 	    ../../shared/dvb/cDvbRtp.cpp \
-	    ../../shared/dvb/cTsBlockPool.cpp \
 	    ../../shared/fmt/format.cpp \
 
 BUILD_DIR = ./build
