@@ -53,21 +53,21 @@ struct sMultiplex {
 
 const sMultiplex kHdMultiplex = {
   "hd",
-  626,
+  626000000,
   { "BBC ONE HD", "BBC TWO HD", "ITV HD", "Channel 4 HD", "Channel 5 HD" },
   { "bbc1hd",     "bbc2hd",     "itv1hd", "chn4hd",       "chn5hd" }
   };
 
 const sMultiplex kItvMultiplex = {
   "itv",
-  650,
+  650000000,
   { "ITV",  "ITV2", "ITV3", "ITV4", "Channel 4", "Channel 4+1", "More 4", "Film4" , "E4", "Channel 5" },
   { "itv1", "itv2", "itv3", "itv4", "chn4"     , "c4+1",        "more4",  "film4",  "e4", "chn5" }
   };
 
 const sMultiplex kBbcMultiplex = {
   "bbc",
-  674,
+  674000000,
   { "BBC ONE S West", "BBC TWO", "BBC FOUR" },
   { "bbc1",           "bbc2",    "bbc4" }
   };
