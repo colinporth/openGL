@@ -140,23 +140,23 @@ private:
       dvbRtp.processBlockList (dvb.getBlocks (&blockPool));
 
       string nowTimeString = dvbRtp.getTimeString();
-      mString = format ("{} blocks {} packets {} errors:{}:{}:{}",
-                        nowTimeString, mBlocks, dvbRtp.getNumPackets(),
-                        dvbRtp.getNumInvalids(), dvbRtp.getNumDiscontinuities(), dvbRtp.getNumErrors());
 
       if (consoleStats) {
         //{{{  update stats
         if (nowTimeString != timeString) {
           // time ticked, update status
-          cLog::status (0, 0, mString);
           timeString = nowTimeString;
+          mString = format ("{} blocks {} packets {} errors:{}:{}:{}",
+                            nowTimeString, mBlocks, dvbRtp.getNumPackets(),
+                            dvbRtp.getNumInvalids(), dvbRtp.getNumDiscontinuities(), dvbRtp.getNumErrors());
+          cLog::status (0, 0, mString);
           }
         //}}}
         //{{{  update status
         string nowStatusString = dvb.getStatusString();
         if (nowStatusString != statusString) {
-          cLog::status (1, 6, nowStatusString);
           statusString = nowStatusString;
+          cLog::status (1, 6, nowStatusString);
           }
         //}}}
         //{{{  update outputs
@@ -164,8 +164,8 @@ private:
           string info = dvbRtp.getOutputInfoString (i);
           if (info != statsStrings[i]) {
             // info changed, update info
-            cLog::status (i+2, i+1, info);
             statsStrings[i] = info;
+            cLog::status (i+2, i+1, info);
             }
           }
         //}}}
