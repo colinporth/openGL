@@ -1,14 +1,14 @@
 TARGET    = app
 SRCS      = cApp.cpp \
-	    cTsBlockPool.cpp \
-	    cDvb.cpp \
-	    cDvbRtp.cpp \
 	    ../../shared/glad/glad.c \
 	    ../../shared/vg/cVg.cpp \
 	    ../../shared/vg/cAtlasText.cpp \
 	    ../../shared/vg/cGlWindow.cpp \
 	    ../../shared/utils/cLog.cpp \
+	    ../../shared/dvb/cDvb1.cpp \
 	    ../../shared/dvb/cDvbUtils.cpp \
+	    ../../shared/dvb/cDvbRtp.cpp \
+	    ../../shared/dvb/cTsBlockPool.cpp \
 	    ../../shared/fmt/format.cpp \
 
 BUILD_DIR = ./build
