@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="h">
+      <UniqueIdentifier>{95dd2d5c-465f-4a53-9083-cdc434e74a62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="h\format">
+      <UniqueIdentifier>{3f275d5e-72ef-4883-9920-569bc7289ace}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\shared\utils\cLog.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\core.h">
+      <Filter>h\format</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\color.h">
+      <Filter>h\format</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\compile.h">
+      <Filter>h\format</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\format.h">
+      <Filter>h\format</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\format-inl.h">
+      <Filter>h\format</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\locale.h">
+      <Filter>h\format</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\os.h">
+      <Filter>h\format</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\ostream.h">
+      <Filter>h\format</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\posix.h">
+      <Filter>h\format</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\printf.h">
+      <Filter>h\format</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\ranges.h">
+      <Filter>h\format</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\args.h">
+      <Filter>h\format</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\fmt\chrono.h">
+      <Filter>h\format</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\shared\utils\cLog.cpp" />
+    <ClCompile Include="..\..\shared\fmt\format.cpp" />
+  </ItemGroup>
+</Project>

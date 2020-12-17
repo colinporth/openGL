@@ -1,5 +1,5 @@
 TARGET    = app
-SRCS      = tiny.c \
+SRCS      = tiny.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/fmt/format.cpp \
 
