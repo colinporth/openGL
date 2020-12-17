@@ -134,9 +134,10 @@ private:
         if (nowTimeString != timeString) {
           // time ticked, update status
           timeString = nowTimeString;
-          mString = format ("{} blocks {} packets {} errors:{}:{}:{}",
+          mString = format ("{} blocks {} packets {} errors:{}:{}:{} {}",
                             nowTimeString, mBlocks, dvbRtp.getNumPackets(),
-                            dvbRtp.getNumInvalids(), dvbRtp.getNumDiscontinuities(), dvbRtp.getNumErrors());
+                            dvbRtp.getNumInvalids(), dvbRtp.getNumDiscontinuities(), dvbRtp.getNumErrors(),
+                            blockPool.getInfoString());
           cLog::status (0, 0, mString);
           }
         //}}}
