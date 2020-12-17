@@ -31,6 +31,19 @@ using namespace std;
 using namespace fmt;
 //}}}
 
+//{{{
+//void sendError (FILE* stream, char* cause, char* errno, char* shortmsg, char* longmsg) {
+  //fprintf (stream, "HTTP/1.1 %s %s\n", errno, shortmsg);
+  //fprintf (stream, "Content-type: text/html\n");
+  //fprintf (stream, "\n");
+  //fprintf (stream, "<html><title>Tiny Error</title>");
+  //fprintf (stream, "<body bgcolor=""ffffff"">\n");
+  //fprintf (stream, "%s: %s\n", errno, shortmsg);
+  //fprintf (stream, "<p>%s: %s\n", longmsg, cause);
+  //fprintf (stream, "<hr><em>The Tiny Web server</em>\n");
+  //}
+//}}}
+
 // main
 int main (int argc, char** argv) {
 
@@ -85,12 +98,15 @@ int main (int argc, char** argv) {
     if (hostaddr == NULL)
       cLog::log (LOGERROR, "inet_ntoa failed");
 
-    char buffer[100];
+    constexpr int kBufferSize = 128;
+    char buffer[kBufferSize];
     while (true) {
-      int bytes = recv (childSocket, buffer, 100, 0);
+      int bytes = recv (childSocket, buffer, kBufferSize, 0);
       if (bytes <= 0)
         break;
-      cLog::log (LOGINFO, "read:%d -> %s", bytes, buffer);
+      buffer [bytes] = 0;
+      cLog::log (LOGINFO, "read:%d", bytes);
+      cLog::log (LOGINFO, buffer);
       }
     cLog::log (LOGINFO, "done");
     break;
