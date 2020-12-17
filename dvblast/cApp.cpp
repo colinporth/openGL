@@ -126,7 +126,7 @@ private:
 
     while (!mExit) {
       mBlocks++;
-      dvbRtp.processBlockList (dvb.getBlocks (&blockPool));
+      dvbRtp.demuxBlockList (dvb.getBlocks (&blockPool));
 
       if (consoleStats) {
         //{{{  update stats
