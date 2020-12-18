@@ -39,16 +39,16 @@ using namespace fmt;
 //}}}
 
 //{{{
-class cRequest {
+class cHttpRequest {
 public:
-  cRequest (SOCKET socket) : mSocket(socket) {}
-  ~cRequest() {}
+  cHttpRequest (SOCKET socket) : mSocket(socket) {}
+  ~cHttpRequest() {}
 
   string getMethod() { return mRequestStrings.size() > 0 ? mRequestStrings[0] : ""; }
   string getUri() { return mRequestStrings.size() > 1 ? mRequestStrings[1] : ""; }
   string getVersion() { return mRequestStrings.size() > 2 ? mRequestStrings[2] : ""; }
   //{{{
-  bool getRequest() {
+  bool receive() {
 
     constexpr int kRecvBufferSize = 128;
     uint8_t buffer[kRecvBufferSize];
@@ -317,8 +317,8 @@ int main (int argc, char** argv) {
     if (hostAddr == NULL)
       cLog::log (LOGERROR, "inet_ntoa");
 
-    cRequest request (childSocket);
-    if (request.getRequest())
+    cHttpRequest request (childSocket);
+    if (request.receive())
       if (request.getMethod() == "GET")
         if (request.respondFile())
           continue;
