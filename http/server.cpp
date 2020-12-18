@@ -39,19 +39,22 @@ using namespace fmt;
 //}}}
 
 vector <string> mLineStrings;
-vector <string> mStrings;
 //{{{
-void split (const string& str, char delim = ' ') {
+vector<string> split (const string& str, char delim = ' ') {
+
+  vector <string> strings;
 
   size_t previous = 0;
   size_t current = str.find (delim);
   while (current != std::string::npos) {
-    mStrings.push_back (str.substr (previous, current - previous));
+    strings.push_back (str.substr (previous, current - previous));
     previous = current + 1;
     current = str.find (delim, previous);
     }
 
-  mStrings.push_back (str.substr (previous, current - previous));
+  strings.push_back (str.substr (previous, current - previous));
+
+  return strings;
   }
 //}}}
 
@@ -277,27 +280,32 @@ int main (int argc, char **argv) {
       }
 
     string uri;
-    mStrings.clear();
     if (mLineStrings.size() > 0) {
-      split (mLineStrings[0], ' ');
-      if (mStrings.size() == 3) {
-        cLog::log (LOGINFO, format ("method:{} uri:{} version:{}",  mStrings[0], mStrings[1], mStrings[2]));
-        string method =  mStrings[0];
-        uri = mStrings[1];
-        if (uri  == "/")
-          uri += "index.html";
-        uri = "." + uri;
-        string version =  mStrings[2];
+      vector <string> strings = split (mLineStrings[0], ' ');
+      if (strings.size() == 3) {
+        cLog::log (LOGINFO, format ("method:{} uri:{} version:{}", strings[0], strings[1], strings[2]));
+        string method = strings[0];
+        if (method == "GET") {
+          // GET
+          uri = "." + strings[1];
+          string version = strings[2];
 
-        int64_t fileSize = getFileSize (uri);
-        if (fileSize) {
-          sendResponseOK (childSocket, uri, fileSize);
-          sendFile (childSocket, uri, fileSize);
-          closeSocket (childSocket);
-          continue;
+          int64_t fileSize = getFileSize (uri);
+          if (fileSize) {
+            sendResponseOK (childSocket, uri, fileSize);
+            sendFile (childSocket, uri, fileSize);
+            closeSocket (childSocket);
+            continue;
+            }
           }
+        else
+          cLog::log (LOGERROR, "unrecoginsed method - " + method);
         }
+      else
+        cLog::log (LOGERROR, "request short - " + mLineStrings[0]);
       }
+    else
+      cLog::log (LOGERROR, "no request");
 
     sendResponseNotOk (childSocket, uri);
     closeSocket (childSocket);
