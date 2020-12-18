@@ -39,6 +39,53 @@ using namespace fmt;
 //}}}
 
 //{{{
+class cHttpServer {
+public:
+  cHttpServer (uint16_t portNumber) : mPortNumber(portNumber) {}
+  ~cHttpServer() {}
+
+ //{{{
+ void start() {
+
+   mParentSocket = socket (AF_INET, SOCK_STREAM, 0);
+   if (mParentSocket < 0)
+     cLog::log (LOGERROR, "socket open failed");
+
+   // allows us to restart server immediately
+   int optval = 1;
+   setsockopt (mParentSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&optval , sizeof(int));
+
+   // bind port to socket
+   constexpr uint16_t kPortNumber = 80;
+
+   struct sockaddr_in serverAddr;
+   memset (&serverAddr, 0, sizeof(serverAddr));
+   serverAddr.sin_family = AF_INET;
+   serverAddr.sin_addr.s_addr = htonl (INADDR_ANY);
+   serverAddr.sin_port = htons (kPortNumber);
+
+   if (bind (mParentSocket, (struct sockaddr*) &serverAddr, sizeof(serverAddr)) < 0)
+     cLog::log (LOGERROR, "bind failed");
+
+   // ready to accept connection requests
+   if (listen (mParentSocket, 5) < 0) // allow 5 requests to queue up
+     cLog::log (LOGERROR, "listen failed");
+   }
+ //}}}
+  //{{{
+  SOCKET accept (struct sockaddr_in& clientAddr) {
+
+    socklen_t clientlen = sizeof (clientAddr);
+    return ::accept (mParentSocket, (struct sockaddr*)&clientAddr, &clientlen);
+    }
+  //}}}
+
+private:
+  SOCKET mParentSocket;
+  uint16_t mPortNumber;
+  };
+//}}}
+//{{{
 class cHttpRequest {
 public:
   cHttpRequest (SOCKET socket) : mSocket(socket) {}
@@ -275,34 +322,14 @@ int main (int argc, char** argv) {
   cLog::init (LOGINFO);
   cLog::log (LOGNOTICE, "minimal http server");
 
-  // open socket descriptor
-  SOCKET parentSocket = socket (AF_INET, SOCK_STREAM, 0);
-  if (parentSocket < 0)
-    cLog::log (LOGERROR, "socket open failed");
-
-  // allows us to restart server immediately
-  int optval = 1;
-  setsockopt (parentSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&optval , sizeof(int));
-
-  // bind port to socket
-  constexpr uint16_t kPortNumber = 80;
-  struct sockaddr_in serverAddr;
-  memset (&serverAddr, 0, sizeof(serverAddr));
-  serverAddr.sin_family = AF_INET;
-  serverAddr.sin_addr.s_addr = htonl (INADDR_ANY);
-  serverAddr.sin_port = htons (kPortNumber);
-  if (bind (parentSocket, (struct sockaddr*) &serverAddr, sizeof(serverAddr)) < 0)
-    cLog::log (LOGERROR, "bind failed");
-
-  // ready to accept connection requests
-  if (listen (parentSocket, 5) < 0) // allow 5 requests to queue up
-    cLog::log (LOGERROR, "listen failed");
+  // start server listening on port
+  cHttpServer server (80);
+  server.start();
 
   while (true) {
     // wait for a connection request
     struct sockaddr_in clientAddr;
-    socklen_t clientlen = sizeof (clientAddr);
-    SOCKET childSocket = accept (parentSocket, (struct sockaddr*) &clientAddr, &clientlen);
+    SOCKET childSocket = server.accept (clientAddr);
     if (childSocket < 0) {
       cLog::log (LOGERROR, "accept failed");
       continue;
