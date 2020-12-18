@@ -47,6 +47,11 @@ public:
   //{{{
   void start() {
 
+    #ifdef _WIN32
+      WSADATA wsaData;
+      WSAStartup (MAKEWORD(2, 2), &wsaData);
+    #endif
+
     mParentSocket = socket (AF_INET, SOCK_STREAM, 0);
     if (mParentSocket < 0)
       cLog::log (LOGERROR, "socket open failed");
@@ -73,10 +78,21 @@ public:
     }
   //}}}
   //{{{
-  SOCKET accept (struct sockaddr_in& clientAddr) {
+  SOCKET client (struct sockaddr_in& clientAddr, string& clientName, string& clientAddressString) {
 
     socklen_t clientlen = sizeof (clientAddr);
-    return ::accept (mParentSocket, (struct sockaddr*)&clientAddr, &clientlen);
+    SOCKET clientSocket = ::accept (mParentSocket, (struct sockaddr*)&clientAddr, &clientlen);
+
+    // determine who sent the message
+    struct hostent* clientHostEnt = gethostbyaddr ((const char*)&clientAddr.sin_addr.s_addr,
+                                                   sizeof(clientAddr.sin_addr.s_addr), AF_INET);
+    clientName = clientHostEnt ? string(clientHostEnt->h_name) : string ("");
+
+    // covert address to string
+    char* clientAddrStr = inet_ntoa (clientAddr.sin_addr);
+    clientAddressString = clientAddrStr ? string (clientAddrStr) : string("");
+
+    return clientSocket;
     }
   //}}}
 
@@ -128,19 +144,23 @@ public:
   //{{{
   bool respondFile() {
 
-    string uri = "." + getUri();
+    #ifdef __linux__
+      string uri = "." + getUri();
+    #else
+      string uri = "E:/piccies" + getUri();
+    #endif
 
     int64_t fileSize = getFileSize (uri);
     if (fileSize) {
       sendResponseOK (uri, fileSize);
 
-      // read file into buffer
+      // read file into fileBuffer
       FILE* file = fopen (uri.c_str(), "rb");
       uint8_t* fileBuffer = (uint8_t*)malloc (fileSize);
       fread (fileBuffer, 1, fileSize, file);
       fclose (file);
 
-      // send file from buffer
+      // send file from fileBuffer
       if (send (mSocket, (const char*)fileBuffer, (int)fileSize, 0) < 0)
         cLog::log (LOGERROR, "send failed");
       free (fileBuffer);
@@ -162,7 +182,7 @@ public:
                               "<body bgcolor=""ffffff"">\n"
                               "404: notFound\n"
                               "<p>Tiny couldn't find this file: {}\n"
-                              "<hr><em>The Tiny Web server</em>\n",
+                              "<hr><em>Colin web server</em>\n",
                               getUri());
 
     if (send (mSocket, response.c_str(), (int)response.size(), 0) < 0)
@@ -220,8 +240,8 @@ private:
 
     string response = format ("HTTP/1.1 200 OK\n"
                               "Server: Colin web server\n"
-                              "Content-length: {0}\n"
-                              "Content-type: {1}\n"
+                              "Content-length: {}\n"
+                              "Content-type: {}\n"
                               "\r\n",
                               fileSize, fileType);
 
@@ -313,46 +333,30 @@ private:
 //}}}
 
 int main (int argc, char** argv) {
-  //{{{  wsa startup
-  #ifdef _WIN32
-    WSADATA wsaData;
-    WSAStartup (MAKEWORD(2, 2), &wsaData);
-  #endif
-  //}}}
   cLog::init (LOGINFO);
   cLog::log (LOGNOTICE, "minimal http server");
 
-  // start server listening on port
+  // start server listening on port for client
   cHttpServer server (80);
   server.start();
 
   while (true) {
-    // wait for a connection request
     struct sockaddr_in clientAddr;
-    SOCKET socket = server.accept (clientAddr);
-    if (socket < 0) {
+    string clientName;
+    string clientAddressString;
+    SOCKET clientSocket = server.client (clientAddr, clientName, clientAddressString);
+    if (clientSocket < 0) {
       cLog::log (LOGERROR, "accept failed");
       continue;
       }
+    cLog::log (LOGINFO, "client " + clientName + " "  + clientAddressString);
 
-    // determine who sent the message
-    struct hostent* host =
-      gethostbyaddr ((const char*)&clientAddr.sin_addr.s_addr, sizeof(clientAddr.sin_addr.s_addr), AF_INET);
-    if (host == NULL)
-      cLog::log (LOGERROR, "gethostbyaddr failed");
-
-    char* hostAddr = inet_ntoa (clientAddr.sin_addr);
-    if (hostAddr)
-      cLog::log (LOGINFO, "inet_ntoa %s", hostAddr);
-    else
-      cLog::log (LOGERROR, "inet_ntoa failed");
-
-    cHttpRequest request (socket);
-    if (request.receive())
-      if (request.getMethod() == "GET")
-        if (request.respondFile())
+    cHttpRequest clientRequest (clientSocket);
+    if (clientRequest.receive())
+      if (clientRequest.getMethod() == "GET")
+        if (clientRequest.respondFile())
           continue;
 
-    request.respondNotOk();
+    clientRequest.respondNotOk();
     }
   }
