@@ -1,16 +1,5 @@
-//{{{
-// tiny.c - a minimal HTTP server that serves static and
-// *          dynamic content with the GET method. Neither
-// *          robust, secure, nor modular. Use for instructional
-// *          purposes only.
-// *          Dave O'Hallaron, Carnegie Mellon
-//}}}
+// server.cpp
 //{{{  includes
-#include <cstdint>
-#include <string>
-#include <vector>
-#include <algorithm>
-
 #ifdef _WIN32
   #define _CRT_SECURE_NO_WARNINGS
   #define _WINSOCK_DEPRECATED_NO_WARNINGS
@@ -32,6 +21,11 @@
 
   #define SOCKET int
 #endif
+
+#include <cstdint>
+#include <string>
+#include <vector>
+#include <algorithm>
 
 #include <stdio.h>
 #include <string.h>
@@ -87,6 +81,7 @@ void split (const string& str, char delim = ' ') {
   mStrings.push_back (str.substr (previous, current - previous));
   }
 //}}}
+
 //{{{
 void response (SOCKET socket, const char* cause, const char* err, const char* shortmsg, const char* longmsg) {
 
@@ -104,6 +99,7 @@ void response (SOCKET socket, const char* cause, const char* err, const char* sh
     cLog::log (LOGERROR, "response send failed");
   }
 //}}}
+//{{{
 void closeSocket (SOCKET socket) {
 
   #ifdef _WIN32
@@ -114,6 +110,7 @@ void closeSocket (SOCKET socket) {
     close (socket);
   #endif
   }
+//}}}
 //{{{  could use tiny http parser
 //{{{
 //enum eHeaderState {
@@ -400,12 +397,12 @@ int main (int argc, char **argv) {
       cLog::log (LOGERROR, "inet_ntoa");
     //}}}
 
+    string uri;
     mLineStrings.clear();
     mStrings.clear();
 
     constexpr int kRecvBufferSize = 128;
     uint8_t buffer[kRecvBufferSize];
-
     bool needMoreData = true;
     while (needMoreData) {
       auto bufferPtr = buffer;
@@ -427,7 +424,7 @@ int main (int argc, char **argv) {
       if (mStrings.size() == 3) {
         cLog::log (LOGINFO, format ("method:{} uri:{} version:{}",  mStrings[0], mStrings[1], mStrings[2]));
         string method =  mStrings[0];
-        string uri = mStrings[1];
+        uri = mStrings[1];
         if (uri  == "/")
           uri += "index.html";
         uri = "." + uri;
@@ -435,7 +432,7 @@ int main (int argc, char **argv) {
 
         int64_t fileSize = getFileSize (uri);
         if (fileSize) {
-          // send OK response, Content-length, Content-type
+          // file exists, send OK response, Content-length, Content-type
           string response = format ("HTTP/1.1 200 OK\n"
                                     "Server: Tiny Web Server\n"
                                     "Content-length: {}\n"
@@ -451,6 +448,7 @@ int main (int argc, char **argv) {
           fread (fileBuffer, 1, fileSize, file);
           fclose (file);
 
+          // send file from buffer
           if (send (childfd, (const char*)fileBuffer, (int)fileSize, 0) < 0)
             cLog::log (LOGERROR, "send failed");
           free (fileBuffer);
@@ -464,7 +462,7 @@ int main (int argc, char **argv) {
         }
       }
 
-    response (childfd, "dummy", "404", "Not found", "Tiny couldn't find this file");
+    response (childfd, uri.c_str(), "404", "Not found", "Tiny couldn't find this file");
     closeSocket (childfd);
     continue;
     }
