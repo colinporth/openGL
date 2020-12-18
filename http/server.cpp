@@ -40,16 +40,16 @@ using namespace fmt;
 
 vector <string> mLineStrings;
 //{{{
-vector<string> split (const string& str, char delim = ' ') {
+vector<string> split (const string& str, char delimiter = ' ') {
 
   vector <string> strings;
 
   size_t previous = 0;
-  size_t current = str.find (delim);
+  size_t current = str.find (delimiter);
   while (current != std::string::npos) {
     strings.push_back (str.substr (previous, current - previous));
     previous = current + 1;
-    current = str.find (delim, previous);
+    current = str.find (delimiter, previous);
     }
 
   strings.push_back (str.substr (previous, current - previous));
@@ -142,17 +142,9 @@ void closeSocket (SOCKET socket) {
 
 enum eLineState { eNone, eChar, eReturn, eLine, eDone, eError };
 eLineState mLineState = eNone;
-bool mRequest = false;
 string mLineString;
 //{{{
 bool parseData (const uint8_t* data, int length, int& bytesParsed) {
-// GET /path  HTTP/1.1\r\n
-// Host: host \r\n
-// header tag: value \r\n
-// \r\n;
-//  method path version\r\n
-//  tag value \r\n
-//  \r\n
 
   int initialLength = length;
 
@@ -189,8 +181,8 @@ bool parseData (const uint8_t* data, int length, int& bytesParsed) {
             }
           else {
             mLineState = eLine;
-            cLog::log (LOGINFO, "got line - " + mLineString);
             mLineStrings.push_back (mLineString);
+            cLog::log (LOGINFO, mLineString);
             }
           }
         else {
@@ -247,7 +239,7 @@ int main (int argc, char **argv) {
     // wait for a connection request
     struct sockaddr_in clientaddr; // client addr
     socklen_t clientlen = sizeof (clientaddr);
-    SOCKET childSocket = accept (parentSocket, (struct sockaddr *) &clientaddr, &clientlen);
+    SOCKET childSocket = accept (parentSocket, (struct sockaddr*) &clientaddr, &clientlen);
     if (childSocket < 0)
       cLog::log (LOGERROR, "accept failed");
 
