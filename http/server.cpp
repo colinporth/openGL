@@ -38,171 +38,231 @@ using namespace std;
 using namespace fmt;
 //}}}
 
-vector <string> mLineStrings;
 //{{{
-vector<string> split (const string& str, char delimiter = ' ') {
+class cRequest {
+public:
+  cRequest() {}
+  ~cRequest() {}
 
-  vector <string> strings;
+  string getMethod() { return mRequestStrings.size() > 0 ? mRequestStrings[0] : ""; }
+  string getUri() { return mRequestStrings.size() > 1 ? mRequestStrings[1] : ""; }
+  string getVersion() { return mRequestStrings.size() > 2 ? mRequestStrings[2] : ""; }
+  //{{{
+  bool getRequest (SOCKET childSocket) {
 
-  size_t previous = 0;
-  size_t current = str.find (delimiter);
-  while (current != std::string::npos) {
-    strings.push_back (str.substr (previous, current - previous));
-    previous = current + 1;
-    current = str.find (delimiter, previous);
-    }
+    constexpr int kRecvBufferSize = 128;
+    uint8_t buffer[kRecvBufferSize];
 
-  strings.push_back (str.substr (previous, current - previous));
-
-  return strings;
-  }
-//}}}
-
-//{{{
-int64_t getFileSize (const string& filename) {
-
-#ifdef _WIN32
-  struct _stati64 st;
-  if (_stat64 (filename.c_str(), &st) == -1)
-#else
-  struct stat st;
-  if (stat (filename.c_str(), &st) == -1)
-#endif
-    return 0;
-  else
-    return st.st_size;
-  }
-//}}}
-//{{{
-void sendResponseOK (SOCKET socket, const string& filename, int fileSize) {
-
-  string fileType;
-  if (filename.find (".html") != string::npos)
-    fileType = "text/html";
-  else if (filename.find (".jpg") != string::npos)
-    fileType = "image/jpg";
-  else
-    fileType = "text/plain";
-
-  string response = format ("HTTP/1.1 200 OK\n"
-                            "Server: Colin web server\n"
-                            "Content-length: {0}\n"
-                            "Content-type: {1}\n"
-                            "\r\n",
-                            fileSize, fileType);
-
-  if (send (socket, response.c_str(), (int)response.size(), 0) < 0)
-    cLog::log (LOGERROR, "sendResponseOK send failed");
-  }
-//}}}
-//{{{
-void sendFile (SOCKET socket, const string& filename, int fileSize) {
-
-  // read file into buffer
-  FILE* file = fopen (filename.c_str(), "rb");
-  uint8_t* fileBuffer = (uint8_t*)malloc (fileSize);
-  fread (fileBuffer, 1, fileSize, file);
-  fclose (file);
-
-  // send file from buffer
-  if (send (socket, (const char*)fileBuffer, (int)fileSize, 0) < 0)
-    cLog::log (LOGERROR, "send failed");
-  free (fileBuffer);
-  }
-//}}}
-//{{{
-void sendResponseNotOk (SOCKET socket, const string& filename) {
-
-  string response = format ("HTTP/1.1 404 notFound\n"
-                            "Content-type: text/html\n"
-                            "\n"
-                            "<html><title>Tiny Error</title>"
-                            "<body bgcolor=""ffffff"">\n"
-                            "404: notFound\n"
-                            "<p>Tiny couldn't find this file: {}\n"
-                            "<hr><em>The Tiny Web server</em>\n",
-                            filename);
-
-  if (send (socket, response.c_str(), (int)response.size(), 0) < 0)
-    cLog::log (LOGERROR, "sendResponseNotOk send failed");
-  }
-//}}}
-//{{{
-void closeSocket (SOCKET socket) {
-
-  #ifdef _WIN32
-    closesocket (socket);
-  #endif
-
-  #ifdef __linux__
-    close (socket);
-  #endif
-  }
-//}}}
-
-enum eLineState { eNone, eChar, eReturn, eLine, eDone, eError };
-eLineState mLineState = eNone;
-string mLineString;
-//{{{
-bool parseData (const uint8_t* data, int length, int& bytesParsed) {
-
-  int initialLength = length;
-
-  while (length) {
-    char ch = *data;
-    switch (mLineState) {
-      case eDone:
-      case eNone:
-      case eLine:
-      case eError:
-        mLineString = "";
-      case eChar:
-        if (ch =='\r') // return, expect newline
-          mLineState = eReturn;
-        else if (ch =='\n') {
-          // newline before return, error
-          cLog::log (LOGERROR, "newline before return");
-          mLineState = eError;
-          }
-        else {// add to LineString
-          mLineString += ch;
-          mLineState = eChar;
-          }
+    bool needMoreData = true;
+    while (needMoreData) {
+      auto bufferPtr = buffer;
+      auto bufferBytesReceived =  recv (childSocket, (char*)buffer, kRecvBufferSize, 0);;
+      if (bufferBytesReceived <= 0) {
+        cLog::log (LOGERROR, "recv - no bytes %d", bufferBytesReceived);
         break;
-
-      case eReturn:
-        if (ch == '\n') {
-          // newline after return
-          if (mLineString.empty()) {
-            // empty line, done
-            mLineState = eDone;
-            bytesParsed = initialLength - length;
-            return false;
-            }
-          else {
-            mLineState = eLine;
-            mLineStrings.push_back (mLineString);
-            cLog::log (LOGINFO, mLineString);
-            }
-          }
-        else {
-          // not newline after return
-          mLineState = eError;
-          cLog::log (LOGERROR, "not newline after return %c", ch);
-          }
-        break;
+        }
+      while (needMoreData && (bufferBytesReceived > 0)) {
+        int bytesReceived;
+        needMoreData = parseData (bufferPtr, bufferBytesReceived, bytesReceived);
+        bufferBytesReceived -= bytesReceived;
+        bufferPtr += bytesReceived;
+        }
       }
 
-    data++;
-    length--;
-    }
+    if (!mLineStrings.empty()) {
+      mRequestStrings = split (mLineStrings[0], ' ');
+      cLog::log (LOGINFO, format ("method:{} uri:{} version:{}", getMethod(), getUri(), getVersion()));
+      }
 
-  bytesParsed = initialLength - length;
-  return true;
-  }
+    return !mLineStrings.empty() && (mRequestStrings.size() == 3);
+    }
+  //}}}
+
+  //{{{
+  bool respondFile (SOCKET socket) {
+
+    string uri = "." + getUri();
+
+    int64_t fileSize = getFileSize (uri);
+    if (fileSize) {
+      sendResponseOK (socket, uri, fileSize);
+
+      // read file into buffer
+      FILE* file = fopen (uri.c_str(), "rb");
+      uint8_t* fileBuffer = (uint8_t*)malloc (fileSize);
+      fread (fileBuffer, 1, fileSize, file);
+      fclose (file);
+
+      // send file from buffer
+      if (send (socket, (const char*)fileBuffer, (int)fileSize, 0) < 0)
+        cLog::log (LOGERROR, "send failed");
+      free (fileBuffer);
+      closeSocket (socket);
+      return true;
+      }
+
+    return false;
+    }
+  //}}}
+  //{{{
+  void respondNotOk (SOCKET socket) {
+
+    string response = format ("HTTP/1.1 404 notFound\n"
+                              "Content-type: text/html\n"
+                              "\n"
+                              "<html><title>Tiny Error</title>"
+                              "<body bgcolor=""ffffff"">\n"
+                              "404: notFound\n"
+                              "<p>Tiny couldn't find this file: {}\n"
+                              "<hr><em>The Tiny Web server</em>\n",
+                              getUri());
+
+    if (send (socket, response.c_str(), (int)response.size(), 0) < 0)
+      cLog::log (LOGERROR, "sendResponseNotOk send failed");
+
+    closeSocket (socket);
+    }
+  //}}}
+
+private:
+  //{{{
+  static int64_t getFileSize (const string& filename) {
+
+  #ifdef _WIN32
+    struct _stati64 st;
+    if (_stat64 (filename.c_str(), &st) == -1)
+  #else
+    struct stat st;
+    if (stat (filename.c_str(), &st) == -1)
+  #endif
+      return 0;
+    else
+      return st.st_size;
+    }
+  //}}}
+  //{{{
+  static vector<string> split (const string& str, char delimiter = ' ') {
+
+    vector <string> strings;
+
+    size_t previous = 0;
+    size_t current = str.find (delimiter);
+    while (current != std::string::npos) {
+      strings.push_back (str.substr (previous, current - previous));
+      previous = current + 1;
+      current = str.find (delimiter, previous);
+      }
+
+    strings.push_back (str.substr (previous, current - previous));
+
+    return strings;
+    }
+  //}}}
+
+  //{{{
+  void sendResponseOK (SOCKET socket, const string& filename, int fileSize) {
+
+    string fileType;
+    if (filename.find (".html") != string::npos)
+      fileType = "text/html";
+    else if (filename.find (".jpg") != string::npos)
+      fileType = "image/jpg";
+    else
+      fileType = "text/plain";
+
+    string response = format ("HTTP/1.1 200 OK\n"
+                              "Server: Colin web server\n"
+                              "Content-length: {0}\n"
+                              "Content-type: {1}\n"
+                              "\r\n",
+                              fileSize, fileType);
+
+    if (send (socket, response.c_str(), (int)response.size(), 0) < 0)
+      cLog::log (LOGERROR, "sendResponseOK send failed");
+    }
+  //}}}
+  //{{{
+  bool parseData (const uint8_t* data, int length, int& bytesParsed) {
+
+    int initialLength = length;
+
+    while (length) {
+      char ch = *data;
+      switch (mLineState) {
+        case eDone:
+        case eNone:
+        case eLine:
+        case eError:
+          mLineString = "";
+        case eChar:
+          if (ch =='\r') // return, expect newline
+            mLineState = eReturn;
+          else if (ch =='\n') {
+            // newline before return, error
+            cLog::log (LOGERROR, "newline before return");
+            mLineState = eError;
+            }
+          else {// add to LineString
+            mLineString += ch;
+            mLineState = eChar;
+            }
+          break;
+
+        case eReturn:
+          if (ch == '\n') {
+            // newline after return
+            if (mLineString.empty()) {
+              // empty line, done
+              mLineState = eDone;
+              bytesParsed = initialLength - length;
+              return false;
+              }
+            else {
+              mLineState = eLine;
+              mLineStrings.push_back (mLineString);
+              cLog::log (LOGINFO, mLineString);
+              }
+            }
+          else {
+            // not newline after return
+            mLineState = eError;
+            cLog::log (LOGERROR, "not newline after return %c", ch);
+            }
+          break;
+        }
+
+      data++;
+      length--;
+      }
+
+    bytesParsed = initialLength - length;
+    return true;
+    }
+  //}}}
+  //{{{
+  void closeSocket (SOCKET socket) {
+
+    #ifdef _WIN32
+      closesocket (socket);
+    #endif
+
+    #ifdef __linux__
+      close (socket);
+    #endif
+    }
+  //}}}
+
+  enum eLineState { eNone, eChar, eReturn, eLine, eDone, eError };
+
+  eLineState mLineState = eNone;
+  string mLineString;
+
+  vector <string> mLineStrings;
+  vector <string> mRequestStrings;
+  };
 //}}}
 
-int main (int argc, char **argv) {
+int main (int argc, char** argv) {
   //{{{  wsa startup
   #ifdef _WIN32
     WSADATA wsaData;
@@ -222,85 +282,43 @@ int main (int argc, char **argv) {
   setsockopt (parentSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&optval , sizeof(int));
 
   // bind port to socket
-  int portno = 80;
-  struct sockaddr_in serveraddr; // server's addr
-  memset (&serveraddr, 0, sizeof(serveraddr));
-  serveraddr.sin_family = AF_INET;
-  serveraddr.sin_addr.s_addr = htonl (INADDR_ANY);
-  serveraddr.sin_port = htons ((unsigned short)portno);
-  if (bind (parentSocket, (struct sockaddr *) &serveraddr, sizeof(serveraddr)) < 0)
-    cLog::log (LOGERROR, "binding failed");
+  constexpr uint16_t kPortNumber = 80;
+  struct sockaddr_in serverAddr;
+  memset (&serverAddr, 0, sizeof(serverAddr));
+  serverAddr.sin_family = AF_INET;
+  serverAddr.sin_addr.s_addr = htonl (INADDR_ANY);
+  serverAddr.sin_port = htons (kPortNumber);
+  if (bind (parentSocket, (struct sockaddr*) &serverAddr, sizeof(serverAddr)) < 0)
+    cLog::log (LOGERROR, "bind failed");
 
-  // get us ready to accept connection requests
+  // ready to accept connection requests
   if (listen (parentSocket, 5) < 0) // allow 5 requests to queue up
     cLog::log (LOGERROR, "listen failed");
 
   while (true) {
     // wait for a connection request
-    struct sockaddr_in clientaddr; // client addr
-    socklen_t clientlen = sizeof (clientaddr);
-    SOCKET childSocket = accept (parentSocket, (struct sockaddr*) &clientaddr, &clientlen);
+    struct sockaddr_in clientAddr;
+    socklen_t clientlen = sizeof (clientAddr);
+    SOCKET childSocket = accept (parentSocket, (struct sockaddr*) &clientAddr, &clientlen);
     if (childSocket < 0)
       cLog::log (LOGERROR, "accept failed");
 
     // determine who sent the message
     struct hostent* host =
-      gethostbyaddr ((const char*)&clientaddr.sin_addr.s_addr, sizeof(clientaddr.sin_addr.s_addr), AF_INET);
+      gethostbyaddr ((const char*)&clientAddr.sin_addr.s_addr, sizeof(clientAddr.sin_addr.s_addr), AF_INET);
     if (host == NULL)
       cLog::log (LOGERROR, "gethostbyaddr failed");
-    char* hostaddr = inet_ntoa (clientaddr.sin_addr);
-    if (hostaddr == NULL)
+    char* hostAddr = inet_ntoa (clientAddr.sin_addr);
+    if (hostAddr == NULL)
       cLog::log (LOGERROR, "inet_ntoa");
 
-    mLineStrings.clear();
-    constexpr int kRecvBufferSize = 128;
-    uint8_t buffer[kRecvBufferSize];
-    bool needMoreData = true;
-    while (needMoreData) {
-      auto bufferPtr = buffer;
-      auto bufferBytesReceived =  recv (childSocket, (char*)buffer, kRecvBufferSize, 0);;
-      if (bufferBytesReceived <= 0) {
-        cLog::log (LOGERROR, "recv - no bytes %d", bufferBytesReceived);
-        break;
-        }
-      while (needMoreData && (bufferBytesReceived > 0)) {
-        int bytesReceived;
-        needMoreData = parseData (bufferPtr, bufferBytesReceived, bytesReceived);
-        bufferBytesReceived -= bytesReceived;
-        bufferPtr += bytesReceived;
-        }
-      }
-
     string uri;
-    if (mLineStrings.size() > 0) {
-      vector <string> strings = split (mLineStrings[0], ' ');
-      if (strings.size() == 3) {
-        cLog::log (LOGINFO, format ("method:{} uri:{} version:{}", strings[0], strings[1], strings[2]));
-        string method = strings[0];
-        if (method == "GET") {
-          // GET
-          uri = "." + strings[1];
-          string version = strings[2];
+    cRequest request;
+    if (request.getRequest (childSocket))
+      if (request.getMethod() == "GET")
+        if (request.respondFile (childSocket))
+          continue;
 
-          int64_t fileSize = getFileSize (uri);
-          if (fileSize) {
-            sendResponseOK (childSocket, uri, fileSize);
-            sendFile (childSocket, uri, fileSize);
-            closeSocket (childSocket);
-            continue;
-            }
-          }
-        else
-          cLog::log (LOGERROR, "unrecoginsed method - " + method);
-        }
-      else
-        cLog::log (LOGERROR, "request short - " + mLineStrings[0]);
-      }
-    else
-      cLog::log (LOGERROR, "no request");
-
-    sendResponseNotOk (childSocket, uri);
-    closeSocket (childSocket);
-    continue;
+    request.respondNotOk (childSocket);
     }
   }
