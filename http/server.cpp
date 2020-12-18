@@ -120,7 +120,7 @@ void sendResponseNotOk (SOCKET socket, const string& filename) {
                             "<hr><em>The Tiny Web server</em>\n",
                             filename);
 
-  if (send (childSocket, response.c_str(), (int)response.size(), 0) < 0)
+  if (send (socket, response.c_str(), (int)response.size(), 0) < 0)
     cLog::log (LOGERROR, "sendResponseNotOk send failed");
   }
 //}}}
