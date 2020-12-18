@@ -41,14 +41,14 @@ using namespace fmt;
 //{{{
 class cRequest {
 public:
-  cRequest() {}
+  cRequest (SOCKET socket) : mSocket(socket) {}
   ~cRequest() {}
 
   string getMethod() { return mRequestStrings.size() > 0 ? mRequestStrings[0] : ""; }
   string getUri() { return mRequestStrings.size() > 1 ? mRequestStrings[1] : ""; }
   string getVersion() { return mRequestStrings.size() > 2 ? mRequestStrings[2] : ""; }
   //{{{
-  bool getRequest (SOCKET childSocket) {
+  bool getRequest() {
 
     constexpr int kRecvBufferSize = 128;
     uint8_t buffer[kRecvBufferSize];
@@ -56,7 +56,7 @@ public:
     bool needMoreData = true;
     while (needMoreData) {
       auto bufferPtr = buffer;
-      auto bufferBytesReceived =  recv (childSocket, (char*)buffer, kRecvBufferSize, 0);;
+      auto bufferBytesReceived =  recv (mSocket, (char*)buffer, kRecvBufferSize, 0);;
       if (bufferBytesReceived <= 0) {
         cLog::log (LOGERROR, "recv - no bytes %d", bufferBytesReceived);
         break;
@@ -79,13 +79,13 @@ public:
   //}}}
 
   //{{{
-  bool respondFile (SOCKET socket) {
+  bool respondFile() {
 
     string uri = "." + getUri();
 
     int64_t fileSize = getFileSize (uri);
     if (fileSize) {
-      sendResponseOK (socket, uri, fileSize);
+      sendResponseOK (uri, fileSize);
 
       // read file into buffer
       FILE* file = fopen (uri.c_str(), "rb");
@@ -94,10 +94,11 @@ public:
       fclose (file);
 
       // send file from buffer
-      if (send (socket, (const char*)fileBuffer, (int)fileSize, 0) < 0)
+      if (send (mSocket, (const char*)fileBuffer, (int)fileSize, 0) < 0)
         cLog::log (LOGERROR, "send failed");
       free (fileBuffer);
-      closeSocket (socket);
+
+      closeSocket();
       return true;
       }
 
@@ -105,7 +106,7 @@ public:
     }
   //}}}
   //{{{
-  void respondNotOk (SOCKET socket) {
+  void respondNotOk() {
 
     string response = format ("HTTP/1.1 404 notFound\n"
                               "Content-type: text/html\n"
@@ -117,10 +118,10 @@ public:
                               "<hr><em>The Tiny Web server</em>\n",
                               getUri());
 
-    if (send (socket, response.c_str(), (int)response.size(), 0) < 0)
+    if (send (mSocket, response.c_str(), (int)response.size(), 0) < 0)
       cLog::log (LOGERROR, "sendResponseNotOk send failed");
 
-    closeSocket (socket);
+    closeSocket();
     }
   //}}}
 
@@ -160,7 +161,7 @@ private:
   //}}}
 
   //{{{
-  void sendResponseOK (SOCKET socket, const string& filename, int fileSize) {
+  void sendResponseOK (const string& filename, int fileSize) {
 
     string fileType;
     if (filename.find (".html") != string::npos)
@@ -177,7 +178,7 @@ private:
                               "\r\n",
                               fileSize, fileType);
 
-    if (send (socket, response.c_str(), (int)response.size(), 0) < 0)
+    if (send (mSocket, response.c_str(), (int)response.size(), 0) < 0)
       cLog::log (LOGERROR, "sendResponseOK send failed");
     }
   //}}}
@@ -240,19 +241,21 @@ private:
     }
   //}}}
   //{{{
-  void closeSocket (SOCKET socket) {
+  void closeSocket() {
 
     #ifdef _WIN32
-      closesocket (socket);
+      closesocket (mSocket);
     #endif
 
     #ifdef __linux__
-      close (socket);
+      close (mSocket);
     #endif
     }
   //}}}
 
   enum eLineState { eNone, eChar, eReturn, eLine, eDone, eError };
+
+  SOCKET mSocket;
 
   eLineState mLineState = eNone;
   string mLineString;
@@ -300,8 +303,10 @@ int main (int argc, char** argv) {
     struct sockaddr_in clientAddr;
     socklen_t clientlen = sizeof (clientAddr);
     SOCKET childSocket = accept (parentSocket, (struct sockaddr*) &clientAddr, &clientlen);
-    if (childSocket < 0)
+    if (childSocket < 0) {
       cLog::log (LOGERROR, "accept failed");
+      continue;
+      }
 
     // determine who sent the message
     struct hostent* host =
@@ -312,13 +317,12 @@ int main (int argc, char** argv) {
     if (hostAddr == NULL)
       cLog::log (LOGERROR, "inet_ntoa");
 
-    string uri;
-    cRequest request;
-    if (request.getRequest (childSocket))
+    cRequest request (childSocket);
+    if (request.getRequest())
       if (request.getMethod() == "GET")
-        if (request.respondFile (childSocket))
+        if (request.respondFile())
           continue;
 
-    request.respondNotOk (childSocket);
+    request.respondNotOk();
     }
   }
