@@ -10,21 +10,32 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-//#include <iterator>
+
+#ifdef _WIN32
+  #define _CRT_SECURE_NO_WARNINGS
+  #define _WINSOCK_DEPRECATED_NO_WARNINGS
+  #include <winsock2.h>
+  #include <WS2tcpip.h>
+  #pragma comment(lib, "Ws2_32.lib")
+#endif
+
+#ifdef __linux__
+  #include <unistd.h>
+  #include <netdb.h>
+  #include <fcntl.h>
+  #include <sys/types.h>
+  #include <sys/socket.h>
+  #include <sys/mman.h>
+  #include <sys/wait.h>
+  #include <netinet/in.h>
+  #include <arpa/inet.h>
+
+  #define SOCKET int
+#endif
 
 #include <stdio.h>
 #include <string.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <netdb.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
-#include <sys/wait.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
-constexpr int kBufferSize = 1024;
 
 #include "../../shared/fmt/core.h"
 #include "../../shared/utils/cLog.h"
@@ -36,7 +47,7 @@ using namespace fmt;
 vector <string> mLineStrings;
 vector <string> mStrings;
 //{{{
-int getFileSize (const string& filename) {
+int64_t getFileSize (const string& filename) {
 
 #ifdef _WIN32
   struct _stati64 st;
@@ -77,7 +88,7 @@ void split (const string& str, char delim = ' ') {
   }
 //}}}
 //{{{
-void response (int socket, const char* cause, const char* err, const char* shortmsg, const char* longmsg) {
+void response (SOCKET socket, const char* cause, const char* err, const char* shortmsg, const char* longmsg) {
 
   string reply = format ("HTTP/1.1 {0} {1}\n"
                          "Content-type: text/html\n"
@@ -93,6 +104,16 @@ void response (int socket, const char* cause, const char* err, const char* short
     cLog::log (LOGERROR, "response send failed");
   }
 //}}}
+void closeSocket (SOCKET socket) {
+
+  #ifdef _WIN32
+    closesocket (socket);
+  #endif
+
+  #ifdef __linux__
+    close (socket);
+  #endif
+  }
 //{{{  could use tiny http parser
 //{{{
 //enum eHeaderState {
@@ -327,18 +348,23 @@ bool parseData (const uint8_t* data, int length, int& bytesParsed) {
 //}}}
 
 int main (int argc, char **argv) {
-
+  //{{{  wsa startup
+  #ifdef _WIN32
+    WSADATA wsaData;
+    WSAStartup (MAKEWORD(2, 2), &wsaData);
+  #endif
+  //}}}
   cLog::init (LOGINFO);
   cLog::log (LOGNOTICE, "http");
 
   //{{{  open socket descriptor
-  int parentfd = socket (AF_INET, SOCK_STREAM, 0);
+  SOCKET parentfd = socket (AF_INET, SOCK_STREAM, 0);
   if (parentfd < 0)
     cLog::log (LOGERROR, "socket open failed");
   //}}}
   //{{{  allows us to restart server immediately
   int optval = 1;
-  setsockopt (parentfd, SOL_SOCKET, SO_REUSEADDR, (const void*)&optval , sizeof(int));
+  setsockopt (parentfd, SOL_SOCKET, SO_REUSEADDR, (const char*)&optval , sizeof(int));
   //}}}
   //{{{  bind port to socket
   int portno = 80;
@@ -359,7 +385,7 @@ int main (int argc, char **argv) {
     //{{{  wait for a connection request
     struct sockaddr_in clientaddr; // client addr
     socklen_t clientlen = sizeof (clientaddr);
-    int childfd = accept (parentfd, (struct sockaddr *) &clientaddr, &clientlen);
+    SOCKET childfd = accept (parentfd, (struct sockaddr *) &clientaddr, &clientlen);
     if (childfd < 0)
       cLog::log (LOGERROR, "accept failed");
     //}}}
@@ -407,7 +433,7 @@ int main (int argc, char **argv) {
         uri = "." + uri;
         string version =  mStrings[2];
 
-        int fileSize = getFileSize (uri);
+        int64_t fileSize = getFileSize (uri);
         if (fileSize) {
           // send OK response, Content-length, Content-type
           string response = format ("HTTP/1.1 200 OK\n"
@@ -420,26 +446,26 @@ int main (int argc, char **argv) {
             cLog::log (LOGERROR, "send failed");
 
           // read file into buffer
-          int fd = open (uri.c_str(), O_RDONLY);
+          FILE* file = fopen (uri.c_str(), "rb");
           uint8_t* fileBuffer = (uint8_t*)malloc (fileSize);
-          read (fd, fileBuffer, fileSize);
-          close (fd);
+          fread (fileBuffer, 1, fileSize, file);
+          fclose (file);
 
-          if (send (childfd, fileBuffer, fileSize, 0) < 0)
+          if (send (childfd, (const char*)fileBuffer, (int)fileSize, 0) < 0)
             cLog::log (LOGERROR, "send failed");
           free (fileBuffer);
 
           cLog::log (LOGINFO, format ("{} {}:bytes sent", uri, fileSize));
 
           // clean up
-          close (childfd);
+          closeSocket (childfd);
           continue;
           }
         }
       }
 
     response (childfd, "dummy", "404", "Not found", "Tiny couldn't find this file");
-    close (childfd);
+    closeSocket (childfd);
     continue;
     }
   }

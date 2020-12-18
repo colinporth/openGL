@@ -21,7 +21,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\shared\fmt\format.cpp" />
     <ClCompile Include="..\..\shared\utils\cLog.cpp" />
-    <ClCompile Include="tiny.cpp" />
+    <ClCompile Include="server.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\fmt\args.h" />

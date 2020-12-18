@@ -1,5 +1,5 @@
 TARGET    = app
-SRCS      = example.cpp \
+SRCS      = server.cpp \
 	    ../../shared/utils/cLog.cpp \
 	    ../../shared/fmt/format.cpp \
 

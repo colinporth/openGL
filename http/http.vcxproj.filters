@@ -55,5 +55,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\shared\utils\cLog.cpp" />
     <ClCompile Include="..\..\shared\fmt\format.cpp" />
+    <ClCompile Include="server.cpp" />
   </ItemGroup>
 </Project>
