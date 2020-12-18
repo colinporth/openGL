@@ -44,34 +44,34 @@ public:
   cHttpServer (uint16_t portNumber) : mPortNumber(portNumber) {}
   ~cHttpServer() {}
 
- //{{{
- void start() {
+  //{{{
+  void start() {
 
-   mParentSocket = socket (AF_INET, SOCK_STREAM, 0);
-   if (mParentSocket < 0)
-     cLog::log (LOGERROR, "socket open failed");
+    mParentSocket = socket (AF_INET, SOCK_STREAM, 0);
+    if (mParentSocket < 0)
+      cLog::log (LOGERROR, "socket open failed");
 
-   // allows us to restart server immediately
-   int optval = 1;
-   setsockopt (mParentSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&optval , sizeof(int));
+    // allows us to restart server immediately
+    int optval = 1;
+    setsockopt (mParentSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&optval , sizeof(int));
 
-   // bind port to socket
-   constexpr uint16_t kPortNumber = 80;
+    // bind port to socket
+    constexpr uint16_t kPortNumber = 80;
 
-   struct sockaddr_in serverAddr;
-   memset (&serverAddr, 0, sizeof(serverAddr));
-   serverAddr.sin_family = AF_INET;
-   serverAddr.sin_addr.s_addr = htonl (INADDR_ANY);
-   serverAddr.sin_port = htons (kPortNumber);
+    struct sockaddr_in serverAddr;
+    memset (&serverAddr, 0, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_addr.s_addr = htonl (INADDR_ANY);
+    serverAddr.sin_port = htons (kPortNumber);
 
-   if (bind (mParentSocket, (struct sockaddr*) &serverAddr, sizeof(serverAddr)) < 0)
-     cLog::log (LOGERROR, "bind failed");
+    if (bind (mParentSocket, (struct sockaddr*) &serverAddr, sizeof(serverAddr)) < 0)
+      cLog::log (LOGERROR, "bind failed");
 
-   // ready to accept connection requests
-   if (listen (mParentSocket, 5) < 0) // allow 5 requests to queue up
-     cLog::log (LOGERROR, "listen failed");
-   }
- //}}}
+    // ready to accept connection requests
+    if (listen (mParentSocket, 5) < 0) // allow 5 requests to queue up
+      cLog::log (LOGERROR, "listen failed");
+    }
+  //}}}
   //{{{
   SOCKET accept (struct sockaddr_in& clientAddr) {
 
@@ -329,8 +329,8 @@ int main (int argc, char** argv) {
   while (true) {
     // wait for a connection request
     struct sockaddr_in clientAddr;
-    SOCKET childSocket = server.accept (clientAddr);
-    if (childSocket < 0) {
+    SOCKET socket = server.accept (clientAddr);
+    if (socket < 0) {
       cLog::log (LOGERROR, "accept failed");
       continue;
       }
@@ -340,11 +340,14 @@ int main (int argc, char** argv) {
       gethostbyaddr ((const char*)&clientAddr.sin_addr.s_addr, sizeof(clientAddr.sin_addr.s_addr), AF_INET);
     if (host == NULL)
       cLog::log (LOGERROR, "gethostbyaddr failed");
-    char* hostAddr = inet_ntoa (clientAddr.sin_addr);
-    if (hostAddr == NULL)
-      cLog::log (LOGERROR, "inet_ntoa");
 
-    cHttpRequest request (childSocket);
+    char* hostAddr = inet_ntoa (clientAddr.sin_addr);
+    if (hostAddr)
+      cLog::log (LOGINFO, "inet_ntoa %s", hostAddr);
+    else
+      cLog::log (LOGERROR, "inet_ntoa failed");
+
+    cHttpRequest request (socket);
     if (request.receive())
       if (request.getMethod() == "GET")
         if (request.respondFile())
