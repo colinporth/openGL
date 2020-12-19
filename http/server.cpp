@@ -117,8 +117,9 @@ public:
 
   //{{{
   bool receive() {
+  // crude http request parser
 
-    constexpr int kRecvBufferSize = 128;
+    constexpr int kRecvBufferSize = 1024;
     uint8_t buffer[kRecvBufferSize];
 
     bool needMoreData = true;
@@ -126,7 +127,7 @@ public:
       auto bufferPtr = buffer;
       auto bufferBytesReceived =  recv (mSocket, (char*)buffer, kRecvBufferSize, 0);;
       if (bufferBytesReceived <= 0) {
-        cLog::log (LOGERROR, "recv - no bytes %d", bufferBytesReceived);
+        cLog::log (LOGERROR, "recv terminated with no bytes %d", bufferBytesReceived);
         break;
         }
       while (needMoreData && (bufferBytesReceived > 0)) {
@@ -208,12 +209,14 @@ public:
   //}}}
 
   //{{{
-  void debug() {
+  void debug (bool showHeaders ) {
+
     cLog::log (LOGINFO1, format ("{} {} {} numLines:{} numHeaders:{}",
                                  getMethod(), getUri(), getVersion(), mStrings.size(), mHeaders.size()));
 
-    for (auto& header : mHeaders)
-      cLog::log (LOGINFO1, format ("tag:{} value:{}", header.mTag, header.mValue));
+    if (showHeaders)
+      for (auto& header : mHeaders)
+        cLog::log (LOGINFO1, format ("tag:{} value:{}", header.mTag, header.mValue));
     }
   //}}}
 
@@ -267,29 +270,8 @@ private:
   //}}}
 
   //{{{
-  void sendResponseOK (const string& filename, int fileSize) {
-
-    string fileType;
-    if (filename.find (".html") != string::npos)
-      fileType = "text/html";
-    else if (filename.find (".jpg") != string::npos)
-      fileType = "image/jpg";
-    else
-      fileType = "text/plain";
-
-    string response = format ("HTTP/1.1 200 OK\n"
-                              "Server: Colin web server\n"
-                              "Content-length: {}\n"
-                              "Content-type: {}\n"
-                              "\r\n",
-                              fileSize, fileType);
-
-    if (send (mSocket, response.c_str(), (int)response.size(), 0) < 0)
-      cLog::log (LOGERROR, "sendResponseOK send failed");
-    }
-  //}}}
-  //{{{
   bool parseData (const uint8_t* data, int length, int& bytesParsed) {
+  // crude http line parser
 
     int initialLength = length;
 
@@ -346,6 +328,28 @@ private:
     }
   //}}}
   //{{{
+  void sendResponseOK (const string& filename, int fileSize) {
+
+    string fileType;
+    if (filename.find (".html") != string::npos)
+      fileType = "text/html";
+    else if (filename.find (".jpg") != string::npos)
+      fileType = "image/jpg";
+    else
+      fileType = "text/plain";
+
+    string response = format ("HTTP/1.1 200 OK\n"
+                              "Server: Colin web server\n"
+                              "Content-length: {}\n"
+                              "Content-type: {}\n"
+                              "\r\n",
+                              fileSize, fileType);
+
+    if (send (mSocket, response.c_str(), (int)response.size(), 0) < 0)
+      cLog::log (LOGERROR, "sendResponseOK send failed");
+    }
+  //}}}
+  //{{{
   void closeSocket() {
 
     #ifdef _WIN32
@@ -375,8 +379,8 @@ private:
     cHeader (const string& tag, const string& value) : mTag(tag), mValue(value) {}
     ~cHeader() {}
 
-    string mTag;
-    string mValue;
+    const string mTag;
+    const string mValue;
     };
   //}}}
   vector <cHeader> mHeaders;
@@ -417,7 +421,7 @@ int main (int numArgs, char* args[]) {
     cHttpRequest request (socket, addr);
     cLog::log (LOGINFO, "accepted client " + request.getClientName() + " "  + request.getClientAddressString());
     if (request.receive()) {
-      request.debug();
+      request.debug (false);
       if (request.getMethod() == "GET")
         if (request.respondFile())
           continue;
