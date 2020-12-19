@@ -61,13 +61,11 @@ public:
     setsockopt (mParentSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&optval , sizeof(int));
 
     // bind port to socket
-    constexpr uint16_t kPortNumber = 80;
-
     struct sockaddr_in serverAddr;
     memset (&serverAddr, 0, sizeof(serverAddr));
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = htonl (INADDR_ANY);
-    serverAddr.sin_port = htons (kPortNumber);
+    serverAddr.sin_port = htons (mPortNumber);
 
     if (bind (mParentSocket, (struct sockaddr*) &serverAddr, sizeof(serverAddr)) < 0)
       cLog::log (LOGERROR, "bind failed");
@@ -78,38 +76,45 @@ public:
     }
   //}}}
   //{{{
-  SOCKET client (struct sockaddr_in& clientAddr, string& clientName, string& clientAddressString) {
+  SOCKET client (struct sockaddr_in& clientAddr) {
 
     socklen_t clientlen = sizeof (clientAddr);
-    SOCKET clientSocket = ::accept (mParentSocket, (struct sockaddr*)&clientAddr, &clientlen);
-
-    // determine who sent the message
-    struct hostent* clientHostEnt = gethostbyaddr ((const char*)&clientAddr.sin_addr.s_addr,
-                                                   sizeof(clientAddr.sin_addr.s_addr), AF_INET);
-    clientName = clientHostEnt ? string(clientHostEnt->h_name) : string ("");
-
-    // covert address to string
-    char* clientAddrStr = inet_ntoa (clientAddr.sin_addr);
-    clientAddressString = clientAddrStr ? string (clientAddrStr) : string("");
-
-    return clientSocket;
+    return ::accept (mParentSocket, (struct sockaddr*)&clientAddr, &clientlen);
     }
   //}}}
 
 private:
   SOCKET mParentSocket;
-  uint16_t mPortNumber;
+  const uint16_t mPortNumber;
   };
 //}}}
 //{{{
 class cHttpRequest {
 public:
-  cHttpRequest (SOCKET socket) : mSocket(socket) {}
+  cHttpRequest (SOCKET socket, const struct sockaddr_in& clientAddr) : mSocket(socket), mSockAddrIn(clientAddr) {
+    }
   ~cHttpRequest() {}
 
   string getMethod() { return mRequestStrings.size() > 0 ? mRequestStrings[0] : ""; }
   string getUri() { return mRequestStrings.size() > 1 ? mRequestStrings[1] : ""; }
   string getVersion() { return mRequestStrings.size() > 2 ? mRequestStrings[2] : ""; }
+  //{{{
+  string getClientName() {
+    // determine who sent the message
+    struct hostent* hostEnt = gethostbyaddr ((const char*)&mSockAddrIn.sin_addr.s_addr,
+                                             sizeof(mSockAddrIn.sin_addr.s_addr), AF_INET);
+    return hostEnt ? string(hostEnt->h_name) : string ("name unknown");
+    }
+  //}}}
+  //{{{
+  string getClientAddressString() {
+  // covert address to string
+
+    char* str = inet_ntoa (mSockAddrIn.sin_addr);
+    return str ? string (str) : string("addr unknown");
+    }
+  //}}}
+
   //{{{
   bool receive() {
 
@@ -132,12 +137,18 @@ public:
         }
       }
 
-    if (!mLineStrings.empty()) {
-      mRequestStrings = split (mLineStrings[0], ' ');
-      cLog::log (LOGINFO, format ("method:{} uri:{} version:{}", getMethod(), getUri(), getVersion()));
+    if (!mStrings.empty())
+      mRequestStrings = split (mStrings[0], ' ');
+
+    if (mStrings.size() > 1) {
+      for (int i = 1; i < mStrings.size(); i++) {
+        vector <string> strings = splitHeader (mStrings[i]);
+        if (strings.size() == 2)
+          mHeaders.push_back (cHeader (strings[0], strings[1]));
+        }
       }
 
-    return !mLineStrings.empty() && (mRequestStrings.size() == 3);
+    return !mStrings.empty() && (mRequestStrings.size() == 3);
     }
   //}}}
 
@@ -150,7 +161,7 @@ public:
       string uri = "E:/piccies" + getUri();
     #endif
 
-    int64_t fileSize = getFileSize (uri);
+    int fileSize = getFileSize (uri);
     if (fileSize) {
       sendResponseOK (uri, fileSize);
 
@@ -164,6 +175,8 @@ public:
       if (send (mSocket, (const char*)fileBuffer, (int)fileSize, 0) < 0)
         cLog::log (LOGERROR, "send failed");
       free (fileBuffer);
+
+      cLog::log (LOGINFO, format ("file {} sent", uri));
 
       closeSocket();
       return true;
@@ -189,12 +202,24 @@ public:
       cLog::log (LOGERROR, "sendResponseNotOk send failed");
 
     closeSocket();
+
+    cLog::log (LOGINFO, format ("404 - file {} not found", getUri()));
+    }
+  //}}}
+
+  //{{{
+  void debug() {
+    cLog::log (LOGINFO1, format ("{} {} {} numLines:{} numHeaders:{}",
+                                 getMethod(), getUri(), getVersion(), mStrings.size(), mHeaders.size()));
+
+    for (auto& header : mHeaders)
+      cLog::log (LOGINFO1, format ("tag:{} value:{}", header.mTag, header.mValue));
     }
   //}}}
 
 private:
   //{{{
-  static int64_t getFileSize (const string& filename) {
+  static int getFileSize (const string& filename) {
 
   #ifdef _WIN32
     struct _stati64 st;
@@ -205,23 +230,37 @@ private:
   #endif
       return 0;
     else
-      return st.st_size;
+      return (int)st.st_size;
     }
   //}}}
   //{{{
-  static vector<string> split (const string& str, char delimiter = ' ') {
+  static vector<string> split (const string& lineString, char delimiter = ' ') {
 
     vector <string> strings;
 
     size_t previous = 0;
-    size_t current = str.find (delimiter);
-    while (current != std::string::npos) {
-      strings.push_back (str.substr (previous, current - previous));
+    size_t current = lineString.find (delimiter);
+    while (current != string::npos) {
+      strings.push_back (lineString.substr (previous, current - previous));
       previous = current + 1;
-      current = str.find (delimiter, previous);
+      current = lineString.find (delimiter, previous);
       }
 
-    strings.push_back (str.substr (previous, current - previous));
+    strings.push_back (lineString.substr (previous, current - previous));
+
+    return strings;
+    }
+  //}}}
+  //{{{
+  static vector<string> splitHeader (const string& lineString) {
+
+    vector <string> strings;
+
+    size_t current = lineString.find (':');
+    if (current != string::npos) {
+      strings.push_back (lineString.substr (0, current));
+      strings.push_back (lineString.substr (current+2, string::npos));
+      }
 
     return strings;
     }
@@ -256,44 +295,43 @@ private:
 
     while (length) {
       char ch = *data;
-      switch (mLineState) {
+      switch (mState) {
         case eDone:
         case eNone:
         case eLine:
         case eError:
-          mLineString = "";
+          mString = "";
         case eChar:
           if (ch =='\r') // return, expect newline
-            mLineState = eReturn;
+            mState = eReturn;
           else if (ch =='\n') {
             // newline before return, error
             cLog::log (LOGERROR, "newline before return");
-            mLineState = eError;
+            mState = eError;
             }
-          else {// add to LineString
-            mLineString += ch;
-            mLineState = eChar;
+          else {// add to string
+            mString += ch;
+            mState = eChar;
             }
           break;
 
         case eReturn:
           if (ch == '\n') {
             // newline after return
-            if (mLineString.empty()) {
+            if (mString.empty()) {
               // empty line, done
-              mLineState = eDone;
+              mState = eDone;
               bytesParsed = initialLength - length;
               return false;
               }
             else {
-              mLineState = eLine;
-              mLineStrings.push_back (mLineString);
-              cLog::log (LOGINFO, mLineString);
+              mState = eLine;
+              mStrings.push_back (mString);
               }
             }
           else {
             // not newline after return
-            mLineState = eError;
+            mState = eError;
             cLog::log (LOGERROR, "not newline after return %c", ch);
             }
           break;
@@ -320,20 +358,48 @@ private:
     }
   //}}}
 
-  enum eLineState { eNone, eChar, eReturn, eLine, eDone, eError };
+  enum eState { eNone, eChar, eReturn, eLine, eDone, eError };
 
-  SOCKET mSocket;
+  const SOCKET mSocket;
+  const struct sockaddr_in mSockAddrIn;
 
-  eLineState mLineState = eNone;
-  string mLineString;
+  eState mState = eNone;
+  string mString;
 
-  vector <string> mLineStrings;
+  vector <string> mStrings;
   vector <string> mRequestStrings;
+
+  //{{{
+  class cHeader {
+  public:
+    cHeader (const string& tag, const string& value) : mTag(tag), mValue(value) {}
+    ~cHeader() {}
+
+    string mTag;
+    string mValue;
+    };
+  //}}}
+  vector <cHeader> mHeaders;
   };
 //}}}
 
-int main (int argc, char** argv) {
-  cLog::init (LOGINFO);
+int main (int numArgs, char* args[]) {
+  //{{{  args to params
+  vector <string> params;
+  for (int i = 1; i < numArgs; i++)
+    params.push_back (args[i]);
+  //}}}
+
+  eLogLevel logLevel = LOGINFO;
+  //{{{  parse params
+  for (auto it = params.begin(); it < params.end(); ++it) {
+    if (*it == "log1") { logLevel = LOGINFO1; params.erase (it); }
+    else if (*it == "log2") { logLevel = LOGINFO2; params.erase (it); }
+    else if (*it == "log3") { logLevel = LOGINFO3; params.erase (it); }
+    }
+  //}}}
+
+  cLog::init (logLevel);
   cLog::log (LOGNOTICE, "minimal http server");
 
   // start server listening on port for client
@@ -341,22 +407,21 @@ int main (int argc, char** argv) {
   server.start();
 
   while (true) {
-    struct sockaddr_in clientAddr;
-    string clientName;
-    string clientAddressString;
-    SOCKET clientSocket = server.client (clientAddr, clientName, clientAddressString);
-    if (clientSocket < 0) {
-      cLog::log (LOGERROR, "accept failed");
+    struct sockaddr_in addr;
+    SOCKET socket = server.client (addr);
+    if (socket < 0) {
+      cLog::log (LOGERROR, "client accept failed");
       continue;
       }
-    cLog::log (LOGINFO, "client " + clientName + " "  + clientAddressString);
 
-    cHttpRequest clientRequest (clientSocket);
-    if (clientRequest.receive())
-      if (clientRequest.getMethod() == "GET")
-        if (clientRequest.respondFile())
+    cHttpRequest request (socket, addr);
+    cLog::log (LOGINFO, "accepted client " + request.getClientName() + " "  + request.getClientAddressString());
+    if (request.receive()) {
+      request.debug();
+      if (request.getMethod() == "GET")
+        if (request.respondFile())
           continue;
-
-    clientRequest.respondNotOk();
+      }
+    request.respondNotOk();
     }
   }
