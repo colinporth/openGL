@@ -91,27 +91,33 @@ private:
 //{{{
 class cHttpRequest {
 public:
-  cHttpRequest (SOCKET socket, const struct sockaddr_in& clientAddr) : mSocket(socket), mSockAddrIn(clientAddr) {
-    }
+  cHttpRequest (SOCKET socket, const struct sockaddr_in& clientAddr)
+    : mSocket(socket), mSockAddrIn(clientAddr) {}
   ~cHttpRequest() {}
 
-  string getMethod() { return mRequestStrings.size() > 0 ? mRequestStrings[0] : ""; }
-  string getUri() { return mRequestStrings.size() > 1 ? mRequestStrings[1] : ""; }
-  string getVersion() { return mRequestStrings.size() > 2 ? mRequestStrings[2] : ""; }
+  string getMethod() { return mRequestStrings.size() > 0 ? mRequestStrings[0] : "no method"; }
+  string getUri() { return mRequestStrings.size() > 1 ? mRequestStrings[1] : "no uri"; }
+  string getVersion() { return mRequestStrings.size() > 2 ? mRequestStrings[2] : "no version"; }
   //{{{
   string getClientName() {
-    // determine who sent the message
+  // determine who sent the message
+
     struct hostent* hostEnt = gethostbyaddr ((const char*)&mSockAddrIn.sin_addr.s_addr,
                                              sizeof(mSockAddrIn.sin_addr.s_addr), AF_INET);
-    return hostEnt ? string(hostEnt->h_name) : string ("name unknown");
+    // other hostent fields
+    // char** h_aliases;
+    // short h_addrtype;
+    // short h_length;
+    // char** h_addr_list;
+
+    return hostEnt ? string(hostEnt->h_name) : string ("no clientName");
     }
   //}}}
   //{{{
   string getClientAddressString() {
-  // covert address to string
 
     char* str = inet_ntoa (mSockAddrIn.sin_addr);
-    return str ? string (str) : string("addr unknown");
+    return str ? string (str) : string("no clientAddr");
     }
   //}}}
 
@@ -393,7 +399,6 @@ int main (int numArgs, char* args[]) {
   for (int i = 1; i < numArgs; i++)
     params.push_back (args[i]);
   //}}}
-
   eLogLevel logLevel = LOGINFO;
   //{{{  parse params
   for (auto it = params.begin(); it < params.end(); ++it) {

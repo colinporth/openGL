@@ -1,11 +1,11 @@
 TARGET    = app
 SRCS      = server.cpp \
-	    ../../shared/utils/cLog.cpp \
 	    ../../shared/fmt/format.cpp \
+	    ../../shared/utils/cLog.cpp
 
 BUILD_DIR = ./build
 CLEAN_DIRS = $(BUILD_DIR) ./shared
-LIBS      = -no-pie -ldl -lbfd -lpthread -lGL -lglfw
+LIBS      = -no-pie -ldl -lbfd -lpthread
 OBJS      = $(SRCS:%=$(BUILD_DIR)/%.o)
 DEPS      = $(OBJS:.o=.d)
 
