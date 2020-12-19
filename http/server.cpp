@@ -142,7 +142,7 @@ public:
       mRequestStrings = split (mStrings[0], ' ');
 
     if (mStrings.size() > 1) {
-      for (int i = 1; i < mStrings.size(); i++) {
+      for (size_t i = 1; i < mStrings.size(); i++) {
         vector <string> strings = splitHeader (mStrings[i]);
         if (strings.size() == 2)
           mHeaders.push_back (cHeader (strings[0], strings[1]));
