@@ -63,9 +63,13 @@ static const vector<string> kNews   = {"news", "a128"};
 static const vector<string> kBbcSw  = {"sw", "a128"};
 
 static const vector<string> kWqxr  = {"http://stream.wqxr.org/js-stream.aac"};
-
-static const vector<string> kRtp  = {"rtp"};
 static const vector<string> kDvb  = {"dvb"};
+
+static const vector<string> kRtp1  = {"rtp 1"};
+static const vector<string> kRtp2  = {"rtp 2"};
+static const vector<string> kRtp3  = {"rtp 3"};
+static const vector<string> kRtp4  = {"rtp 4"};
+static const vector<string> kRtp5  = {"rtp 5"};
 //}}}
 
 // cAppWindow
@@ -113,9 +117,17 @@ public:
 
       // add icycast channel icons
       mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        load (kRtp); }, "rtp"));
-      mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
         load (kDvb); }, "dvb"));
+      mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
+        load (kRtp1); }, "rtp1"));
+      mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
+        load (kRtp2); }, "rtp2"));
+      mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
+        load (kRtp3); }, "rtp3"));
+      mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
+        load (kRtp4); }, "rtp4"));
+      mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
+        load (kRtp5); }, "rtp5"));
 
       mIcons->addBelowLeft (new cLoaderInfoWidget (this));
 

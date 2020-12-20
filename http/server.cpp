@@ -411,7 +411,7 @@ int main (int numArgs, char* args[]) {
   cLog::init (logLevel);
   cLog::log (LOGNOTICE, "minimal http server");
 
-  // start server listening on port for client
+  // start server listening on port for clients
   cHttpServer server (80);
   server.start();
 
