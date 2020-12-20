@@ -38,6 +38,9 @@ using namespace std;
 using namespace fmt;
 //}}}
 
+constexpr int kHttpPortNumber = 80;
+constexpr int kRtspPortNumber = 554;
+
 //{{{
 class cHttpServer {
 public:
@@ -91,8 +94,8 @@ private:
 //{{{
 class cHttpRequest {
 public:
-  cHttpRequest (SOCKET socket, const struct sockaddr_in& clientAddr)
-    : mSocket(socket), mSockAddrIn(clientAddr) {}
+  cHttpRequest (SOCKET socket, const struct sockaddr_in& clientAddr, bool debug = false)
+    : mSocket(socket), mSockAddrIn(clientAddr), mDebug(debug) {}
   ~cHttpRequest() {}
 
   string getMethod() { return mRequestStrings.size() > 0 ? mRequestStrings[0] : "no method"; }
@@ -155,6 +158,9 @@ public:
         }
       }
 
+    if (mDebug)
+      report (true);
+
     return !mStrings.empty() && (mRequestStrings.size() == 3);
     }
   //}}}
@@ -215,7 +221,7 @@ public:
   //}}}
 
   //{{{
-  void debug (bool showHeaders ) {
+  void report (bool showHeaders) {
 
     cLog::log (LOGINFO1, format ("{} {} {} numLines:{} numHeaders:{}",
                                  getMethod(), getUri(), getVersion(), mStrings.size(), mHeaders.size()));
@@ -315,6 +321,8 @@ private:
             else {
               mState = eLine;
               mStrings.push_back (mString);
+              if (mDebug)
+                cLog::log (LOGINFO, mString);
               }
             }
           else {
@@ -372,6 +380,7 @@ private:
 
   const SOCKET mSocket;
   const struct sockaddr_in mSockAddrIn;
+  const bool mDebug;
 
   eState mState = eNone;
   string mString;
@@ -400,19 +409,21 @@ int main (int numArgs, char* args[]) {
     params.push_back (args[i]);
   //}}}
   eLogLevel logLevel = LOGINFO;
+  bool http = true;
   //{{{  parse params
   for (auto it = params.begin(); it < params.end(); ++it) {
     if (*it == "log1") { logLevel = LOGINFO1; params.erase (it); }
     else if (*it == "log2") { logLevel = LOGINFO2; params.erase (it); }
     else if (*it == "log3") { logLevel = LOGINFO3; params.erase (it); }
+    else if (*it == "rtsp") { http = false; params.erase (it); }
     }
   //}}}
 
   cLog::init (logLevel);
-  cLog::log (LOGNOTICE, "minimal http server");
+  cLog::log (LOGNOTICE, "minimal http/rtsp server");
 
-  // start server listening on port for clients
-  cHttpServer server (80);
+  // start server listening on well known port for clients
+  cHttpServer server (http ? kHttpPortNumber : kRtspPortNumber);
   server.start();
 
   while (true) {
@@ -423,10 +434,9 @@ int main (int numArgs, char* args[]) {
       continue;
       }
 
-    cHttpRequest request (socket, addr);
+    cHttpRequest request (socket, addr, !http);
     cLog::log (LOGINFO, "accepted client " + request.getClientName() + " "  + request.getClientAddressString());
     if (request.receive()) {
-      request.debug (false);
       if (request.getMethod() == "GET")
         if (request.respondFile())
           continue;

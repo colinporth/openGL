@@ -118,7 +118,7 @@ public:
       // add icycast channel icons
       mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
         load (kDvb); }, "dvb"));
-      mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
+      mIcons->add (new cImageWidget (bbc2, sizeof(bbc2), kIcon,kIcon, [&](cWidget* widget) noexcept {
         load (kRtp1); }, "rtp1"));
       mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
         load (kRtp2); }, "rtp2"));
