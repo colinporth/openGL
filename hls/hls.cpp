@@ -117,10 +117,8 @@ public:
 
       // add icycast channel icons
       mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
-        load (kDvb); }, "dvb"));
-      mIcons->add (new cImageWidget (bbc2, sizeof(bbc2), kIcon,kIcon, [&](cWidget* widget) noexcept {
         load (kRtp1); }, "rtp1"));
-      mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
+      mIcons->add (new cImageWidget (bbc2, sizeof(bbc2), kIcon,kIcon, [&](cWidget* widget) noexcept {
         load (kRtp2); }, "rtp2"));
       mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
         load (kRtp3); }, "rtp3"));
@@ -128,6 +126,9 @@ public:
         load (kRtp4); }, "rtp4"));
       mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
         load (kRtp5); }, "rtp5"));
+
+      //mIcons->add (new cImageWidget (bbc1, sizeof(bbc1), kIcon,kIcon, [&](cWidget* widget) noexcept {
+      //  load (kDvb); }, "dvb"));
 
       mIcons->addBelowLeft (new cLoaderInfoWidget (this));
 
