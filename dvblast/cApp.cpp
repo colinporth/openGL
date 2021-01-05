@@ -31,18 +31,19 @@ using namespace fmt;
 class cApp : public cGlWindow {
 public:
   //{{{
-  void run (const string& title, int width, int height, bool gui, bool consoleStats, bool multicast) {
+  void run (const string& title, int width, int height,
+            bool gui, bool consoleStats, bool multicast, int frequency) {
 
     if (gui) {
       initialiseGui (title, width, height, (unsigned char*)droidSansMono, sizeof(droidSansMono));
       add (new cTextBox (mString, 0.f));
 
-      thread ([=](){ dvblast (626000000, multicast, false); } ).detach();
+      thread ([=](){ dvblast (frequency, multicast, false); } ).detach();
 
       runGui (true);
       }
     else // run in this main thread
-      dvblast (626000000, multicast, consoleStats);
+      dvblast (frequency, multicast, consoleStats);
 
     cLog::log (LOGINFO, "exit");
     }
@@ -105,15 +106,24 @@ private:
     cTsBlockPool blockPool (100);
 
     // init dvb
-    cDvb dvb (626000000, 0);
+    cDvb dvb (frequency, 0);
 
     // init dvbRtp
     cDvbRtp dvbRtp (&dvb, &blockPool);
-    dvbRtp.selectOutput (multicast ? "239.255.1.1:5002" : "192.168.1.109:5002", 17540);
-    dvbRtp.selectOutput (multicast ? "239.255.1.2:5002" : "192.168.1.109:5004", 17472);
-    dvbRtp.selectOutput (multicast ? "239.255.1.3:5002" : "192.168.1.109:5006", 17662);
-    dvbRtp.selectOutput (multicast ? "239.255.1.4:5002" : "192.168.1.109:5008", 17664);
-    dvbRtp.selectOutput (multicast ? "239.255.1.5:5002" : "192.168.1.109:5010", 17728);
+    if (frequency == 626000000) {
+      dvbRtp.selectOutput (multicast ? "239.255.1.1:5002" : "192.168.1.109:5002", 17540);
+      dvbRtp.selectOutput (multicast ? "239.255.1.2:5002" : "192.168.1.109:5004", 17472);
+      dvbRtp.selectOutput (multicast ? "239.255.1.3:5002" : "192.168.1.109:5006", 17662);
+      dvbRtp.selectOutput (multicast ? "239.255.1.4:5002" : "192.168.1.109:5008", 17664);
+      dvbRtp.selectOutput (multicast ? "239.255.1.5:5002" : "192.168.1.109:5010", 17728);
+      }
+    else if (frequency == 650000000) {
+      dvbRtp.selectOutput (multicast ? "239.255.1.1:5002" : "192.168.1.109:5002", 17540);
+      dvbRtp.selectOutput (multicast ? "239.255.1.2:5002" : "192.168.1.109:5004", 17472);
+      dvbRtp.selectOutput (multicast ? "239.255.1.3:5002" : "192.168.1.109:5006", 17662);
+      dvbRtp.selectOutput (multicast ? "239.255.1.4:5002" : "192.168.1.109:5008", 17664);
+      dvbRtp.selectOutput (multicast ? "239.255.1.5:5002" : "192.168.1.109:5010", 17728);
+      }
 
     string timeString;
     string statusString;
@@ -182,12 +192,16 @@ int main (int numArgs, char* args[]) {
   bool gui = false;
   bool multicast = false;
   bool consoleStats = false;
+  int frequency = 626000000;
   eLogLevel logLevel = LOGINFO;
   //{{{  parse params to options
   for (size_t i = 0; i < params.size(); i++) {
     if (params[i] == "gui") gui = true;
     else if (params[i] == "m") multicast = true;
     else if (params[i] == "s") consoleStats = true;
+    else if (params[i] == "itv") frequency = 650000000;
+    else if (params[i] == "bbc") frequency = 674000000;
+    else if (params[i] == "hd") frequency = 626000000;
     else if (params[i] == "log1") logLevel = LOGINFO1;
     else if (params[i] == "log2") logLevel = LOGINFO2;
     else if (params[i] == "log3") logLevel = LOGINFO3;
@@ -198,7 +212,7 @@ int main (int numArgs, char* args[]) {
   cLog::log (LOGNOTICE, "dvblast");
 
   cApp app;
-  app.run ("dvblast", 790, 450, gui, consoleStats, multicast);
+  app.run ("dvblast", 790, 450, gui, consoleStats, multicast, frequency);
 
   return 0;
   }
