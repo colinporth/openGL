@@ -118,11 +118,21 @@ private:
       dvbRtp.selectOutput (multicast ? "239.255.1.5:5002" : "192.168.1.109:5010", 17728);
       }
     else if (frequency == 650000000) {
-      dvbRtp.selectOutput (multicast ? "239.255.1.1:5002" : "192.168.1.109:5002", 17540);
-      dvbRtp.selectOutput (multicast ? "239.255.1.2:5002" : "192.168.1.109:5004", 17472);
-      dvbRtp.selectOutput (multicast ? "239.255.1.3:5002" : "192.168.1.109:5006", 17662);
-      dvbRtp.selectOutput (multicast ? "239.255.1.4:5002" : "192.168.1.109:5008", 17664);
-      dvbRtp.selectOutput (multicast ? "239.255.1.5:5002" : "192.168.1.109:5010", 17728);
+      dvbRtp.selectOutput (multicast ? "239.255.1.1:5002" : "192.168.1.109:5002", 8277); // itv
+      dvbRtp.selectOutput (multicast ? "239.255.1.2:5002" : "192.168.1.109:5004", 8384); // c4
+      dvbRtp.selectOutput (multicast ? "239.255.1.3:5002" : "192.168.1.109:5006", 8500); // c5
+      dvbRtp.selectOutput (multicast ? "239.255.1.4:5002" : "192.168.1.109:5008", 8385); // film4
+      dvbRtp.selectOutput (multicast ? "239.255.1.5:5002" : "192.168.1.109:5010", 8442); // more4
+      dvbRtp.selectOutput (multicast ? "239.255.1.6:5002" : "192.168.1.109:5012", 8325); // itv2
+      dvbRtp.selectOutput (multicast ? "239.255.1.7:5002" : "192.168.1.109:5014", 8330); // itv4
+      }
+    else if (frequency == 674000000) {
+      dvbRtp.selectOutput (multicast ? "239.255.1.1:5002" : "192.168.1.109:5002", 4162); // bbcsw
+      dvbRtp.selectOutput (multicast ? "239.255.1.2:5002" : "192.168.1.109:5004", 4287); // bbc2
+      dvbRtp.selectOutput (multicast ? "239.255.1.3:5002" : "192.168.1.109:5006", 4544); // bbc4
+      dvbRtp.selectOutput (multicast ? "239.255.1.4:5002" : "192.168.1.109:5008", 4352); // bbc news
+      dvbRtp.selectOutput (multicast ? "239.255.1.5:5002" : "192.168.1.109:5010", 4736); // bbc parl
+      dvbRtp.selectOutput (multicast ? "239.255.1.6:5002" : "192.168.1.109:5012", 6848); // r3
       }
 
     string timeString;
